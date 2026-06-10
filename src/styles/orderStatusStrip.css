@@ -1,0 +1,216 @@
+.status-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin: 18px 0 22px;
+}
+
+.status-strip__item {
+  position: relative;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  background: rgba(255, 255, 255, 0.76);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 22px;
+  padding: 16px 16px 14px;
+  text-align: left;
+  min-height: 118px;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    border-color 0.18s ease,
+    background 0.18s ease;
+  overflow: hidden;
+}
+
+.status-strip__item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 36px rgba(15, 23, 42, 0.09);
+}
+
+.status-strip__item--active {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 38px rgba(15, 23, 42, 0.1);
+}
+
+.status-strip__item::before {
+  content: "";
+  position: absolute;
+  inset: auto -20px -35px auto;
+  width: 120px;
+  height: 120px;
+  border-radius: 999px;
+  filter: blur(28px);
+  opacity: 0.18;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.status-strip__item:hover::before,
+.status-strip__item--active::before {
+  opacity: 0.28;
+  transform: scale(1.05);
+}
+
+.status-strip__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.status-strip__icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+}
+
+.status-strip__state {
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  font-size: 10.5px;
+  font-weight: 800;
+}
+
+.status-strip__body {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.status-strip__text strong {
+  display: block;
+  color: #0f172a;
+  font-size: 15px;
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.status-strip__text span {
+  display: block;
+  margin-top: 4px;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.status-strip__value {
+  font-size: 36px;
+  line-height: 0.9;
+  font-weight: 950;
+  letter-spacing: -0.06em;
+  color: #0f172a;
+  animation: statusValuePop 0.28s ease;
+}
+
+.status-strip__line {
+  height: 4px;
+  border-radius: 999px;
+  margin-top: 16px;
+  opacity: 0.92;
+}
+
+/* PENDIENTE */
+.status-strip__item--pendiente .status-strip__icon,
+.status-strip__item--pendiente .status-strip__state {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.status-strip__item--pendiente .status-strip__line {
+  background: #f59e0b;
+}
+
+.status-strip__item--pendiente::before {
+  background: #f59e0b;
+}
+
+/* PREPARADO */
+.status-strip__item--preparado .status-strip__icon,
+.status-strip__item--preparado .status-strip__state {
+  background: #eff6ff;
+  color: #0369a1;
+}
+
+.status-strip__item--preparado .status-strip__line {
+  background: #0ea5e9;
+}
+
+.status-strip__item--preparado::before {
+  background: #0ea5e9;
+}
+
+/* ENTREGADO */
+.status-strip__item--entregado .status-strip__icon,
+.status-strip__item--entregado .status-strip__state {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.status-strip__item--entregado .status-strip__line {
+  background: #10b981;
+}
+
+.status-strip__item--entregado::before {
+  background: #10b981;
+}
+
+/* CANCELADO */
+.status-strip__item--cancelado .status-strip__icon,
+.status-strip__item--cancelado .status-strip__state {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.status-strip__item--cancelado .status-strip__line {
+  background: #94a3b8;
+}
+
+.status-strip__item--cancelado::before {
+  background: #94a3b8;
+}
+
+.status-strip__item--active.status-strip__item--pendiente {
+  border-color: rgba(245, 158, 11, 0.45);
+}
+
+.status-strip__item--active.status-strip__item--preparado {
+  border-color: rgba(14, 165, 233, 0.42);
+}
+
+.status-strip__item--active.status-strip__item--entregado {
+  border-color: rgba(16, 185, 129, 0.42);
+}
+
+.status-strip__item--active.status-strip__item--cancelado {
+  border-color: rgba(148, 163, 184, 0.52);
+}
+
+@keyframes statusValuePop {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 1100px) {
+  .status-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .status-strip {
+    grid-template-columns: 1fr;
+  }
+}

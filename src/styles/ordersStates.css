@@ -1,0 +1,70 @@
+.orders-state {
+  min-height: 260px;
+  padding: 34px 20px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+
+  animation: ordersStateIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.orders-state__animation {
+  width: 138px;
+  height: 138px;
+  margin-bottom: 6px;
+
+  filter: drop-shadow(0 12px 24px rgba(15, 23, 42, 0.08));
+}
+
+.orders-state__animation--loading {
+  width: 116px;
+  height: 116px;
+  margin-bottom: 14px;
+}
+
+.orders-state h3 {
+  margin: 0;
+
+  color: #111827;
+
+  font-size: 18px;
+  font-weight: 950;
+  letter-spacing: -0.025em;
+}
+
+.orders-state p {
+  max-width: 390px;
+  margin: 8px 0 0;
+
+  color: #94a3b8;
+
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.orders-state--loading h3 {
+  color: #ef233c;
+}
+
+.orders-state--loading p {
+  color: #64748b;
+}
+
+@keyframes ordersStateIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+    filter: blur(5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}

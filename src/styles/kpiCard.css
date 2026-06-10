@@ -1,0 +1,275 @@
+@import url("https://fonts.googleapis.com/css2?family=Birthstone&display=swap");
+
+.kpi-filter-card {
+  position: relative;
+  min-height: 76px;
+  padding: 11px 13px;
+
+  border: 0px solid rgba(239, 35, 59, 0);
+  border-radius: 5px;
+
+  background: #ffffff;
+
+  display: flex;
+  align-items: center;
+  gap: 11px;
+
+  color: #111827;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  isolation: isolate;
+
+ box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    border-color 0.18s ease,
+    background 0.18s ease;
+}
+
+.kpi-filter-card::before {
+  content: "";
+  position: absolute;
+  right: -54px;
+  top: -58px;
+  width: 118px;
+  height: 118px;
+  border-radius: 999px;
+  background: rgba(239, 35, 60, 0.08);
+  filter: blur(18px);
+  opacity: 0.62;
+  z-index: -1;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.kpi-filter-card::after {
+  content: "";
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  bottom: -12px;
+  height: 20px;
+  border-radius: 999px;
+  background: rgba(239, 35, 60, 0.1);
+  filter: blur(14px);
+  opacity: 0.48;
+  z-index: -1;
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
+}
+
+.kpi-filter-card:hover {
+  transform: translateY(-3px);
+  box-shadow:
+  #f34343 0px 5px,
+  rgba(243, 67, 67, 0.30) 0px 10px,
+  rgba(243, 67, 67, 0.20) 0px 15px,
+  rgba(243, 67, 67, 0.10) 0px 20px,
+  rgba(243, 67, 67, 0.05) 0px 25px;
+}
+
+.kpi-filter-card:hover::before {
+  transform: scale(1.08);
+  opacity: 0.88;
+}
+
+.kpi-filter-card:hover::after {
+  opacity: 0.82;
+  transform: scaleX(1.04);
+}
+
+/* ACTIVO: blanco + animación sutil */
+.kpi-filter-card--active {
+  border-color: rgba(243, 67, 67, 0);
+  background: #ffffff;
+
+  box-shadow:
+    #f34343 0px 5px,
+    rgba(243, 67, 67, 0.30) 0px 10px,
+    rgba(243, 67, 67, 0.20) 0px 15px,
+    rgba(243, 67, 67, 0.10) 0px 20px,
+    rgba(243, 67, 67, 0.05) 0px 25px;
+
+  animation: activeCardFloat 1.9s ease-in-out infinite;
+}
+
+.kpi-filter-card--active::before {
+  background: rgba(239, 35, 59, 0);
+  opacity: 0.68;
+}
+
+.kpi-filter-card--active::after {
+  background: rgba(239, 35, 59, 0);
+  opacity: 0.75;
+}
+
+/* LOTTIE */
+.kpi-filter-card__icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 15px;
+
+  background: #fff1f300;
+
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+
+ 
+  transition:
+    transform 0.18s ease,
+    background 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.kpi-filter-card:hover .kpi-filter-card__icon {
+  transform: translateY(-1px) scale(1.04);
+}
+
+.kpi-filter-card--active .kpi-filter-card__icon {
+  background: #fff1f300;
+  box-shadow:
+    0 8px 18px rgba(239, 35, 59, 0),
+    inset 0 0 0 1px rgba(239, 35, 59, 0);
+}
+
+.kpi-filter-card__lottie {
+  width: 52px;
+  height: 52px;
+  display: block;
+}
+
+.kpi-filter-card__lottie svg {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+
+/* TEXTO */
+.kpi-filter-card__content {
+  min-width: 0;
+  flex: 1;
+}
+
+.kpi-filter-card__content span {
+  display: block;
+  color: #2b2e33;
+  font-size: 20px;
+  font-weight: 900;
+   font-family: "Birthstone", cursive;
+  text-transform: uppercase;
+  letter-spacing: 0.045em;
+}
+
+.kpi-filter-card__content strong {
+  display: block;
+  margin-top: 4px;
+  color: #111827;
+  font-size: 27px;
+  line-height: 0.9;
+  font-weight: 950;
+  letter-spacing: -0.065em;
+  animation: kpiNumberPop 0.28s ease both;
+}
+
+.kpi-filter-card--active .kpi-filter-card__content span {
+  color: #b40912;
+}
+
+.kpi-filter-card--active .kpi-filter-card__content strong {
+  color: #ef233c;
+}
+
+/* PILL */
+.kpi-filter-card__indicator {
+  position: absolute;
+  top: 9px;
+  right: 10px;
+
+  height: 19px;
+  padding: 0 8px;
+  border-radius: 999px;
+
+  background: #fff1f3;
+  color: #b40912;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.01em;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 4px 10px rgba(239, 35, 60, 0.06);
+}
+
+.kpi-filter-card--active .kpi-filter-card__indicator {
+  background: #ffffff;
+  color: #ef233c;
+  border: 1px solid rgba(239, 35, 60, 0.18);
+  box-shadow: 0 5px 12px rgba(239, 35, 60, 0.1);
+}
+
+/* ANIMACIONES */
+@keyframes kpiNumberPop {
+  from {
+    opacity: 0;
+    transform: translateY(5px) scale(0.94);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes activeCardFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+    box-shadow:
+      #f34343 0px 5px,
+      rgba(243, 67, 67, 0.30) 0px 10px,
+      rgba(243, 67, 67, 0.20) 0px 15px,
+      rgba(243, 67, 67, 0.10) 0px 20px,
+      rgba(243, 67, 67, 0.05) 0px 25px;
+  }
+
+  50% {
+    transform: translateY(-3px);
+    box-shadow:
+      #f34343 0px 7px,
+      rgba(243, 67, 67, 0.32) 0px 13px,
+      rgba(243, 67, 67, 0.22) 0px 19px,
+      rgba(243, 67, 67, 0.12) 0px 25px,
+      rgba(243, 67, 67, 0.06) 0px 31px;
+  }
+}
+
+@media (max-width: 720px) {
+  .kpi-filter-card {
+    min-height: 74px;
+    padding: 10px 12px;
+  }
+
+  .kpi-filter-card__icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .kpi-filter-card__lottie {
+    width: 30px;
+    height: 30px;
+  }
+
+  .kpi-filter-card__content strong {
+    font-size: 25px;
+  }
+}

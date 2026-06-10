@@ -1,0 +1,200 @@
+.critical-stock {
+  width: 100%;
+  min-width: 0;
+  height: fit-content;
+  margin-top: 30px;
+  animation: criticalStockIn 0.28s ease both;
+}
+
+.critical-stock__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 5px 2px 0;
+}
+
+.critical-stock__header h3 {
+  margin: 0;
+  color: #111827;
+  font-size: 18px;
+  font-weight: 950;
+  letter-spacing: -0.035em;
+}
+
+.critical-stock__header p {
+  margin: 4px 0 0;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.critical-stock__header svg {
+  color: #ef233c;
+  margin-top: 2px;
+  animation: criticalIconPulse 1.8s ease-in-out infinite;
+}
+
+.critical-stock__list {
+  display: grid;
+  gap: 10px;
+}
+
+.critical-stock__item {
+  min-height: 72px;
+  padding: 12px;
+
+  border-radius: 5px;
+  border: 0px solid rgba(226, 232, 240, 0.9);
+  background: rgba(255, 255, 255, 0.78);
+
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  align-items: center;
+  gap: 12px;
+
+box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
+
+  transition:
+    transform 0.16s ease,
+    box-shadow 0.16s ease,
+    border-color 0.16s ease,
+    background 0.16s ease;
+}
+
+.critical-stock__item:hover {
+  transform: translateY(-2px);
+  border-color: rgba(239, 35, 60, 0.22);
+  background: #ffffff;
+  box-shadow:
+    0 12px 22px rgba(15, 23, 42, 0.065),
+    0 18px 32px rgba(239, 35, 60, 0.08);
+}
+
+.critical-stock__image {
+  width: 46px;
+  height: 46px;
+  border-radius: 1px;
+
+  background: #fff1f3;
+  overflow: hidden;
+
+  display: grid;
+  place-items: center;
+
+  box-shadow:
+    inset 0 0 0 1px rgba(239, 35, 60, 0.06),
+    0 8px 16px rgba(239, 35, 60, 0.08);
+}
+
+.critical-stock__image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.critical-stock__image span {
+  color: #ef233c;
+  font-size: 14px;
+  font-weight: 950;
+}
+
+.critical-stock__content {
+  min-width: 0;
+}
+
+.critical-stock__top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.critical-stock__top strong {
+  color: #111827;
+  font-size: 13.5px;
+  font-weight: 950;
+  line-height: 1.1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.critical-stock__top span {
+  color: #b40912;
+  font-size: 11px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.critical-stock__bar {
+  width: 100%;
+  height: 5px;
+  margin-top: 10px;
+  border-radius: 999px;
+  background: #eef2f7;
+  overflow: hidden;
+}
+
+.critical-stock__bar div {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #b40912, #ef233c, #f34343);
+  animation: criticalBarIn 0.65s ease both;
+}
+
+.critical-stock__message {
+  min-height: 74px;
+  padding: 14px 12px;
+
+  border: 1px dashed rgba(239, 35, 60, 0.18);
+  border-radius: 8px;
+
+  background: rgba(255, 255, 255, 0.66);
+  color: #64748b;
+
+  display: grid;
+  place-items: center;
+  text-align: center;
+
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.critical-stock__message--error {
+  color: #be123c;
+  background: #fff1f2;
+}
+
+@keyframes criticalStockIn {
+  from {
+    opacity: 0;
+    transform: translateX(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes criticalIconPulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.85;
+  }
+
+  50% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+}
+
+@keyframes criticalBarIn {
+  from {
+    width: 0;
+  }
+}

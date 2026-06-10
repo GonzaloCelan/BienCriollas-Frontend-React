@@ -1,0 +1,525 @@
+/* =========================
+   PEDIDOS TABLE - PREMIUM CLEAN
+   ========================= */
+
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap");
+
+.orders-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  padding: 0;
+
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.82);
+
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+
+  box-shadow:
+    rgba(0, 0, 0, 0.16) 0px 1px 2px,
+    rgba(0, 0, 0, 0.12) 0px 8px 22px,
+    rgba(255, 255, 255, 0.12) 0px 0px 0px 1px inset;
+}
+
+.orders-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+}
+
+.orders-table--floating {
+  min-width: 1040px;
+  table-layout: fixed;
+}
+
+/* HEADER */
+.orders-table--floating thead th {
+  height: 44px;
+  padding: 0 18px;
+
+  background: #f34343;
+  border: 0;
+
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+  text-align: left;
+  white-space: nowrap;
+
+  text-transform: none;
+  letter-spacing: 0.015em;
+}
+
+.orders-table--floating thead th:first-child {
+  border-top-left-radius: 5px;
+}
+
+.orders-table--floating thead th:last-child {
+  border-top-right-radius: 5px;
+  text-align: center;
+}
+
+/* FILAS */
+.orders-table--floating tbody tr {
+  opacity: 0;
+  animation: orderRowCleanIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+
+  transition:
+    background 0.16s ease,
+    transform 0.16s ease;
+}
+
+.orders-table--floating tbody tr:hover {
+  background: rgba(243, 67, 67, 0.026);
+}
+
+/* CELDAS */
+.orders-table--floating tbody td {
+  height: 56px;
+  padding: 10px 18px;
+
+  color: #1f2937;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  vertical-align: middle;
+
+  background: transparent;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.68);
+
+  box-shadow: none !important;
+
+  transition:
+    background 0.16s ease,
+    color 0.16s ease;
+}
+
+.orders-table--floating tbody tr:hover td {
+  background: rgba(255, 255, 255, 0.48);
+}
+
+.orders-table--floating tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+/* COLUMNAS */
+.orders-table--floating th:nth-child(1),
+.orders-table--floating td:nth-child(1) {
+  width: 19%;
+}
+
+.orders-table--floating th:nth-child(2),
+.orders-table--floating td:nth-child(2) {
+  width: 12%;
+}
+
+.orders-table--floating th:nth-child(3),
+.orders-table--floating td:nth-child(3) {
+  width: 12%;
+}
+
+.orders-table--floating th:nth-child(4),
+.orders-table--floating td:nth-child(4) {
+  width: 13%;
+}
+
+.orders-table--floating th:nth-child(5),
+.orders-table--floating td:nth-child(5) {
+  width: 13%;
+}
+
+.orders-table--floating th:nth-child(6),
+.orders-table--floating td:nth-child(6) {
+  width: 13%;
+}
+
+.orders-table--floating th:nth-child(7),
+.orders-table--floating td:nth-child(7) {
+  width: 18%;
+  text-align: center;
+}
+
+/* TEXT OVERFLOW */
+.orders-table--floating td:nth-child(1),
+.orders-table--floating td:nth-child(2),
+.orders-table--floating td:nth-child(3),
+.orders-table--floating td:nth-child(4) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.orders-table--floating td:nth-child(7) {
+  overflow: visible;
+}
+
+/* FILA ACTIVA */
+.orders-row-active td {
+  background: rgba(255, 241, 243, 0.72) !important;
+}
+
+/* CLIENTE */
+.orders-client-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.orders-client-cell strong {
+  color: #111827;
+
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.orders-client-cell span {
+  color: #f34343;
+
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* PAGO / VENTA */
+.orders-sale-pill,
+.orders-payment-pill {
+  min-height: 25px;
+  padding: 0;
+
+  border-radius: 0;
+  border: 0;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+
+  background: transparent;
+
+  transition:
+    transform 0.14s ease,
+    color 0.14s ease;
+}
+
+.orders-sale-pill:hover,
+.orders-payment-pill:hover {
+  transform: translateY(-1px);
+}
+
+/* VENTA */
+.sale-particular {
+  color: #475569;
+}
+
+.sale-pedidos-ya {
+  color: #f34343;
+}
+
+/* PAGO */
+.payment-cash {
+  color: #111827;
+}
+
+.payment-transfer {
+  color: #2563eb;
+}
+
+/* N° PEDIDO */
+.orders-external-number {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+/* ESTADOS - CLEAN PREMIUM */
+.orders-status {
+  min-width: 86px;
+  min-height: 26px;
+  padding: 0 12px;
+  border-radius: 999px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  text-transform: uppercase;
+
+  border: 0 solid transparent;
+
+  transition:
+    transform 0.14s ease,
+    background 0.14s ease,
+    border-color 0.14s ease,
+    color 0.14s ease,
+    box-shadow 0.14s ease;
+}
+
+.orders-status:hover {
+  transform: translateY(-1px);
+}
+
+/* PENDIENTE */
+.status-pending {
+  background: #fff7ed;
+  color: #c2410c;
+  border-color: #fed7aa;
+}
+
+/* PREPARADO */
+.status-ready {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-color: #bfdbfe;
+}
+
+/* ENTREGADO */
+.status-delivered {
+  background: #ecfdf5;
+  color: #047857;
+  border-color: #a7f3d0;
+}
+
+/* CANCELADO */
+.status-cancelled {
+  background: #fff1f2;
+  color: #be123c;
+  border-color: #fecdd3;
+}
+
+/* TOTAL */
+.orders-total-price {
+  color: #111827;
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: -0.035em;
+}
+
+/* ACCIONES */
+.orders-actions {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+.orders-icon-btn {
+  width: 30px;
+  height: 30px;
+
+  border: 0;
+  border-radius: 999px;
+
+  background: transparent;
+  color: #f34343;
+
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.14s ease,
+    color 0.14s ease,
+    box-shadow 0.14s ease,
+    background 0.14s ease,
+    opacity 0.14s ease;
+}
+
+.orders-icon-btn:hover {
+  transform: translateY(-2px);
+  color: #dc2626;
+  background: #ffffff;
+  box-shadow: 0 8px 16px rgba(15, 23, 42, 0.065);
+}
+
+.orders-icon-btn:disabled {
+  opacity: 0.34;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.orders-icon-btn--danger:hover {
+  color: #dc2626;
+  background: #fff1f2;
+}
+
+/* BOTÓN PASAR ESTADO - ANIMACIÓN */
+.orders-icon-btn--next {
+  position: relative;
+  isolation: isolate;
+  color: #f34343;
+  animation: nextStateAttention 1.55s ease-in-out infinite;
+}
+
+.orders-icon-btn--next svg {
+  position: relative;
+  z-index: 2;
+  animation: nextStateArrowPush 1.55s ease-in-out infinite;
+}
+
+.orders-icon-btn--next::before {
+  content: "";
+  position: absolute;
+  inset: 4px;
+
+  border-radius: 999px;
+  background: rgba(243, 67, 67, 0.1);
+
+  opacity: 0;
+  transform: scale(0.65);
+
+  z-index: 0;
+
+  animation: nextStateHalo 1.55s ease-in-out infinite;
+}
+
+.orders-icon-btn--next::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+
+  border-radius: 999px;
+  border: 1px solid rgba(243, 67, 67, 0.22);
+
+  opacity: 0;
+  transform: scale(0.75);
+
+  z-index: 0;
+
+  animation: nextStateRing 1.55s ease-in-out infinite;
+}
+
+.orders-icon-btn--next:hover {
+  color: #ffffff;
+  background: #f34343;
+  transform: translateY(-2px) scale(1.04);
+
+  box-shadow:
+    0 10px 20px rgba(243, 67, 67, 0.22),
+    0 4px 8px rgba(243, 67, 67, 0.14);
+}
+
+.orders-icon-btn--next:hover svg {
+  animation-play-state: paused;
+}
+
+.orders-icon-btn--next:disabled {
+  animation: none;
+}
+
+.orders-icon-btn--next:disabled svg,
+.orders-icon-btn--next:disabled::before,
+.orders-icon-btn--next:disabled::after {
+  animation: none;
+}
+
+/* EMPTY / LOADING */
+.orders-state-row td {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  padding: 22px 0 !important;
+  transform: none !important;
+}
+
+/* ANIMACIONES */
+@keyframes orderRowCleanIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes nextStateArrowPush {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  38% {
+    transform: translateX(3px);
+  }
+
+  58% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes nextStateAttention {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 0 rgba(243, 67, 67, 0));
+  }
+
+  50% {
+    filter: drop-shadow(0 0 5px rgba(243, 67, 67, 0.36));
+  }
+}
+
+@keyframes nextStateHalo {
+  0% {
+    opacity: 0;
+    transform: scale(0.65);
+  }
+
+  35% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.35);
+  }
+}
+
+@keyframes nextStateRing {
+  0% {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+
+  40% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.45);
+  }
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .orders-table--floating {
+    min-width: 1040px;
+  }
+}
