@@ -2,12 +2,16 @@
 @import "./criticalStockPanel.css";
 @import url("https://fonts.googleapis.com/css2?family=Ephesis&family=Parisienne&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800;900&display=swap");
-@import url('https://fonts.googleapis.com/css2?family=Birthstone&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Birthstone&display=swap");
 
 .orders-page {
   width: 100%;
   min-height: 100vh;
-  padding: 22px 28px 30px;
+  padding: 40px 28px 30px;
+
+  transition:
+    background 0.25s ease,
+    color 0.25s ease;
 }
 
 /* HEADER */
@@ -32,8 +36,7 @@
   margin: 0;
   color: #111827;
 
- font-family: "Birthstone", cursive;
-  font-weight: 500;
+  font-family: "Birthstone", cursive;
   font-style: normal;
   font-size: 45px;
   font-weight: 400;
@@ -113,6 +116,7 @@
   border-radius: 0;
   overflow: visible;
 }
+
 /* ERROR */
 .orders-error {
   margin: 12px 0 18px;
@@ -128,7 +132,383 @@
   border: 1px solid #fecdd3;
 }
 
-/* RESPONSIVE */
+/* =========================================================
+   MODO OSCURO - PEDIDOS
+========================================================= */
+
+body.dark-mode {
+  background:
+    radial-gradient(circle at top center, rgba(243, 67, 67, 0.08), transparent 26%),
+    radial-gradient(circle at top left, rgba(59, 130, 246, 0.05), transparent 24%),
+    #080d13;
+  color: #f8fafc;
+}
+
+body.dark-mode .app-shell,
+body.dark-mode .app-content {
+  background: transparent;
+}
+
+body.dark-mode .orders-page {
+  color: #f8fafc;
+}
+
+/* HEADER OSCURO */
+body.dark-mode .orders-eyebrow {
+  color: #f34343;
+  text-shadow: 0 0 18px rgba(243, 67, 67, 0.22);
+}
+
+body.dark-mode .orders-hero h2 {
+  color: #f8fafc;
+  opacity: 0.96;
+  text-shadow: 0 14px 34px rgba(0, 0, 0, 0.45);
+}
+
+body.dark-mode .orders-hero span {
+  color: #a7b0bf;
+}
+
+/* BOTÓN NUEVO PEDIDO OSCURO */
+body.dark-mode .orders-primary-btn {
+  color: #ffffff;
+  background: linear-gradient(135deg, #f34343, #d92f3a);
+
+  box-shadow:
+    0 18px 36px rgba(243, 67, 67, 0.28),
+    0 8px 18px rgba(0, 0, 0, 0.35);
+}
+
+body.dark-mode .orders-primary-btn:hover {
+  background: linear-gradient(135deg, #ff5a5a, #e22d39);
+  box-shadow:
+    0 20px 38px rgba(243, 67, 67, 0.3),
+    0 8px 20px rgba(0, 0, 0, 0.45);
+  transform: translateY(-4px);
+}
+
+body.dark-mode .orders-primary-btn:active {
+  transform: translateY(-1px);
+}
+
+/* ERROR OSCURO */
+body.dark-mode .orders-error {
+  background: rgba(190, 18, 60, 0.12);
+  color: #fecdd3;
+  border: 1px solid rgba(244, 63, 94, 0.25);
+}
+
+/* =========================================================
+   KPI CARDS DE PEDIDOS
+========================================================= */
+
+body.dark-mode .orders-stats > *,
+body.dark-mode .kpi-card,
+body.dark-mode .kpi-card--orders,
+body.dark-mode .orders-stat-card,
+body.dark-mode .status-card {
+  background:
+    linear-gradient(180deg, rgba(243, 67, 67, 0.07), rgba(255, 255, 255, 0.015)),
+    #131922;
+
+  border: 1px solid rgba(243, 67, 67, 0.18);
+  color: #f8fafc;
+
+  box-shadow:
+    0 18px 38px rgba(0, 0, 0, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+body.dark-mode .orders-stats > *:hover,
+body.dark-mode .kpi-card:hover,
+body.dark-mode .orders-stat-card:hover,
+body.dark-mode .status-card:hover {
+  border-color: rgba(243, 67, 67, 0.32);
+  box-shadow:
+    0 20px 44px rgba(0, 0, 0, 0.38),
+    0 0 0 1px rgba(243, 67, 67, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+body.dark-mode .orders-stats h3,
+body.dark-mode .orders-stats h4,
+body.dark-mode .orders-stats strong,
+body.dark-mode .orders-stats b,
+body.dark-mode .kpi-card h3,
+body.dark-mode .kpi-card h4,
+body.dark-mode .kpi-card strong,
+body.dark-mode .kpi-card b,
+body.dark-mode .orders-stat-card h3,
+body.dark-mode .orders-stat-card h4,
+body.dark-mode .orders-stat-card strong,
+body.dark-mode .orders-stat-card b,
+body.dark-mode .status-card h3,
+body.dark-mode .status-card h4,
+body.dark-mode .status-card strong,
+body.dark-mode .status-card b {
+  color: #f8fafc;
+}
+
+body.dark-mode .orders-stats span,
+body.dark-mode .orders-stats small,
+body.dark-mode .orders-stats p,
+body.dark-mode .kpi-card span,
+body.dark-mode .kpi-card small,
+body.dark-mode .kpi-card p,
+body.dark-mode .orders-stat-card span,
+body.dark-mode .orders-stat-card small,
+body.dark-mode .orders-stat-card p,
+body.dark-mode .status-card span,
+body.dark-mode .status-card small,
+body.dark-mode .status-card p {
+  color: #c4ccd8;
+}
+
+body.dark-mode .orders-stats button,
+body.dark-mode .kpi-card button,
+body.dark-mode .orders-stat-card button,
+body.dark-mode .status-card button {
+  background: rgba(243, 67, 67, 0.1);
+  color: #ff9a9a;
+  border: 1px solid rgba(243, 67, 67, 0.18);
+}
+
+body.dark-mode .orders-stats button:hover,
+body.dark-mode .kpi-card button:hover,
+body.dark-mode .orders-stat-card button:hover,
+body.dark-mode .status-card button:hover {
+  background: rgba(243, 67, 67, 0.18);
+  color: #ffffff;
+}
+
+/* Primer KPI activo / filtrado */
+body.dark-mode .orders-stats > *:first-child {
+  border-color: rgba(243, 67, 67, 0.3);
+  box-shadow:
+    0 20px 44px rgba(0, 0, 0, 0.38),
+    0 14px 34px rgba(243, 67, 67, 0.13),
+    inset 0 -5px 0 rgba(243, 67, 67, 0.95),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* =========================================================
+   TABLA PEDIDOS OSCURA
+========================================================= */
+
+body.dark-mode .orders-panel {
+  background: transparent;
+}
+
+body.dark-mode .orders-table,
+body.dark-mode .orders-table-wrap,
+body.dark-mode .orders-table-wrapper,
+body.dark-mode .pedidos-table,
+body.dark-mode .pedidos-table-wrap,
+body.dark-mode .pedidos-table-wrapper {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0.01)),
+    #121821;
+
+  border: 1px solid rgba(255, 255, 255, 0.07);
+
+  box-shadow:
+    0 22px 46px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.035);
+}
+
+body.dark-mode table {
+  background: transparent;
+  color: #f8fafc;
+}
+
+body.dark-mode thead tr {
+  background: #f34343;
+}
+
+body.dark-mode thead th {
+  color: #ffffff;
+  font-weight: 900;
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+body.dark-mode tbody tr {
+  background: #121821;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+body.dark-mode tbody tr:nth-child(even) {
+  background: #151c26;
+}
+
+body.dark-mode tbody tr:hover {
+  background: rgba(243, 67, 67, 0.08);
+}
+
+body.dark-mode tbody td {
+  color: #dbe4ee;
+  border-color: rgba(255, 255, 255, 0.055);
+}
+
+body.dark-mode tbody td *,
+body.dark-mode .orders-table td,
+body.dark-mode .orders-table td *,
+body.dark-mode .pedidos-table td,
+body.dark-mode .pedidos-table td * {
+  color: #dbe4ee;
+}
+
+body.dark-mode tbody td strong,
+body.dark-mode .orders-table strong,
+body.dark-mode .pedidos-table strong {
+  color: #f8fafc;
+}
+
+body.dark-mode tbody td span,
+body.dark-mode tbody td small {
+  color: #a7b0bf;
+}
+
+body.dark-mode .orders-table a,
+body.dark-mode .pedidos-table a {
+  color: #ff6b6b;
+}
+
+body.dark-mode .orders-table .payment-transfer,
+body.dark-mode .orders-table .transferencia,
+body.dark-mode .pedidos-table .payment-transfer,
+body.dark-mode .pedidos-table .transferencia {
+  color: #60a5fa;
+}
+
+body.dark-mode .orders-table .pedidos-ya,
+body.dark-mode .pedidos-table .pedidos-ya {
+  color: #ff6b6b;
+}
+
+body.dark-mode .orders-table .orders-total,
+body.dark-mode .pedidos-table .orders-total,
+body.dark-mode tbody td:nth-child(5) {
+  color: #f8fafc;
+  font-weight: 900;
+}
+
+/* ESTADOS */
+body.dark-mode .status-badge,
+body.dark-mode .estado-pill,
+body.dark-mode .pedido-estado {
+  background: rgba(16, 185, 129, 0.14);
+  color: #6ee7b7;
+  border: 1px solid rgba(16, 185, 129, 0.24);
+}
+
+/* ACCIONES TABLA */
+body.dark-mode .orders-table button,
+body.dark-mode .pedidos-table button,
+body.dark-mode .orders-table svg,
+body.dark-mode .pedidos-table svg {
+  color: #f34343;
+}
+
+/* EMPTY STATE TABLA */
+body.dark-mode .orders-empty,
+body.dark-mode .orders-empty-state,
+body.dark-mode .empty-state,
+body.dark-mode .table-empty {
+  color: #f8fafc;
+}
+
+body.dark-mode .orders-empty h3,
+body.dark-mode .orders-empty-state h3,
+body.dark-mode .empty-state h3,
+body.dark-mode .table-empty h3,
+body.dark-mode .orders-empty strong,
+body.dark-mode .orders-empty-state strong,
+body.dark-mode .empty-state strong,
+body.dark-mode .table-empty strong {
+  color: #f8fafc;
+}
+
+body.dark-mode .orders-empty p,
+body.dark-mode .orders-empty-state p,
+body.dark-mode .empty-state p,
+body.dark-mode .table-empty p,
+body.dark-mode .orders-empty span,
+body.dark-mode .orders-empty-state span,
+body.dark-mode .empty-state span,
+body.dark-mode .table-empty span {
+  color: #94a3b8;
+}
+
+/* =========================================================
+   STOCK CRÍTICO OSCURO
+========================================================= */
+
+body.dark-mode .critical-stock-panel,
+body.dark-mode .stock-critical-panel,
+body.dark-mode .stock-critico,
+body.dark-mode .stock-critico-panel {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0.01)),
+    #121821;
+
+  border: 1px solid rgba(255, 255, 255, 0.07);
+
+  box-shadow:
+    0 22px 46px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.035);
+}
+
+body.dark-mode .critical-stock-panel h3,
+body.dark-mode .stock-critical-panel h3,
+body.dark-mode .stock-critico h3,
+body.dark-mode .stock-critico-panel h3 {
+  color: #f8fafc;
+}
+
+body.dark-mode .critical-stock-panel span,
+body.dark-mode .critical-stock-panel p,
+body.dark-mode .stock-critical-panel span,
+body.dark-mode .stock-critical-panel p,
+body.dark-mode .stock-critico span,
+body.dark-mode .stock-critico p,
+body.dark-mode .stock-critico-panel span,
+body.dark-mode .stock-critico-panel p {
+  color: #9ca3af;
+}
+
+body.dark-mode .critical-stock-empty,
+body.dark-mode .stock-critical-empty,
+body.dark-mode .stock-critico-empty {
+  background: rgba(255, 255, 255, 0.018);
+  border: 1px dashed rgba(243, 67, 67, 0.34);
+  color: #9ca3af;
+}
+
+/* =========================================================
+   FORMULARIOS / MODALES ABIERTOS DESDE PEDIDOS
+========================================================= */
+
+body.dark-mode .orders-page input,
+body.dark-mode .orders-page select,
+body.dark-mode .orders-page textarea {
+  background: #0f1620;
+  color: #f8fafc;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+body.dark-mode .orders-page input::placeholder,
+body.dark-mode .orders-page textarea::placeholder {
+  color: #6b7280;
+}
+
+body.dark-mode .orders-page label {
+  color: #cbd5e1;
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
 @media (max-width: 1200px) {
   .orders-content-grid {
     grid-template-columns: 1fr;

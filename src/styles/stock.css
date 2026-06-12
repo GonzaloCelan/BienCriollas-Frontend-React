@@ -7,7 +7,8 @@
 .stock-page {
   width: 100%;
   min-height: 100vh;
-  padding: 22px 28px 34px;
+  padding: 40px 28px 34px;
+  
 }
 
 /* =========================
@@ -16,16 +17,16 @@
 
 .stock-page__header {
   display: flex;
-  align-items: flex-start;
-  justify-content: flex-start;
-  gap: 22px;
-  margin-bottom: 12px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+  margin-bottom: 28px;
 }
 
 .stock-page__header--clean {
   display: flex;
-  align-items: flex-start;
-  justify-content: flex-start;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .stock-page__title {
@@ -65,10 +66,11 @@
    ========================= */
 
 .stock-page__stock-total-wrap {
-  width: 100%;
+  width: auto;
   display: flex;
-  justify-content: center;
-  margin: 4px 0 26px;
+  justify-content: flex-end;
+  margin: 0;
+  flex: 0 0 auto;
 }
 
 .stock-page__stock-total {
@@ -78,7 +80,7 @@
 
   border-radius: 5px;
   background: rgba(255, 255, 255, 0.86);
-  border: 0px solid rgba(226, 232, 240, 0.82);
+  border: 0 solid rgba(226, 232, 240, 0.82);
 
   display: flex;
   flex-direction: column;
@@ -86,7 +88,11 @@
   justify-content: center;
 
   text-align: center;
- box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
+
+  box-shadow:
+    rgba(0, 0, 0, 0.4) 0px 2px 4px,
+    rgba(0, 0, 0, 0.3) 0px 7px 13px -3px,
+    rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
 }
 
 .stock-page__stock-total span {
@@ -108,7 +114,7 @@
 }
 
 /* =========================
-   MODOS DE STOCK - CLEAN
+   MODOS DE STOCK
    ========================= */
 
 .stock-mode-panel {
@@ -255,6 +261,8 @@
   text-transform: uppercase;
   letter-spacing: 0.08em;
 
+  cursor: pointer;
+
   box-shadow: 0 12px 22px rgba(239, 35, 60, 0.22);
 
   transition:
@@ -310,7 +318,8 @@
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease,
-    border-color 0.2s ease;
+    border-color 0.2s ease,
+    background 0.2s ease;
 }
 
 .stock-card:hover {
@@ -363,7 +372,9 @@
   -webkit-backdrop-filter: blur(12px);
 }
 
-/* ESTADOS */
+/* =========================
+   ESTADOS STOCK
+   ========================= */
 
 .stock-card--empty {
   border-color: rgba(15, 23, 42, 0.12);
@@ -416,6 +427,10 @@
   background: rgba(15, 23, 42, 0.82);
   color: #ffffff;
 }
+
+/* =========================
+   CARD BODY
+   ========================= */
 
 .stock-card__body {
   padding: 14px 15px 15px;
@@ -488,7 +503,9 @@
   animation: stockProgressIn 0.7s ease both;
 }
 
-/* INPUT */
+/* =========================
+   INPUT
+   ========================= */
 
 .stock-card__production {
   margin-top: 13px;
@@ -526,7 +543,8 @@
   transition:
     border-color 0.16s ease,
     box-shadow 0.16s ease,
-    background 0.16s ease;
+    background 0.16s ease,
+    color 0.16s ease;
 }
 
 .stock-card__production input:focus {
@@ -588,6 +606,293 @@
 
   font-size: 13px;
   font-weight: 850;
+}
+
+/* =========================================================
+   MODO OSCURO - STOCK
+   ========================================================= */
+
+body.dark-mode .stock-page {
+  color: #dbe4ee;
+}
+
+body.dark-mode .stock-page__eyebrow {
+  color: #ff6b6b;
+}
+
+body.dark-mode .stock-page__header h2 {
+  color: #f8fafc;
+  text-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+}
+
+body.dark-mode .stock-page__header span {
+  color: #94a3b8;
+}
+
+/* TOTAL */
+
+body.dark-mode .stock-page__stock-total {
+  position: relative;
+  overflow: hidden;
+
+  background:
+    radial-gradient(circle at 50% 0%, rgba(243, 67, 67, 0.2), transparent 58%),
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.045),
+      rgba(255, 255, 255, 0.015)
+    ),
+    #121821;
+
+  border: 1px solid rgba(243, 67, 67, 0.34);
+
+  box-shadow:
+    0 0 18px rgba(243, 67, 67, 0.22),
+    0 0 38px rgba(243, 67, 67, 0.16),
+    0 18px 40px rgba(0, 0, 0, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    inset 0 -3px 0 rgba(0, 0, 0, 0.24);
+
+  animation: stockTotalNeonPulse 2.2s ease-in-out infinite;
+}
+body.dark-mode .stock-page__stock-total span {
+  color: #94a3b8;
+}
+
+body.dark-mode .stock-page__stock-total strong {
+  color: #f8fafc;
+  text-shadow:
+    0 0 8px rgba(243, 67, 67, 0.45),
+    0 0 18px rgba(243, 67, 67, 0.28);
+}
+
+/* TABS */
+
+body.dark-mode .stock-mode-tab {
+  color: #64748b;
+}
+
+body.dark-mode .stock-mode-tab:hover {
+  color: #dbe4ee;
+}
+
+body.dark-mode .stock-mode-tab--active {
+  color: #f8fafc;
+}
+
+body.dark-mode .stock-mode-tab::after {
+  background: #f34343;
+  box-shadow: 0 0 12px rgba(243, 67, 67, 0.32);
+}
+
+body.dark-mode .stock-mode-help {
+  color: #94a3b8;
+}
+
+body.dark-mode .stock-mode-help span {
+  color: #f8fafc;
+}
+
+body.dark-mode .stock-mode-help span b {
+  color: #ff6b6b;
+}
+
+/* BOTÓN */
+
+body.dark-mode .stock-page__confirm-btn {
+  background: #f34343;
+  color: #ffffff;
+  box-shadow: 0 14px 28px rgba(243, 67, 67, 0.24);
+}
+
+body.dark-mode .stock-page__confirm-btn:hover {
+  background: #ff5a5a;
+  box-shadow: 0 16px 34px rgba(243, 67, 67, 0.34);
+}
+
+body.dark-mode .stock-page__confirm-btn:disabled {
+  opacity: 0.45;
+  box-shadow: none;
+}
+
+/* CARDS */
+
+body.dark-mode .stock-card {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.035),
+      rgba(255, 255, 255, 0.012)
+    ),
+    #121821;
+
+  border: 1px solid rgba(255, 255, 255, 0.07);
+
+  box-shadow:
+    0 16px 34px rgba(0, 0, 0, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.035);
+}
+
+body.dark-mode .stock-card:hover {
+  border-color: rgba(243, 67, 67, 0.26);
+
+  box-shadow:
+    0 22px 46px rgba(0, 0, 0, 0.46),
+    0 0 0 1px rgba(243, 67, 67, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.045);
+}
+
+body.dark-mode .stock-card__image-wrap {
+  background: #0b1117;
+}
+
+body.dark-mode .stock-card__image {
+  filter: brightness(0.86) saturate(0.95);
+}
+
+body.dark-mode .stock-card:hover .stock-card__image {
+  filter: brightness(0.94) saturate(1.05);
+}
+
+/* BADGES DARK */
+
+body.dark-mode .stock-card__badge--stable {
+  background: rgba(16, 185, 129, 0.16);
+  color: #6ee7b7;
+  border: 1px solid rgba(16, 185, 129, 0.32);
+}
+
+body.dark-mode .stock-card__badge--low {
+  background: rgba(245, 158, 11, 0.16);
+  color: #fcd34d;
+  border: 1px solid rgba(245, 158, 11, 0.34);
+}
+
+body.dark-mode .stock-card__badge--critical {
+  background: rgba(239, 68, 68, 0.18);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.36);
+}
+
+body.dark-mode .stock-card__badge--empty {
+  background: rgba(15, 23, 42, 0.88);
+  color: #f8fafc;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* TEXTOS CARD */
+
+body.dark-mode .stock-card__header h3 {
+  color: #f8fafc;
+}
+
+body.dark-mode .stock-card__info {
+  border-top-color: rgba(255, 255, 255, 0.07);
+}
+
+body.dark-mode .stock-card__line {
+  border-bottom-color: rgba(255, 255, 255, 0.07);
+}
+
+body.dark-mode .stock-card__line span,
+body.dark-mode .stock-card__production span {
+  color: #94a3b8;
+}
+
+body.dark-mode .stock-card__line strong {
+  color: #dbe4ee;
+}
+
+body.dark-mode .stock-card__line:nth-child(1) strong {
+  color: #ff6b6b;
+}
+
+/* PROGRESS DARK */
+
+body.dark-mode .stock-card__progress {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+body.dark-mode .stock-card--empty .stock-card__progress span {
+  background: linear-gradient(90deg, #475569, #94a3b8);
+}
+
+body.dark-mode .stock-card--critical .stock-card__progress span {
+  background: linear-gradient(90deg, #991b1b, #ef4444, #fb7185);
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.28);
+}
+
+body.dark-mode .stock-card--low .stock-card__progress span {
+  background: linear-gradient(90deg, #b45309, #f59e0b, #facc15);
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.22);
+}
+
+body.dark-mode .stock-card--stable .stock-card__progress span {
+  background: linear-gradient(90deg, #047857, #10b981, #6ee7b7);
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.22);
+}
+
+/* INPUT DARK */
+
+body.dark-mode .stock-card__production input {
+  background: #0b1117;
+  color: #f8fafc;
+  border-color: rgba(255, 255, 255, 0.08);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.035),
+    0 8px 18px rgba(0, 0, 0, 0.18);
+}
+
+body.dark-mode .stock-card__production input::placeholder {
+  color: #64748b;
+}
+
+body.dark-mode .stock-card__production input:focus,
+body.dark-mode .stock-card--mode-produccion .stock-card__production input:focus {
+  border-color: rgba(243, 67, 67, 0.48);
+  box-shadow:
+    0 0 0 4px rgba(243, 67, 67, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+body.dark-mode .stock-card--mode-mermas .stock-card__production input:focus {
+  border-color: rgba(249, 115, 22, 0.5);
+  box-shadow:
+    0 0 0 4px rgba(249, 115, 22, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+body.dark-mode .stock-card--mode-conteo .stock-card__production input:focus {
+  border-color: rgba(96, 165, 250, 0.5);
+  box-shadow:
+    0 0 0 4px rgba(96, 165, 250, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+/* EMPTY / ERROR DARK */
+
+body.dark-mode .stock-page__empty {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.025),
+      rgba(255, 255, 255, 0.01)
+    ),
+    #121821;
+
+  border-color: rgba(243, 67, 67, 0.26);
+  color: #94a3b8;
+
+  box-shadow:
+    0 16px 34px rgba(0, 0, 0, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.035);
+}
+
+body.dark-mode .stock-page__error {
+  background: rgba(190, 18, 60, 0.13);
+  color: #fecdd3;
+  border-color: rgba(244, 63, 94, 0.32);
 }
 
 /* =========================
@@ -673,5 +978,28 @@
 
   .stock-page__confirm-btn {
     width: 100%;
+  }
+}
+
+@keyframes stockTotalNeonPulse {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow:
+      0 0 18px rgba(243, 67, 67, 0.22),
+      0 0 38px rgba(243, 67, 67, 0.16),
+      0 18px 40px rgba(0, 0, 0, 0.42),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05),
+      inset 0 -3px 0 rgba(0, 0, 0, 0.24);
+  }
+
+  50% {
+    transform: scale(1.025);
+    box-shadow:
+      0 0 24px rgba(243, 67, 67, 0.42),
+      0 0 58px rgba(243, 67, 67, 0.28),
+      0 22px 48px rgba(0, 0, 0, 0.48),
+      inset 0 1px 0 rgba(255, 255, 255, 0.07),
+      inset 0 -3px 0 rgba(0, 0, 0, 0.26);
   }
 }

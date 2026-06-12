@@ -2,12 +2,15 @@ import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { Minus, Plus, X } from "lucide-react";
 
+
 import {
   crearPedidoApi,
   type PedidoRequestDTO,
   type TipoPagoBackend,
   type TipoVentaBackend,
 } from "../services/pedidosApi";
+
+import { obtenerStockActual, type StockItem } from "../services/stockApi";
 
 import { imprimirComandaPedido } from "../utils/printComanda";
 
@@ -16,7 +19,12 @@ import "../styles/newOrderDrawer.css";
 type NewOrderDrawerProps = {
   open: boolean;
   onClose: () => void;
-  onCreated?: () => void;
+  onCreated?: () => void | Promise<void>;
+};
+
+type StockAlert = {
+  title: string;
+  description: string;
 };
 
 const VARIEDADES: Record<number, { nombre: string; descripcion: string }> = {
@@ -60,10 +68,17 @@ function NewOrderDrawer({ open, onClose, onCreated }: NewOrderDrawerProps) {
   const [total, setTotal] = useState("");
   const [cantidades, setCantidades] = useState<Record<number, number>>({});
 
+  const [stockActual, setStockActual] = useState<StockItem[]>([]);
+  const [stockLoading, setStockLoading] = useState(false);
+  const [stockError, setStockError] = useState("");
+
+  const [stockAlert, setStockAlert] = useState<StockAlert | null>(null);
+
   useEffect(() => {
     if (open) {
       setShouldRender(true);
       setClosing(false);
+      cargarStockParaPedido();
     }
   }, [open]);
 
@@ -78,6 +93,22 @@ function NewOrderDrawer({ open, onClose, onCreated }: NewOrderDrawerProps) {
     };
   }, [shouldRender]);
 
+  async function cargarStockParaPedido() {
+    try {
+      setStockLoading(true);
+      setStockError("");
+
+      const data = await obtenerStockActual();
+      setStockActual(data);
+    } catch (error) {
+      console.error(error);
+      setStockError("No se pudo validar el stock actual.");
+      setStockActual([]);
+    } finally {
+      setStockLoading(false);
+    }
+  }
+
   function resetForm() {
     setCliente("");
     setNumeroPedido("");
@@ -88,8 +119,8 @@ function NewOrderDrawer({ open, onClose, onCreated }: NewOrderDrawerProps) {
     setCantidades({});
   }
 
-  function closeWithAnimation() {
-    if (saving) return;
+  function closeWithAnimation(force = false) {
+    if (saving && !force) return;
 
     setClosing(true);
 
@@ -104,21 +135,113 @@ function NewOrderDrawer({ open, onClose, onCreated }: NewOrderDrawerProps) {
     return Object.values(cantidades).reduce((acc, value) => acc + value, 0);
   }, [cantidades]);
 
+  function obtenerNombreVariedad(idVariedad: number) {
+    return VARIEDADES[idVariedad]?.nombre ?? `Variedad #${idVariedad}`;
+  }
+
+  function obtenerStockDisponible(idVariedad: number) {
+    const item = stockActual.find((stock) => stock.id === idVariedad);
+    return item?.stock ?? null;
+  }
+
+  function mostrarAvisoStockInsuficiente(
+    idVariedad: number,
+    cantidadSolicitada: number,
+    stockDisponible: number
+  ) {
+    const nombre = obtenerNombreVariedad(idVariedad);
+
+    setStockAlert({
+      title: "Stock insuficiente",
+      description: `No hay stock suficiente de ${nombre}. Disponible: ${stockDisponible}. Intentaste cargar: ${cantidadSolicitada}.`,
+    });
+  }
+
+  function validarCantidadContraStock(idVariedad: number, nuevaCantidad: number) {
+    if (nuevaCantidad <= 0) return true;
+
+    if (stockLoading) {
+      setStockAlert({
+        title: "Validando stock",
+        description:
+          "El stock todavía se está cargando. Esperá unos segundos y volvé a intentar.",
+      });
+
+      return false;
+    }
+
+    if (stockError) {
+      setStockAlert({
+        title: "No se pudo validar el stock",
+        description:
+          "No se pudo consultar el stock actual. Cerrá el aviso y volvé a abrir el pedido para reintentar.",
+      });
+
+      return false;
+    }
+
+    const stockDisponible = obtenerStockDisponible(idVariedad);
+
+    if (stockDisponible === null) {
+      setStockAlert({
+        title: "Stock no encontrado",
+        description: `No se encontró stock para ${obtenerNombreVariedad(
+          idVariedad
+        )}. Revisá la pantalla de stock antes de cargar el pedido.`,
+      });
+
+      return false;
+    }
+
+    if (nuevaCantidad > stockDisponible) {
+      mostrarAvisoStockInsuficiente(
+        idVariedad,
+        nuevaCantidad,
+        stockDisponible
+      );
+
+      return false;
+    }
+
+    return true;
+  }
+
   function updateCantidad(idVariedad: number, value: number) {
+    const nuevaCantidad = Math.max(Number(value) || 0, 0);
+
+    if (!validarCantidadContraStock(idVariedad, nuevaCantidad)) return;
+
     setCantidades((prev) => ({
       ...prev,
-      [idVariedad]: Math.max(value || 0, 0),
+      [idVariedad]: nuevaCantidad,
     }));
   }
 
   function sumar(idVariedad: number, cantidad: number) {
     const actual = cantidades[idVariedad] ?? 0;
-    updateCantidad(idVariedad, actual + cantidad);
+    const nuevaCantidad = actual + cantidad;
+
+    updateCantidad(idVariedad, nuevaCantidad);
   }
 
   function restar(idVariedad: number) {
     const actual = cantidades[idVariedad] ?? 0;
-    updateCantidad(idVariedad, actual - 1);
+    const nuevaCantidad = Math.max(actual - 1, 0);
+
+    updateCantidad(idVariedad, nuevaCantidad);
+  }
+
+  function validarPedidoCompleto(detalles: { idVariedad: number; cantidad: number }[]) {
+    for (const detalle of detalles) {
+      const valido = validarCantidadContraStock(
+        detalle.idVariedad,
+        detalle.cantidad
+      );
+
+      if (!valido) return false;
+    }
+
+    return true;
   }
 
   async function confirmarPedido() {
@@ -149,6 +272,8 @@ function NewOrderDrawer({ open, onClose, onCreated }: NewOrderDrawerProps) {
       return;
     }
 
+    if (!validarPedidoCompleto(detalles)) return;
+
     const payload: PedidoRequestDTO = {
       cliente: clienteTrim,
       tipoVenta,
@@ -177,8 +302,8 @@ function NewOrderDrawer({ open, onClose, onCreated }: NewOrderDrawerProps) {
       }));
 
       resetForm();
-      onCreated?.();
-      closeWithAnimation();
+      await onCreated?.();
+      closeWithAnimation(true);
 
       window.setTimeout(() => {
         imprimirComandaPedido(pedidoCreado, itemsComanda);
@@ -199,7 +324,10 @@ function NewOrderDrawer({ open, onClose, onCreated }: NewOrderDrawerProps) {
         closing ? "new-order-drawer--closing" : ""
       }`}
     >
-      <div className="new-order-drawer__backdrop" onClick={closeWithAnimation} />
+      <div
+        className="new-order-drawer__backdrop"
+        onClick={() => closeWithAnimation()}
+      />
 
       <section className="new-order-drawer__panel">
         <header className="new-order-drawer__header">
@@ -208,7 +336,11 @@ function NewOrderDrawer({ open, onClose, onCreated }: NewOrderDrawerProps) {
             <p>Registro rápido de venta</p>
           </div>
 
-          <button type="button" onClick={closeWithAnimation} aria-label="Cerrar">
+          <button
+            type="button"
+            onClick={() => closeWithAnimation()}
+            aria-label="Cerrar"
+          >
             <X size={18} />
           </button>
         </header>
@@ -309,24 +441,18 @@ function NewOrderDrawer({ open, onClose, onCreated }: NewOrderDrawerProps) {
           </section>
 
           <section className="drawer-section drawer-section--variedades">
-            <div className="drawer-section__head">
-              <div>
-                <span>Selección de variedades</span>
-                <p>Cargá cantidades rápido por sabor.</p>
-              </div>
-
-              <strong>{totalEmpanadas}</strong>
-            </div>
-
             <div className="drawer-varieties">
               {variedadesList.map((variedad) => {
                 const cantidad = cantidades[variedad.id] ?? 0;
 
                 return (
                   <article className="drawer-variety" key={variedad.id}>
-                    <div>
+                    <div className="drawer-variety__name">
                       <strong>{variedad.nombre}</strong>
-                      {cantidad > 0 && <span>{cantidad} seleccionadas</span>}
+
+                      {cantidad > 0 && (
+                        <span>{cantidad} seleccionadas</span>
+                      )}
                     </div>
 
                     <div className="drawer-variety__controls">
@@ -388,7 +514,7 @@ function NewOrderDrawer({ open, onClose, onCreated }: NewOrderDrawerProps) {
           <button
             type="button"
             className="drawer-cancel"
-            onClick={closeWithAnimation}
+            onClick={() => closeWithAnimation()}
             disabled={saving}
           >
             Cancelar
@@ -398,11 +524,33 @@ function NewOrderDrawer({ open, onClose, onCreated }: NewOrderDrawerProps) {
             type="button"
             className="drawer-confirm"
             onClick={confirmarPedido}
-            disabled={saving}
+            disabled={saving || stockLoading}
           >
-            {saving ? "Guardando..." : "Confirmar"}
+            {stockLoading
+              ? "Validando stock..."
+              : saving
+                ? "Guardando..."
+                : "Confirmar"}
           </button>
         </footer>
+
+        {stockAlert && (
+  <div className="stock-alert">
+    <div
+      className="stock-alert__backdrop"
+      onClick={() => setStockAlert(null)}
+    />
+
+    <section className="stock-alert__panel">
+      <h3>{stockAlert.title}</h3>
+      <p>{stockAlert.description}</p>
+
+      <button type="button" onClick={() => setStockAlert(null)}>
+        Entendido
+      </button>
+    </section>
+  </div>
+)}
       </section>
     </aside>,
     document.body

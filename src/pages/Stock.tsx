@@ -275,20 +275,20 @@ function Stock() {
 
   return (
     <section className="stock-page">
-      <header className="stock-page__header stock-page__header--clean">
-        <div className="stock-page__title">
-          <p className="stock-page__eyebrow">Gestión de stock</p>
-          <h2>Stock</h2>
-          <span>Disponibilidad y carga de producción por variedad.</span>
-        </div>
-      </header>
+     <header className="stock-page__header stock-page__header--clean">
+  <div className="stock-page__title">
+    <p className="stock-page__eyebrow">Gestión de stock</p>
+    <h2>Stock</h2>
+    <span>Disponibilidad y carga de producción por variedad.</span>
+  </div>
 
-      <div className="stock-page__stock-total-wrap">
-        <div className="stock-page__stock-total">
-          <span>Stock total</span>
-          <strong>{totalDisponible}</strong>
-        </div>
-      </div>
+  <div className="stock-page__stock-total-wrap">
+    <div className="stock-page__stock-total">
+      <span>Stock total</span>
+      <strong>{totalDisponible}</strong>
+    </div>
+  </div>
+</header>
 
       <section className="stock-mode-panel">
         <div className="stock-mode-tabs">

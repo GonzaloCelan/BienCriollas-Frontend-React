@@ -1,4 +1,4 @@
-import { Bell } from "lucide-react";
+import { Bell, Moon, Sun } from "lucide-react";
 import { useLayoutEffect, useRef, useState } from "react";
 
 export type AppPage =
@@ -23,6 +23,8 @@ type SidebarProps = {
   activePage: AppPage;
   onChangePage: (page: AppPage) => void;
   pedidosPendientes?: PedidoNotificacion[];
+  darkMode: boolean;
+  onToggleTheme: () => void;
 };
 
 type MenuItem = {
@@ -53,6 +55,8 @@ function Sidebar({
   activePage,
   onChangePage,
   pedidosPendientes = [],
+  darkMode,
+  onToggleTheme,
 }: SidebarProps) {
   const [openNotifications, setOpenNotifications] = useState(false);
 
@@ -96,9 +100,10 @@ function Sidebar({
       <div className="topbar__brand">
         <button
           type="button"
-          className="topbar__brand-button topbar__brand-button--icon-only"
+          className="topbar__brand-button"
           onClick={() => onChangePage("pedidos")}
           aria-label="Ir a pedidos"
+          title="Ir a pedidos"
         >
           <img
             src="/logocolor.png"
@@ -148,6 +153,16 @@ function Sidebar({
       </nav>
 
       <div className="topbar__actions">
+        <button
+          type="button"
+          className="topbar__theme-btn"
+          onClick={onToggleTheme}
+          title={darkMode ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
+          aria-label={darkMode ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
+        >
+          {darkMode ? <Sun size={18} /> : <Moon size={18} />}
+        </button>
+
         <div className="topbar__notifications">
           <button
             className={`topbar__icon-btn ${
@@ -156,6 +171,7 @@ function Sidebar({
             type="button"
             onClick={() => setOpenNotifications((prev) => !prev)}
             title="Pedidos pendientes"
+            aria-label="Pedidos pendientes"
           >
             <Bell size={18} />
 

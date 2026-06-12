@@ -4,7 +4,7 @@
 .income-page {
   width: 100%;
   min-height: 100vh;
- padding: 22px 28px 36px;
+  padding: 40px 28px 36px;
   font-family: "Plus Jakarta Sans", system-ui, sans-serif;
 }
 
@@ -24,7 +24,7 @@
 .income-hero h2 {
   margin: 0;
   color: #111827;
-   font-family: "Birthstone", cursive;
+  font-family: "Birthstone", cursive;
   font-size: 58px;
   font-weight: 500;
   letter-spacing: -0.045em;
@@ -675,7 +675,7 @@
   cursor: pointer;
 }
 
-/* FILTROS SUPERIORES - MISMO ESTILO QUE ESTADÍSTICAS */
+/* FILTROS SUPERIORES */
 
 .income-period-filters {
   display: flex;
@@ -780,8 +780,6 @@
   color: #64748b;
 }
 
-/* Ajuste para que el header acomode bien los filtros */
-
 .income-hero {
   display: flex;
   align-items: flex-end;
@@ -792,6 +790,374 @@
 
 .income-hero > div:first-child {
   min-width: 260px;
+}
+
+/* =========================================================
+   MODO OSCURO - INGRESOS
+========================================================= */
+
+body.dark-mode .income-page {
+  color: #dbe4ee;
+}
+
+body.dark-mode .income-eyebrow {
+  color: #ff6b6b;
+}
+
+body.dark-mode .income-hero h2 {
+  color: #f8fafc;
+  text-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+}
+
+body.dark-mode .income-hero span {
+  color: #94a3b8;
+}
+
+/* CARDS / KPIS */
+
+body.dark-mode .income-kpi,
+body.dark-mode .income-card {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.035),
+      rgba(255, 255, 255, 0.012)
+    ),
+    #121821;
+
+  border: 1px solid rgba(255, 255, 255, 0.07);
+
+  box-shadow:
+    0 16px 34px rgba(0, 0, 0, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.035);
+}
+
+body.dark-mode .income-kpi span,
+body.dark-mode .income-kpi strong,
+body.dark-mode .income-card h3,
+body.dark-mode .income-table-header h3,
+body.dark-mode .income-side-header h3 {
+  color: #f8fafc;
+}
+
+body.dark-mode .income-kpi small {
+  color: #6ee7b7;
+}
+
+body.dark-mode .income-kpi small.is-pending {
+  color: #fdba74;
+}
+
+body.dark-mode .income-card__title span,
+body.dark-mode .income-table-header span,
+body.dark-mode .income-side-header span {
+  color: #94a3b8;
+}
+
+body.dark-mode .income-table-header b,
+body.dark-mode .income-card__title > svg {
+  color: #ff6b6b;
+}
+
+/* KPI ICONS */
+
+body.dark-mode .income-kpi__icon--cash {
+  background: rgba(16, 185, 129, 0.15);
+  color: #6ee7b7;
+  box-shadow: inset 0 0 0 1px rgba(16, 185, 129, 0.28);
+}
+
+body.dark-mode .income-kpi__icon--transfer {
+  background: rgba(59, 130, 246, 0.15);
+  color: #93c5fd;
+  box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.28);
+}
+
+body.dark-mode .income-kpi__icon--py {
+  background: rgba(239, 68, 68, 0.16);
+  color: #fca5a5;
+  box-shadow: inset 0 0 0 1px rgba(239, 68, 68, 0.3);
+}
+
+body.dark-mode .income-kpi__icon--month {
+  background: rgba(168, 85, 247, 0.16);
+  color: #d8b4fe;
+  box-shadow: inset 0 0 0 1px rgba(168, 85, 247, 0.28);
+}
+
+body.dark-mode .income-kpi__icon--total {
+  background: rgba(245, 158, 11, 0.16);
+  color: #fcd34d;
+  box-shadow: inset 0 0 0 1px rgba(245, 158, 11, 0.3);
+}
+
+/* INPUTS / FILTERS */
+
+body.dark-mode .income-field span {
+  color: #94a3b8;
+}
+
+body.dark-mode .income-field input,
+body.dark-mode .income-field select,
+body.dark-mode .income-money-input,
+body.dark-mode .income-date-input,
+body.dark-mode .income-filter-btn,
+body.dark-mode .income-filter-select,
+body.dark-mode .income-search,
+body.dark-mode .income-range-actions,
+body.dark-mode .income-date-filter {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.026),
+      rgba(255, 255, 255, 0.01)
+    ),
+    #0f1620;
+
+  color: #f8fafc;
+  border-color: rgba(255, 255, 255, 0.08);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.035),
+    0 8px 18px rgba(0, 0, 0, 0.18);
+}
+
+body.dark-mode .income-money-input input,
+body.dark-mode .income-date-input input,
+body.dark-mode .income-filter-select select,
+body.dark-mode .income-search input,
+body.dark-mode .income-date-filter input {
+  color: #f8fafc;
+}
+
+body.dark-mode .income-field input::placeholder,
+body.dark-mode .income-search input::placeholder,
+body.dark-mode .income-money-input input::placeholder {
+  color: #64748b;
+}
+
+body.dark-mode .income-field select option,
+body.dark-mode .income-filter-select select option {
+  background: #121821;
+  color: #f8fafc;
+}
+
+body.dark-mode .income-date-filter svg {
+  color: #94a3b8;
+}
+
+body.dark-mode .income-range-actions button {
+  color: #94a3b8;
+}
+
+body.dark-mode .income-range-actions button:hover {
+  color: #ff8a8a;
+  background: rgba(243, 67, 67, 0.1);
+}
+
+body.dark-mode .income-range-actions button.active {
+  color: #ffffff;
+  background: linear-gradient(135deg, #f34343, #b91c1c);
+  box-shadow:
+    0 12px 26px rgba(243, 67, 67, 0.26),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+body.dark-mode .income-date-filter:hover {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.04),
+      rgba(255, 255, 255, 0.014)
+    ),
+    #121821;
+
+  box-shadow:
+    0 14px 28px rgba(0, 0, 0, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+/* BOTONES */
+
+body.dark-mode .income-save-btn {
+  background: #f34343;
+  color: #ffffff;
+  box-shadow: 0 14px 28px rgba(243, 67, 67, 0.24);
+}
+
+body.dark-mode .income-save-btn:hover {
+  background: #ff5a5a;
+  box-shadow: 0 18px 34px rgba(243, 67, 67, 0.34);
+}
+
+body.dark-mode .income-action-btn {
+  background: #0f1620;
+  color: #cbd5e1;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+body.dark-mode .income-action-btn:hover {
+  color: #ff8a8a;
+  border-color: rgba(243, 67, 67, 0.34);
+}
+
+/* TABLE */
+
+body.dark-mode .income-table th {
+  color: #ffffff;
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+body.dark-mode .income-table td {
+  color: #dbe4ee;
+  border-bottom-color: rgba(255, 255, 255, 0.07);
+}
+
+body.dark-mode .income-table tbody tr:hover {
+  background: rgba(243, 67, 67, 0.07);
+}
+
+body.dark-mode .income-date-cell strong,
+body.dark-mode .income-description,
+body.dark-mode .income-amount {
+  color: #f8fafc;
+}
+
+body.dark-mode .income-date-cell span {
+  color: #ffffff;
+}
+
+/* PILLS */
+
+body.dark-mode .income-pill,
+body.dark-mode .income-status {
+  border: 1px solid transparent;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 8px 16px rgba(0, 0, 0, 0.16);
+}
+
+body.dark-mode .income-pill--cash,
+body.dark-mode .income-activity__icon.income-pill--cash {
+  background: rgba(16, 185, 129, 0.16);
+  color: #6ee7b7;
+  border-color: rgba(16, 185, 129, 0.34);
+}
+
+body.dark-mode .income-pill--transfer,
+body.dark-mode .income-activity__icon.income-pill--transfer {
+  background: rgba(59, 130, 246, 0.16);
+  color: #93c5fd;
+  border-color: rgba(59, 130, 246, 0.34);
+}
+
+body.dark-mode .income-pill--py,
+body.dark-mode .income-activity__icon.income-pill--py {
+  background: rgba(239, 68, 68, 0.16);
+  color: #fca5a5;
+  border-color: rgba(239, 68, 68, 0.34);
+}
+
+body.dark-mode .income-status--success {
+  background: rgba(16, 185, 129, 0.16);
+  color: #6ee7b7;
+  border-color: rgba(16, 185, 129, 0.34);
+}
+
+body.dark-mode .income-status--pending {
+  background: rgba(249, 115, 22, 0.16);
+  color: #fdba74;
+  border-color: rgba(249, 115, 22, 0.34);
+}
+
+/* FOOTER / PAGINATION */
+
+body.dark-mode .income-table-footer span {
+  color: #94a3b8;
+}
+
+body.dark-mode .income-pagination button {
+  background: #0f1620;
+  color: #cbd5e1;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+body.dark-mode .income-pagination button.active {
+  background: #f34343;
+  border-color: #f34343;
+  color: #ffffff;
+  box-shadow: 0 10px 22px rgba(243, 67, 67, 0.22);
+}
+
+/* DONUT / CHART */
+
+body.dark-mode .income-donut {
+  filter: drop-shadow(0 18px 34px rgba(0, 0, 0, 0.34));
+}
+
+body.dark-mode .income-donut::after {
+  background: #121821;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 8px 20px rgba(0, 0, 0, 0.28);
+}
+
+body.dark-mode .income-donut span {
+  color: #94a3b8;
+}
+
+body.dark-mode .income-donut strong {
+  color: #f8fafc;
+}
+
+body.dark-mode .income-chart-list p,
+body.dark-mode .income-chart-list strong {
+  color: #f8fafc;
+}
+
+body.dark-mode .income-dot--transfer {
+  background: #22c55e;
+  box-shadow: 0 0 10px rgba(34, 197, 94, 0.3);
+}
+
+body.dark-mode .income-dot--cash {
+  background: #6ee7b7;
+  box-shadow: 0 0 10px rgba(110, 231, 183, 0.3);
+}
+
+body.dark-mode .income-dot--py {
+  background: #f34343;
+  box-shadow: 0 0 10px rgba(243, 67, 67, 0.35);
+}
+
+/* ACTIVITY */
+
+body.dark-mode .income-activity {
+  border-bottom-color: rgba(255, 255, 255, 0.07);
+}
+
+body.dark-mode .income-activity strong,
+body.dark-mode .income-activity b {
+  color: #f8fafc;
+}
+
+body.dark-mode .income-activity span,
+body.dark-mode .income-activity small {
+  color: #94a3b8;
+}
+
+body.dark-mode .income-activity__icon.income-pill--cash,
+body.dark-mode .income-activity__icon.income-pill--transfer,
+body.dark-mode .income-activity__icon.income-pill--py {
+  border-radius: 13px;
+}
+
+body.dark-mode .income-link-btn {
+  color: #ff8a8a;
+}
+
+body.dark-mode .income-link-btn:hover {
+  color: #ffb4b4;
 }
 
 /* RESPONSIVE FILTROS */
@@ -822,6 +1188,7 @@
     width: 100%;
   }
 }
+
 @media (max-width: 1400px) {
   .income-layout {
     grid-template-columns: 1fr;

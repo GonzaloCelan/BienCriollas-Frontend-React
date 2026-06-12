@@ -6,6 +6,10 @@
   animation: criticalStockIn 0.28s ease both;
 }
 
+/* =========================
+   HEADER
+========================= */
+
 .critical-stock__header {
   display: flex;
   align-items: flex-start;
@@ -36,6 +40,10 @@
   animation: criticalIconPulse 1.8s ease-in-out infinite;
 }
 
+/* =========================
+   LISTA
+========================= */
+
 .critical-stock__list {
   display: grid;
   gap: 10px;
@@ -46,7 +54,7 @@
   padding: 12px;
 
   border-radius: 5px;
-  border: 0px solid rgba(226, 232, 240, 0.9);
+  border: 1px solid rgba(226, 232, 240, 0.45);
   background: rgba(255, 255, 255, 0.78);
 
   display: grid;
@@ -54,7 +62,7 @@
   align-items: center;
   gap: 12px;
 
-box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
+  box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
 
   transition:
     transform 0.16s ease,
@@ -67,15 +75,20 @@ box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
   transform: translateY(-2px);
   border-color: rgba(239, 35, 60, 0.22);
   background: #ffffff;
+
   box-shadow:
     0 12px 22px rgba(15, 23, 42, 0.065),
     0 18px 32px rgba(239, 35, 60, 0.08);
 }
 
+/* =========================
+   IMAGEN
+========================= */
+
 .critical-stock__image {
   width: 46px;
   height: 46px;
-  border-radius: 1px;
+  border-radius: 3px;
 
   background: #fff1f3;
   overflow: hidden;
@@ -101,6 +114,10 @@ box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
   font-weight: 950;
 }
 
+/* =========================
+   CONTENIDO
+========================= */
+
 .critical-stock__content {
   min-width: 0;
 }
@@ -117,6 +134,7 @@ box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
   font-size: 13.5px;
   font-weight: 950;
   line-height: 1.1;
+
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -128,6 +146,10 @@ box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
   font-weight: 900;
   white-space: nowrap;
 }
+
+/* =========================
+   BARRA
+========================= */
 
 .critical-stock__bar {
   width: 100%;
@@ -144,6 +166,10 @@ box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
   background: linear-gradient(90deg, #b40912, #ef233c, #f34343);
   animation: criticalBarIn 0.65s ease both;
 }
+
+/* =========================
+   MENSAJES
+========================= */
 
 .critical-stock__message {
   min-height: 74px;
@@ -166,7 +192,106 @@ box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
 .critical-stock__message--error {
   color: #be123c;
   background: #fff1f2;
+  border-color: rgba(190, 18, 60, 0.22);
 }
+
+/* =========================================================
+   MODO OSCURO
+========================================================= */
+
+body.dark-mode .critical-stock__header h3 {
+  color: #f8fafc;
+}
+
+body.dark-mode .critical-stock__header p {
+  color: #94a3b8;
+}
+
+body.dark-mode .critical-stock__header svg {
+  color: #ff6b6b;
+  filter: drop-shadow(0 0 8px rgba(243, 67, 67, 0.28));
+}
+
+body.dark-mode .critical-stock__item {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.012)),
+    #121821;
+
+  border: 1px solid rgba(255, 255, 255, 0.07);
+
+  box-shadow:
+    0 16px 34px rgba(0, 0, 0, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.035);
+}
+
+body.dark-mode .critical-stock__item:hover {
+  background:
+    linear-gradient(180deg, rgba(243, 67, 67, 0.08), rgba(255, 255, 255, 0.015)),
+    #151c26;
+
+  border-color: rgba(243, 67, 67, 0.28);
+
+  box-shadow:
+    0 20px 42px rgba(0, 0, 0, 0.42),
+    0 0 0 1px rgba(243, 67, 67, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.045);
+}
+
+body.dark-mode .critical-stock__image {
+  background: rgba(243, 67, 67, 0.1);
+
+  box-shadow:
+    inset 0 0 0 1px rgba(243, 67, 67, 0.18),
+    0 10px 20px rgba(0, 0, 0, 0.28);
+}
+
+body.dark-mode .critical-stock__image img {
+  opacity: 0.96;
+}
+
+body.dark-mode .critical-stock__image span {
+  color: #ff8a8a;
+}
+
+body.dark-mode .critical-stock__top strong {
+  color: #f8fafc;
+}
+
+body.dark-mode .critical-stock__top span {
+  color: #ff8a8a;
+}
+
+body.dark-mode .critical-stock__bar {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+body.dark-mode .critical-stock__bar div {
+  background: linear-gradient(90deg, #991b1b, #ef4444, #fb7185);
+  box-shadow: 0 0 12px rgba(243, 67, 67, 0.24);
+}
+
+body.dark-mode .critical-stock__message {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0.01)),
+    #121821;
+
+  color: #94a3b8;
+  border: 1px dashed rgba(243, 67, 67, 0.32);
+
+  box-shadow:
+    0 16px 34px rgba(0, 0, 0, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.035);
+}
+
+body.dark-mode .critical-stock__message--error {
+  background: rgba(190, 18, 60, 0.12);
+  color: #fecdd3;
+  border-color: rgba(244, 63, 94, 0.32);
+}
+
+/* =========================================================
+   ANIMACIONES
+========================================================= */
 
 @keyframes criticalStockIn {
   from {
