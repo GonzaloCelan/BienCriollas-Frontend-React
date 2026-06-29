@@ -17,9 +17,11 @@ import cancelledAnimation from "../assets/lotties/cancel.json";
 
 import {
   actualizarEstadoPedidoApi,
+  actualizarTipoPagoPedidoApi,
   obtenerPedidosPorEstado,
   obtenerDetallePedidoApi,
   type EstadoBackend,
+  type TipoPagoBackend,
 } from "../services/pedidosApi";
 
 import "../styles/pedidos.css";
@@ -79,6 +81,21 @@ function getCountKey(estado: EstadoBackend): keyof StatusCounts {
   if (estado === "PREPARADO") return "preparados";
   if (estado === "ENTREGADO") return "entregados";
   return "cancelados";
+}
+
+function getNuevoPagoBackend(pagoActual: string): TipoPagoBackend {
+  const value = pagoActual.toLowerCase();
+
+  if (value.includes("transfer")) {
+    return "EFECTIVO";
+  }
+
+  return "TRANSFERENCIA";
+}
+
+function getPagoFrontend(pagoBackend: TipoPagoBackend) {
+  if (pagoBackend === "TRANSFERENCIA") return "Transferencia";
+  return "Efectivo";
 }
 
 function Pedidos() {
@@ -188,10 +205,34 @@ function Pedidos() {
           [nuevoEstadoKey]: prev[nuevoEstadoKey] + 1,
         };
       });
-
     } catch (error) {
       console.error(error);
       alert("No se pudo actualizar el estado del pedido.");
+    }
+  }
+
+  async function cambiarTipoPagoPedido(pedido: Pedido) {
+    if (pedido.estado === "Cancelado") return;
+
+    const nuevoPagoBackend = getNuevoPagoBackend(pedido.pago);
+    const nuevoPagoFrontend = getPagoFrontend(nuevoPagoBackend);
+
+    try {
+      await actualizarTipoPagoPedidoApi(pedido.id, nuevoPagoBackend);
+
+      setPedidos((prev) =>
+        prev.map((item) =>
+          item.id === pedido.id
+            ? {
+                ...item,
+                pago: nuevoPagoFrontend,
+              }
+            : item
+        )
+      );
+    } catch (error) {
+      console.error(error);
+      alert("No se pudo cambiar el medio de pago del pedido.");
     }
   }
 
@@ -326,6 +367,7 @@ function Pedidos() {
             onNextStatus={avanzarEstadoPedido}
             onDeletePedido={abrirConfirmacionCancelacion}
             onLoadDetail={cargarDetallePedido}
+            onChangePayment={cambiarTipoPagoPedido}
           />
         </div>
 

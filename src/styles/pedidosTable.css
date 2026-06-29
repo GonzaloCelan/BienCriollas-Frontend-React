@@ -580,6 +580,32 @@ body.dark-mode .orders-state-row td {
   background: transparent !important;
 }
 
+.orders-payment-pill--clickable {
+  border: 0;
+  cursor: pointer;
+  font-family: inherit;
+  transition:
+    transform 0.16s ease,
+    box-shadow 0.16s ease,
+    opacity 0.16s ease;
+}
+
+.orders-payment-pill--clickable:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.12);
+}
+
+.orders-payment-pill--clickable:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+body.dark-mode .orders-payment-pill--clickable:hover:not(:disabled) {
+  box-shadow:
+    0 10px 22px rgba(0, 0, 0, 0.28),
+    0 0 16px rgba(243, 67, 67, 0.1);
+}
+
 /* ANIMACIONES */
 @keyframes orderRowCleanIn {
   from {

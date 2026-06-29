@@ -224,3 +224,23 @@ export async function obtenerPedidosPendientesNotificacion(): Promise<
     total: Number(pedido.totalPedido ?? 0),
   }));
 }
+
+export async function actualizarTipoPagoPedidoApi(
+  idPedido: number,
+  nuevoPago: TipoPagoBackend
+): Promise<boolean> {
+  const response = await fetch(
+    `${API_URL}/api/v2/pedido/actualizar-pago/${idPedido}/${nuevoPago}`,
+    {
+      method: "PUT",
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      `Error al actualizar el pago del pedido. Status: ${response.status}`
+    );
+  }
+
+  return await response.json();
+}

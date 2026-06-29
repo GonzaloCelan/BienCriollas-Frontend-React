@@ -41,6 +41,7 @@ type PedidosTableProps = {
   onNextStatus: (pedido: Pedido) => void;
   onDeletePedido: (idPedido: number) => void;
   onLoadDetail: (idPedido: number) => Promise<Pedido["items"]>;
+  onChangePayment: (pedido: Pedido) => void;
 };
 
 function formatPrice(value: number) {
@@ -82,11 +83,29 @@ function puedeCancelarPedido(estado: Pedido["estado"]) {
   return estado !== "Entregado" && estado !== "Cancelado";
 }
 
+function puedeCambiarPago(estado: Pedido["estado"]) {
+  return estado !== "Cancelado";
+}
+
 function getDeleteTitle(estado: Pedido["estado"]) {
   if (estado === "Entregado") return "No se puede cancelar un pedido entregado";
   if (estado === "Cancelado") return "El pedido ya está cancelado";
 
   return "Cancelar pedido";
+}
+
+function getPaymentTitle(pedido: Pedido) {
+  if (!puedeCambiarPago(pedido.estado)) {
+    return "No se puede cambiar el pago de un pedido cancelado";
+  }
+
+  const pagoActual = pedido.pago.toLowerCase();
+
+  if (pagoActual.includes("transfer")) {
+    return "Cambiar pago a efectivo";
+  }
+
+  return "Cambiar pago a transferencia";
 }
 
 function getNumeroPedidoExterno(pedido: Pedido) {
@@ -105,6 +124,7 @@ function PedidosTable({
   onNextStatus,
   onDeletePedido,
   onLoadDetail,
+  onChangePayment,
 }: PedidosTableProps) {
   const [selectedPedido, setSelectedPedido] = useState<Pedido | null>(null);
   const [detalleItems, setDetalleItems] = useState<Pedido["items"]>([]);
@@ -188,6 +208,7 @@ function PedidosTable({
               pedidos.map((pedido, index) => {
                 const puedeAvanzar = puedeAvanzarEstado(pedido.estado);
                 const puedeCancelar = puedeCancelarPedido(pedido.estado);
+                const puedeCambiarPagoPedido = puedeCambiarPago(pedido.estado);
 
                 return (
                   <tr
@@ -207,13 +228,17 @@ function PedidosTable({
                     </td>
 
                     <td>
-                      <span
-                        className={`orders-payment-pill ${getPaymentClass(
+                      <button
+                        type="button"
+                        className={`orders-payment-pill orders-payment-pill--clickable ${getPaymentClass(
                           pedido.pago
                         )}`}
+                        title={getPaymentTitle(pedido)}
+                        disabled={!puedeCambiarPagoPedido}
+                        onClick={() => onChangePayment(pedido)}
                       >
                         {pedido.pago}
-                      </span>
+                      </button>
                     </td>
 
                     <td>
