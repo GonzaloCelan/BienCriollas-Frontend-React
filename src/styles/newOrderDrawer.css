@@ -1017,6 +1017,43 @@ body.dark-mode .stock-alert__panel p {
   color: #cbd5e1;
 }
 
+.drawer-total-mode {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 10px;
+  padding: 0 2px;
+  color: #64748b;
+}
+
+.drawer-total-mode small {
+  max-width: 250px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.drawer-total-mode button {
+  flex: 0 0 auto;
+  border: 0;
+  background: transparent;
+  color: #e11d48;
+  font-size: 11px;
+  font-weight: 900;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+body.dark-mode .drawer-total-mode {
+  color: #94a3b8;
+}
+
+body.dark-mode .drawer-total-mode button {
+  color: #fb7185;
+}
+
 @keyframes stockAlertIn {
   from {
     opacity: 0;

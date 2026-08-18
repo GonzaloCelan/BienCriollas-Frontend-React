@@ -220,14 +220,14 @@ function PedidosTable({
                     }
                     style={{ animationDelay: `${index * 0.045}s` }}
                   >
-                    <td>
+                    <td data-label="Cliente">
                       <div className="orders-client-cell">
                         <strong>{pedido.cliente || "Sin cliente"}</strong>
                         <span>Pedido #{pedido.id}</span>
                       </div>
                     </td>
 
-                    <td>
+                    <td data-label="Pago">
                       <button
                         type="button"
                         className={`orders-payment-pill orders-payment-pill--clickable ${getPaymentClass(
@@ -241,7 +241,7 @@ function PedidosTable({
                       </button>
                     </td>
 
-                    <td>
+                    <td data-label="Venta">
                       <span
                         className={`orders-sale-pill ${getSaleClass(
                           pedido.tipoVenta
@@ -251,19 +251,19 @@ function PedidosTable({
                       </span>
                     </td>
 
-                    <td>
+                    <td data-label="N° pedido">
                       <span className="orders-external-number">
                         {getNumeroPedidoExterno(pedido)}
                       </span>
                     </td>
 
-                    <td>
+                    <td data-label="Total">
                       <strong className="orders-total-price">
                         {formatPrice(pedido.total)}
                       </strong>
                     </td>
 
-                    <td>
+                    <td data-label="Estado">
                       <span
                         className={`orders-status ${getStatusClass(
                           pedido.estado
@@ -273,7 +273,7 @@ function PedidosTable({
                       </span>
                     </td>
 
-                    <td>
+                    <td data-label="Acciones">
                       <div className="orders-actions">
                         <button
                           className="orders-icon-btn"

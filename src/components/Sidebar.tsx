@@ -1,8 +1,9 @@
-import { Bell, Moon, Sun } from "lucide-react";
+import { Bell, Menu, Moon, Sun, X } from "lucide-react";
 import { useLayoutEffect, useRef, useState } from "react";
 
 export type AppPage =
   | "pedidos"
+  | "catalogo"
   | "stock"
   | "ingresos"
   | "egresos"
@@ -35,6 +36,7 @@ type MenuItem = {
 
 const menuItems: MenuItem[] = [
   { label: "Pedidos", page: "pedidos", enabled: true },
+  { label: "Catálogo", page: "catalogo", enabled: true },
   { label: "Stock", page: "stock", enabled: true },
   { label: "Ingresos", page: "ingresos", enabled: true },
   { label: "Egresos", page: "egresos", enabled: true },
@@ -50,8 +52,6 @@ function formatMoney(value?: number | null) {
 }
 
 function Sidebar({
-  collapsed: _collapsed,
-  onToggle: _onToggle,
   activePage,
   onChangePage,
   pedidosPendientes = [],
@@ -59,6 +59,7 @@ function Sidebar({
   onToggleTheme,
 }: SidebarProps) {
   const [openNotifications, setOpenNotifications] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navRef = useRef<HTMLElement | null>(null);
   const itemRefs = useRef<Partial<Record<AppPage, HTMLButtonElement | null>>>(
@@ -92,16 +93,36 @@ function Sidebar({
 
   function handleVerPedidos() {
     setOpenNotifications(false);
+    setMobileMenuOpen(false);
     onChangePage("pedidos");
   }
 
+  function handleChangePage(page: AppPage) {
+    setOpenNotifications(false);
+    setMobileMenuOpen(false);
+    onChangePage(page);
+  }
+
+  const activePageLabel =
+    menuItems.find((item) => item.page === activePage)?.label ?? "Bien Criollas";
+
   return (
-    <header className="topbar">
+    <>
+      {mobileMenuOpen && (
+        <button
+          type="button"
+          className="topbar__mobile-overlay"
+          aria-label="Cerrar menú"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
+
+    <header className={`topbar ${mobileMenuOpen ? "topbar--menu-open" : ""}`}>
       <div className="topbar__brand">
         <button
           type="button"
           className="topbar__brand-button"
-          onClick={() => onChangePage("pedidos")}
+          onClick={() => handleChangePage("pedidos")}
           aria-label="Ir a pedidos"
           title="Ir a pedidos"
         >
@@ -113,7 +134,15 @@ function Sidebar({
         </button>
       </div>
 
-      <nav ref={navRef} className="topbar__nav" aria-label="Navegación principal">
+      <span className="topbar__mobile-page">{activePageLabel}</span>
+
+      <nav
+        ref={navRef}
+        className={`topbar__nav ${
+          mobileMenuOpen ? "topbar__nav--mobile-open" : ""
+        }`}
+        aria-label="Navegación principal"
+      >
         <span
           className={`topbar__active-pill ${
             activePill.ready ? "topbar__active-pill--ready" : ""
@@ -139,8 +168,7 @@ function Sidebar({
               }`}
               onClick={() => {
                 if (item.enabled) {
-                  onChangePage(item.page);
-                  setOpenNotifications(false);
+                  handleChangePage(item.page);
                 }
               }}
               disabled={!item.enabled}
@@ -169,7 +197,10 @@ function Sidebar({
               tienePendientes ? "topbar__icon-btn--active" : ""
             }`}
             type="button"
-            onClick={() => setOpenNotifications((prev) => !prev)}
+            onClick={() => {
+              setMobileMenuOpen(false);
+              setOpenNotifications((prev) => !prev);
+            }}
             title="Pedidos pendientes"
             aria-label="Pedidos pendientes"
           >
@@ -232,8 +263,23 @@ function Sidebar({
             </div>
           )}
         </div>
+
+        <button
+          type="button"
+          className="topbar__mobile-menu-btn"
+          onClick={() => {
+            setOpenNotifications(false);
+            setMobileMenuOpen((prev) => !prev);
+          }}
+          title={mobileMenuOpen ? "Cerrar menú" : "Abrir menú"}
+          aria-label={mobileMenuOpen ? "Cerrar menú" : "Abrir menú"}
+          aria-expanded={mobileMenuOpen}
+        >
+          {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+        </button>
       </div>
     </header>
+    </>
   );
 }
 

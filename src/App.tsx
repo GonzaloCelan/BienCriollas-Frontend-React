@@ -7,6 +7,7 @@ import Sidebar, {
 } from "./components/Sidebar";
 
 import Pedidos from "./pages/Pedidos";
+import Catalogo from "./pages/Catalogo";
 import Stock from "./pages/Stock";
 import Estadisticas from "./pages/Estadisticas";
 import Egresos from "./pages/Egresos";
@@ -17,11 +18,13 @@ import { obtenerPedidosPorEstado } from "./services/pedidosApi";
 import "./styles/global.css";
 import "./styles/sidebar.css";
 import "./styles/pedidos.css";
+import "./styles/catalogo.css";
 import "./styles/stock.css";
 import "./styles/estadisticas.css";
 import "./styles/kpi.css";
 import "./styles/egresos.css";
 import "./styles/ingresos.css";
+import "./styles/mobile.css";
 
 function obtenerHorarioPedido(pedido: unknown) {
   const data = pedido as {
@@ -120,6 +123,7 @@ function App() {
         className={`app-content ${collapsed ? "app-content--collapsed" : ""}`}
       >
         {activePage === "pedidos" && <Pedidos />}
+        {activePage === "catalogo" && <Catalogo />}
         {activePage === "stock" && <Stock />}
         {activePage === "estadisticas" && <Estadisticas />}
         {activePage === "egresos" && <Egresos />}

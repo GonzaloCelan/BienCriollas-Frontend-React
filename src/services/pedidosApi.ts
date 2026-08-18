@@ -1,8 +1,5 @@
 import type { Pedido, EstadoPedidoFrontend } from "../components/PedidosTable";
-
-const API_URL =
-  import.meta.env.VITE_API_URL ??
-  "http://localhost:8080";
+import { API_URL } from "../config/api";
 
 export type EstadoBackend =
   | "PENDIENTE"

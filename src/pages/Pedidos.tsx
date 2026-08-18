@@ -290,6 +290,10 @@ function Pedidos() {
     setNewOrderOpen(false);
   }
 
+  function abrirNuevoPedidoManual() {
+    setNewOrderOpen(true);
+  }
+
   async function handlePedidoCreado() {
     setEstadoActivo("PENDIENTE");
 
@@ -348,13 +352,16 @@ function Pedidos() {
         />
       </div>
 
-      <AppButton
-        variant="primary"
-        size="md"
-        onClick={() => setNewOrderOpen(true)}
-      >
-        Nuevo pedido
-      </AppButton>
+      <div className="orders-toolbar">
+        <AppButton
+          variant="primary"
+          size="md"
+          onClick={abrirNuevoPedidoManual}
+        >
+          Nuevo pedido
+        </AppButton>
+
+      </div>
 
       <div className="orders-content-grid">
         <div className="orders-panel">
@@ -403,6 +410,7 @@ function Pedidos() {
         onConfirm={confirmarCancelacionPedido}
         onCancel={() => setPedidoACancelar(null)}
       />
+
     </section>
   );
 }

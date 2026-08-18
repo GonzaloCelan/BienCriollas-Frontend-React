@@ -645,14 +645,14 @@ function Ingresos() {
                   ) : movimientosPaginados.length > 0 ? (
                     movimientosPaginados.map((movimiento) => (
                       <tr key={`${movimiento.origen}-${movimiento.id}`}>
-                        <td>
+                        <td data-label="Fecha">
                           <div className="income-date-cell">
                             <strong>{formatDate(movimiento.fecha)}</strong>
                             <span>{formatTime(movimiento.fechaHora)}</span>
                           </div>
                         </td>
 
-                        <td>
+                        <td data-label="Tipo">
                           <span
                             className={`income-pill ${getTipoClass(
                               movimiento
@@ -663,21 +663,23 @@ function Ingresos() {
                           </span>
                         </td>
 
-                        <td>
+                        <td data-label="Descripción">
                           <strong className="income-description">
                             {movimiento.descripcion}
                           </strong>
                         </td>
 
-                        <td>{normalizarMedioPago(movimiento.medioPago)}</td>
+                        <td data-label="Medio / origen">
+                          {normalizarMedioPago(movimiento.medioPago)}
+                        </td>
 
-                        <td>
+                        <td data-label="Monto">
                           <strong className="income-amount">
                             {formatMoney(movimiento.monto)}
                           </strong>
                         </td>
 
-                        <td>
+                        <td data-label="Estado">
                           <span
                             className={`income-status ${getEstadoClass(
                               movimiento.estadoIngreso

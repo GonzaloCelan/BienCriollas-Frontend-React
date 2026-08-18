@@ -8,15 +8,18 @@ export default defineConfig({
 
     VitePWA({
       registerType: "autoUpdate",
+      injectRegister: "auto",
 
       manifest: {
+        id: "/",
         name: "Bien Criollas",
         short_name: "Bien Criollas",
         description: "Sistema de gestión para Bien Criollas",
+        lang: "es-AR",
         theme_color: "#f34343",
         background_color: "#ffffff",
         display: "standalone",
-        orientation: "landscape",
+        orientation: "any",
         start_url: "/",
         scope: "/",
 
@@ -41,7 +44,9 @@ export default defineConfig({
       },
 
       workbox: {
-
+        cleanupOutdatedCaches: true,
+        clientsClaim: true,
+        skipWaiting: true,
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
     
         globPatterns: ["**/*.{js,css,html,ico,png,svg,webp,mp3}"],
@@ -56,7 +61,10 @@ export default defineConfig({
           },
 
           {
-            urlPattern: ({ url }) => url.pathname.startsWith("/api"),
+            urlPattern: ({ url }) =>
+              url.pathname.startsWith("/api") &&
+              url.hostname ===
+                "biencriollas-backend-production.up.railway.app",
             handler: "NetworkFirst",
             options: {
               cacheName: "bien-criollas-api",

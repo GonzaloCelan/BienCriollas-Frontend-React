@@ -598,14 +598,14 @@ function Egresos() {
                         key={`${egreso.id}-${index}`}
                         style={{ animationDelay: `${index * 0.045}s` }}
                       >
-                        <td>
+                        <td data-label="Fecha">
                           <div className="expenses-date-cell">
                             <strong>{egreso.fecha}</strong>
                             <span>{egreso.hora}</span>
                           </div>
                         </td>
 
-                        <td>
+                        <td data-label="Categoría">
                           <span
                             className={`expense-pill ${getCategoriaClass(
                               egreso.categoria
@@ -616,15 +616,15 @@ function Egresos() {
                           </span>
                         </td>
 
-                        <td>
+                        <td data-label="Descripción">
                           <strong className="expenses-description">
                             {egreso.descripcion}
                           </strong>
                         </td>
 
-                        <td>{egreso.responsable}</td>
+                        <td data-label="Responsable">{egreso.responsable}</td>
 
-                        <td>
+                        <td data-label="Monto">
                           <strong className="expenses-amount">
                             {formatMoney(egreso.monto)}
                           </strong>

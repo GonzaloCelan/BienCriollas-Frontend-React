@@ -13,6 +13,8 @@ import {
 import { obtenerStockActual, type StockItem } from "../services/stockApi";
 
 import { imprimirComandaPedido } from "../utils/printComanda";
+import { calcularTotalPedido } from "../utils/calcularTotalPedido";
+import { useCatalogo } from "../context/CatalogoContext";
 
 import "../styles/newOrderDrawer.css";
 
@@ -55,7 +57,12 @@ function parseMoney(value: string) {
   return Number(cleanValue || 0);
 }
 
-function NewOrderDrawer({ open, onClose, onCreated }: NewOrderDrawerProps) {
+function NewOrderDrawer({
+  open,
+  onClose,
+  onCreated,
+}: NewOrderDrawerProps) {
+  const { catalogo, catalogoLoading, catalogoError } = useCatalogo();
   const [shouldRender, setShouldRender] = useState(open);
   const [closing, setClosing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -65,7 +72,9 @@ function NewOrderDrawer({ open, onClose, onCreated }: NewOrderDrawerProps) {
   const [hora, setHora] = useState("");
   const [tipoPago, setTipoPago] = useState<TipoPagoBackend>("EFECTIVO");
   const [tipoVenta, setTipoVenta] = useState<TipoVentaBackend>("PARTICULAR");
-  const [total, setTotal] = useState("");
+  const [totalManual, setTotalManual] = useState("");
+  const [totalModificadoManualmente, setTotalModificadoManualmente] =
+    useState(false);
   const [cantidades, setCantidades] = useState<Record<number, number>>({});
 
   const [stockActual, setStockActual] = useState<StockItem[]>([]);
@@ -115,7 +124,8 @@ function NewOrderDrawer({ open, onClose, onCreated }: NewOrderDrawerProps) {
     setHora("");
     setTipoPago("EFECTIVO");
     setTipoVenta("PARTICULAR");
-    setTotal("");
+    setTotalManual("");
+    setTotalModificadoManualmente(false);
     setCantidades({});
   }
 
@@ -125,6 +135,7 @@ function NewOrderDrawer({ open, onClose, onCreated }: NewOrderDrawerProps) {
     setClosing(true);
 
     window.setTimeout(() => {
+      resetForm();
       setShouldRender(false);
       setClosing(false);
       onClose();
@@ -134,6 +145,16 @@ function NewOrderDrawer({ open, onClose, onCreated }: NewOrderDrawerProps) {
   const totalEmpanadas = useMemo(() => {
     return Object.values(cantidades).reduce((acc, value) => acc + value, 0);
   }, [cantidades]);
+
+  const totalCalculado = useMemo(() => {
+    return calcularTotalPedido(cantidades, catalogo);
+  }, [cantidades, catalogo]);
+
+  const usaTotalManual =
+    tipoVenta === "PEDIDOS_YA" || totalModificadoManualmente;
+  const totalPedidoActual = usaTotalManual
+    ? parseMoney(totalManual)
+    : totalCalculado;
 
   function obtenerNombreVariedad(idVariedad: number) {
     return VARIEDADES[idVariedad]?.nombre ?? `Variedad #${idVariedad}`;
@@ -248,7 +269,21 @@ function NewOrderDrawer({ open, onClose, onCreated }: NewOrderDrawerProps) {
     if (saving) return;
 
     const clienteTrim = cliente.trim();
-    const totalPedido = parseMoney(total);
+
+    if (tipoVenta === "PARTICULAR" && catalogoLoading) {
+      alert("El catálogo de precios todavía se está cargando.");
+      return;
+    }
+
+    if (
+      tipoVenta === "PARTICULAR" &&
+      (catalogoError || catalogo.length === 0)
+    ) {
+      alert("No se pudo cargar el catálogo de precios. Recargá la aplicación.");
+      return;
+    }
+
+    const totalPedido = totalPedidoActual;
 
     const detalles = Object.entries(cantidades)
       .map(([idVariedad, cantidad]) => ({
@@ -414,6 +449,8 @@ function NewOrderDrawer({ open, onClose, onCreated }: NewOrderDrawerProps) {
                   onClick={() => {
                     setTipoVenta("PARTICULAR");
                     setNumeroPedido("");
+                    setTotalManual("");
+                    setTotalModificadoManualmente(false);
                   }}
                 >
                   Particular
@@ -422,7 +459,11 @@ function NewOrderDrawer({ open, onClose, onCreated }: NewOrderDrawerProps) {
                 <button
                   type="button"
                   className={tipoVenta === "PEDIDOS_YA" ? "active" : ""}
-                  onClick={() => setTipoVenta("PEDIDOS_YA")}
+                  onClick={() => {
+                    setTipoVenta("PEDIDOS_YA");
+                    setTotalManual("");
+                    setTotalModificadoManualmente(false);
+                  }}
                 >
                   Pedidos Ya
                 </button>
@@ -431,13 +472,56 @@ function NewOrderDrawer({ open, onClose, onCreated }: NewOrderDrawerProps) {
 
             <label className="drawer-floating-field drawer-floating-field--full">
               <input
-                value={total}
-                onChange={(event) => setTotal(event.target.value)}
+                value={
+                  tipoVenta === "PEDIDOS_YA" || totalModificadoManualmente
+                    ? totalManual
+                    : catalogoLoading
+                      ? "Cargando precios..."
+                      : catalogoError
+                        ? "Precios no disponibles"
+                        : totalCalculado || ""
+                }
+                onChange={(event) => {
+                  setTotalManual(event.target.value.replace(/[^\d]/g, ""));
+                  if (tipoVenta === "PARTICULAR") {
+                    setTotalModificadoManualmente(true);
+                  }
+                }}
+                onFocus={(event) => event.currentTarget.select()}
                 placeholder=" "
                 inputMode="numeric"
+                aria-busy={tipoVenta === "PARTICULAR" && catalogoLoading}
               />
-              <span>Total del pedido</span>
+              <span>
+                {tipoVenta === "PEDIDOS_YA"
+                  ? "Total informado por Pedidos Ya"
+                  : totalModificadoManualmente
+                    ? "Total manual"
+                    : "Total calculado"}
+              </span>
             </label>
+
+            <div className="drawer-total-mode">
+              <small>
+                {tipoVenta === "PEDIDOS_YA"
+                  ? "Ingresá el importe que figura en la aplicación."
+                  : totalModificadoManualmente
+                    ? "Este importe reemplaza el cálculo automático."
+                    : "Se actualiza automáticamente según las cantidades."}
+              </small>
+
+              {tipoVenta === "PARTICULAR" && totalModificadoManualmente && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTotalManual("");
+                    setTotalModificadoManualmente(false);
+                  }}
+                >
+                  Volver al cálculo automático
+                </button>
+              )}
+            </div>
           </section>
 
           <section className="drawer-section drawer-section--variedades">
@@ -503,7 +587,7 @@ function NewOrderDrawer({ open, onClose, onCreated }: NewOrderDrawerProps) {
         <footer className="new-order-drawer__footer">
           <div>
             <span>Total pedido</span>
-            <strong>${parseMoney(total).toLocaleString("es-AR")}</strong>
+            <strong>${totalPedidoActual.toLocaleString("es-AR")}</strong>
           </div>
 
           <div>
@@ -524,13 +608,22 @@ function NewOrderDrawer({ open, onClose, onCreated }: NewOrderDrawerProps) {
             type="button"
             className="drawer-confirm"
             onClick={confirmarPedido}
-            disabled={saving || stockLoading}
+            disabled={
+              saving ||
+              stockLoading ||
+              (tipoVenta === "PARTICULAR" &&
+                (catalogoLoading ||
+                  Boolean(catalogoError) ||
+                  catalogo.length === 0))
+            }
           >
-            {stockLoading
-              ? "Validando stock..."
-              : saving
-                ? "Guardando..."
-                : "Confirmar"}
+            {tipoVenta === "PARTICULAR" && catalogoLoading
+              ? "Cargando precios..."
+              : stockLoading
+                ? "Validando stock..."
+                : saving
+                  ? "Guardando..."
+                  : "Confirmar"}
           </button>
         </footer>
 
