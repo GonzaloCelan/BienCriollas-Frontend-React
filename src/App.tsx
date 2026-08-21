@@ -69,6 +69,23 @@ function App() {
     localStorage.setItem("bc-theme", darkMode ? "dark" : "light");
   }, [darkMode]);
 
+  useEffect(() => {
+    const mobileViewport = window.matchMedia("(max-width: 760px)");
+
+    function mantenerPedidosEnMovil() {
+      if (mobileViewport.matches) {
+        setActivePage("pedidos");
+      }
+    }
+
+    mantenerPedidosEnMovil();
+    mobileViewport.addEventListener("change", mantenerPedidosEnMovil);
+
+    return () => {
+      mobileViewport.removeEventListener("change", mantenerPedidosEnMovil);
+    };
+  }, []);
+
   async function cargarPedidosPendientesTopbar() {
     try {
       const data = await obtenerPedidosPorEstado("PENDIENTE", 0, 50);

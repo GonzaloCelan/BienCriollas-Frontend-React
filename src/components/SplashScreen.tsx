@@ -15,22 +15,9 @@ function SplashScreen({ onFinish }: SplashScreenProps) {
   const splashRef = useRef<HTMLElement | null>(null);
   const lettersRef = useRef<(HTMLSpanElement | null)[]>([]);
   const loaderRef = useRef<HTMLDivElement | null>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   function startSplash() {
     if (started) return;
-
-    if (!audioRef.current) {
-      audioRef.current = new Audio("/sound/intro.mp3");
-      audioRef.current.volume = 0.55;
-      audioRef.current.preload = "auto";
-    }
-
-    audioRef.current.currentTime = 0;
-
-    audioRef.current.play().catch((error) => {
-      console.warn("No se pudo reproducir el sonido del splash:", error);
-    });
 
     setStarted(true);
   }
@@ -140,11 +127,6 @@ function SplashScreen({ onFinish }: SplashScreenProps) {
 
     return () => {
       tl.kill();
-
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.currentTime = 0;
-      }
     };
   }, [started, onFinish]);
 

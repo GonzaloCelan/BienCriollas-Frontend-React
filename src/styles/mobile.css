@@ -154,7 +154,7 @@
   }
 
   .topbar__mobile-menu-btn {
-    display: grid;
+    display: none;
     place-items: center;
     padding: 0;
     border: 0;
@@ -238,13 +238,70 @@
   }
 
   .orders-stats {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
-    margin: 22px 0;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+    margin: 18px 0 22px;
+  }
+
+  .orders-stats .kpi-filter-card {
+    min-width: 0;
+    min-height: 88px;
+    padding: 7px 3px 8px;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    text-align: center;
+  }
+
+  .orders-stats .kpi-filter-card__icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
+  }
+
+  .orders-stats .kpi-filter-card__lottie {
+    width: 28px;
+    height: 28px;
+  }
+
+  .orders-stats .kpi-filter-card__content {
+    width: 100%;
+    flex: 0 0 auto;
+  }
+
+  .orders-stats .kpi-filter-card__content span {
+    overflow: hidden;
+    font-size: clamp(11px, 3.2vw, 14px);
+    line-height: 1;
+    letter-spacing: 0;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .orders-stats .kpi-filter-card__content strong {
+    margin-top: 4px;
+    font-size: 22px;
+    line-height: 0.9;
+    letter-spacing: -0.04em;
+  }
+
+  .orders-stats .kpi-filter-card__indicator {
+    display: none;
   }
 
   .orders-toolbar {
     gap: 8px;
+    padding: 16px 0 14px;
+  }
+
+  .orders-new-button .app-button__icon {
+    display: inline-flex;
+  }
+
+  .orders-new-button .app-button__icon svg {
+    width: 18px;
+    height: 18px;
+    stroke-width: 2.6;
   }
 
   .orders-toolbar > * {
@@ -266,9 +323,20 @@
     box-shadow: none;
   }
 
+  body.dark-mode .orders-table-wrapper {
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
   .orders-table--floating {
     display: block;
     min-width: 0;
+    background: transparent;
+  }
+
+  body.dark-mode .orders-table--floating {
+    background: transparent !important;
   }
 
   .orders-table--floating thead {
@@ -277,12 +345,27 @@
 
   .orders-table--floating tbody {
     display: grid;
-    gap: 12px;
+    gap: 14px;
+    background: transparent;
+  }
+
+  body.dark-mode .orders-table--floating tbody {
+    background: transparent !important;
   }
 
   .orders-table--floating tbody tr {
-    display: block;
+    display: grid;
     overflow: hidden;
+    padding: 14px 13px 0;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "client status"
+      "payment total"
+      "sale total"
+      "external total"
+      "actions actions";
+    column-gap: 14px;
+    row-gap: 7px;
     border: 1px solid #e2e8f0;
     border-radius: 5px;
     background: #ffffff;
@@ -290,31 +373,63 @@
   }
 
   .orders-table--floating tbody td[data-label] {
-    display: grid;
+    display: flex;
     width: 100%;
     height: auto;
-    min-height: 45px;
-    padding: 9px 12px;
-    grid-template-columns: 100px minmax(0, 1fr);
+    min-height: 0;
+    padding: 0;
     align-items: center;
-    gap: 10px;
+    gap: 5px;
     overflow: visible;
+    border: 0;
     white-space: normal;
-    text-align: right;
+    text-align: left;
   }
 
   .orders-table--floating tbody td[data-label]::before {
-    content: attr(data-label);
-    color: #94a3b8;
-    font-size: 9px;
-    font-weight: 950;
-    letter-spacing: 0.08em;
-    text-align: left;
-    text-transform: uppercase;
+    display: none;
+    content: none;
+  }
+
+  .orders-table--floating tbody td:nth-child(1) {
+    grid-area: client;
+  }
+
+  .orders-table--floating tbody td:nth-child(2) {
+    grid-area: payment;
+  }
+
+  .orders-table--floating tbody td:nth-child(3) {
+    grid-area: sale;
+  }
+
+  .orders-table--floating tbody td:nth-child(4) {
+    grid-area: external;
+  }
+
+  .orders-table--floating tbody td:nth-child(5) {
+    grid-area: total;
+    align-items: center;
+    justify-content: flex-end;
+  }
+
+  .orders-table--floating tbody td:nth-child(6) {
+    grid-area: status;
+    align-items: flex-start;
+    justify-content: flex-end;
+  }
+
+  .orders-table--floating tbody td:nth-child(7) {
+    grid-area: actions;
+    width: auto;
+    margin: 10px -13px 0;
+    border-top: 1px solid #e2e8f0;
   }
 
   .orders-client-cell {
-    align-items: flex-end;
+    width: 100%;
+    align-items: flex-start;
+    gap: 6px;
   }
 
   .orders-client-cell strong,
@@ -322,29 +437,152 @@
     max-width: 100%;
   }
 
-  .orders-actions {
+  .orders-client-cell strong {
+    font-size: 12px;
+    line-height: 1.1;
+    text-transform: uppercase;
+  }
+
+  .orders-client-cell span {
+    order: -1;
+    color: #64748b;
+    font-size: 11px;
+    line-height: 1;
+  }
+
+  .orders-status-meta {
+    flex-direction: row;
+    align-items: center;
     justify-content: flex-end;
-    gap: 8px;
+    gap: 6px;
   }
 
-  .orders-icon-btn {
-    width: 42px;
-    height: 42px;
-    border: 1px solid #fee2e2;
-    background: #fff7f8;
+  .orders-status {
+    min-width: 0;
+    min-height: 19px;
+    padding: 0 6px;
+    font-size: 7px;
+    letter-spacing: 0;
   }
 
-  .orders-payment-pill--clickable {
-    min-height: 40px;
-    padding: 0 8px;
+  .orders-mobile-time {
+    display: inline;
+    color: #94a3b8;
+    font-size: 7px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .orders-mobile-meta-icon {
+    display: block;
+    flex: 0 0 auto;
   }
 
   .orders-payment-pill,
   .orders-sale-pill {
-    justify-self: end;
+    min-height: 22px;
+    padding: 0;
+    justify-self: auto;
+    gap: 5px;
+    font-size: 9px;
+    line-height: 1;
+  }
+
+  .orders-payment-pill--clickable {
+    min-height: 22px;
+    padding: 0;
+  }
+
+  .orders-external-cell {
+    color: #94a3b8;
+    font-size: 8px;
+    font-weight: 800;
+  }
+
+  .orders-external-cell--empty {
+    display: none !important;
+  }
+
+  .orders-mobile-external-label {
+    display: inline;
+  }
+
+  .orders-external-number {
+    font-size: 8px;
+  }
+
+  .orders-total-price {
+    font-size: 16px;
+    line-height: 1;
+  }
+
+  .orders-actions {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    justify-content: stretch;
+    gap: 0;
+  }
+
+  .orders-icon-btn {
+    display: flex;
+    width: 100%;
+    height: 54px;
+    padding: 7px 4px;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-right: 1px solid #e2e8f0;
+    border-radius: 0;
+    background: transparent;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .orders-icon-btn--view {
+    color: #10b981;
+  }
+
+  .orders-icon-btn--next {
+    color: #3b82f6;
+  }
+
+  .orders-icon-btn--danger {
+    color: #ef4444;
+  }
+
+  .orders-icon-btn--next::before,
+  .orders-icon-btn--next::after {
+    inset: auto;
+    top: 6px;
+    left: 50%;
+    width: 28px;
+    height: 28px;
+    margin-left: -14px;
+  }
+
+  .orders-icon-btn:last-child {
+    border-right: 0;
+  }
+
+  .orders-icon-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .orders-icon-btn--print {
+    display: none;
+  }
+
+  .orders-action-label {
+    display: block;
+    font-size: 8px;
+    font-weight: 800;
+    line-height: 1;
   }
 
   .orders-state-row {
+    display: block !important;
+    padding: 0 !important;
     border: 0 !important;
     background: transparent !important;
     box-shadow: none !important;
@@ -362,6 +600,14 @@
 
   body.dark-mode .orders-table--floating tbody tr:nth-child(even) {
     background: #151c26;
+  }
+
+  body.dark-mode .orders-table--floating tbody td:nth-child(7) {
+    border-top-color: rgba(255, 255, 255, 0.08);
+  }
+
+  body.dark-mode .orders-icon-btn {
+    border-right-color: rgba(255, 255, 255, 0.08);
   }
 
   body.dark-mode .orders-table--floating tbody td[data-label]::before {
@@ -944,23 +1190,17 @@
     display: none;
   }
 
-  .kpi-filter-card {
-    padding: 9px;
-    gap: 7px;
+  .orders-stats {
+    gap: 5px;
   }
 
-  .kpi-filter-card__icon {
-    width: 36px;
-    height: 36px;
+  .orders-stats .kpi-filter-card {
+    min-height: 84px;
+    padding-inline: 2px;
   }
 
-  .kpi-filter-card__lottie {
-    width: 28px;
-    height: 28px;
-  }
-
-  .kpi-filter-card__content span {
-    font-size: 17px;
+  .orders-stats .kpi-filter-card__content span {
+    font-size: clamp(10px, 3.15vw, 13px);
   }
 
   .catalog-calculator__quantity {

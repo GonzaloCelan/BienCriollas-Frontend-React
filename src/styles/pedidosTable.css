@@ -322,6 +322,19 @@
   gap: 7px;
 }
 
+.orders-mobile-meta-icon,
+.orders-mobile-external-label,
+.orders-mobile-time,
+.orders-action-label {
+  display: none;
+}
+
+.orders-status-meta {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
 .orders-icon-btn {
   width: 30px;
   height: 30px;

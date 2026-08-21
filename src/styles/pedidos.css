@@ -93,6 +93,10 @@
   flex-wrap: wrap;
 }
 
+.orders-new-button .app-button__icon {
+  display: none;
+}
+
 /* KPI */
 .orders-stats {
   width: 100%;

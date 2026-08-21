@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Plus } from "lucide-react";
 
 import KpiCard from "../components/KpiCard";
 import PedidosTable from "../components/PedidosTable";
@@ -354,8 +355,10 @@ function Pedidos() {
 
       <div className="orders-toolbar">
         <AppButton
+          className="orders-new-button"
           variant="primary"
           size="md"
+          icon={<Plus size={18} />}
           onClick={abrirNuevoPedidoManual}
         >
           Nuevo pedido

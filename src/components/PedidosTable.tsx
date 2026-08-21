@@ -1,4 +1,11 @@
-import { ArrowRightCircle, Eye, Printer, Trash2 } from "lucide-react";
+import {
+  ArrowRightCircle,
+  CreditCard,
+  Eye,
+  Printer,
+  Store,
+  Trash2,
+} from "lucide-react";
 import { useState } from "react";
 
 import OrderDetailDrawer from "./OrderDetailDrawer";
@@ -209,6 +216,7 @@ function PedidosTable({
                 const puedeAvanzar = puedeAvanzarEstado(pedido.estado);
                 const puedeCancelar = puedeCancelarPedido(pedido.estado);
                 const puedeCambiarPagoPedido = puedeCambiarPago(pedido.estado);
+                const numeroPedidoExterno = getNumeroPedidoExterno(pedido);
 
                 return (
                   <tr
@@ -237,6 +245,10 @@ function PedidosTable({
                         disabled={!puedeCambiarPagoPedido}
                         onClick={() => onChangePayment(pedido)}
                       >
+                        <CreditCard
+                          className="orders-mobile-meta-icon"
+                          size={11}
+                        />
                         {pedido.pago}
                       </button>
                     </td>
@@ -247,13 +259,27 @@ function PedidosTable({
                           pedido.tipoVenta
                         )}`}
                       >
+                        <Store
+                          className="orders-mobile-meta-icon"
+                          size={11}
+                        />
                         {pedido.tipoVenta}
                       </span>
                     </td>
 
-                    <td data-label="N° pedido">
+                    <td
+                      className={`orders-external-cell ${
+                        numeroPedidoExterno === "-"
+                          ? "orders-external-cell--empty"
+                          : ""
+                      }`}
+                      data-label="N° pedido"
+                    >
+                      <span className="orders-mobile-external-label">
+                        N° Pedidos Ya
+                      </span>
                       <span className="orders-external-number">
-                        {getNumeroPedidoExterno(pedido)}
+                        {numeroPedidoExterno}
                       </span>
                     </td>
 
@@ -264,34 +290,43 @@ function PedidosTable({
                     </td>
 
                     <td data-label="Estado">
-                      <span
-                        className={`orders-status ${getStatusClass(
-                          pedido.estado
-                        )}`}
-                      >
-                        {pedido.estado}
-                      </span>
+                      <div className="orders-status-meta">
+                        <span
+                          className={`orders-status ${getStatusClass(
+                            pedido.estado
+                          )}`}
+                        >
+                          {pedido.estado}
+                        </span>
+                        {pedido.horario && (
+                          <span className="orders-mobile-time">
+                            {pedido.horario}
+                          </span>
+                        )}
+                      </div>
                     </td>
 
                     <td data-label="Acciones">
                       <div className="orders-actions">
                         <button
-                          className="orders-icon-btn"
+                          className="orders-icon-btn orders-icon-btn--view"
                           type="button"
                           title="Ver detalle"
                           onClick={() => abrirDetalle(pedido)}
                         >
                           <Eye size={15} />
+                          <span className="orders-action-label">Ver</span>
                         </button>
 
                         <button
-                          className="orders-icon-btn"
+                          className="orders-icon-btn orders-icon-btn--print"
                           type="button"
                           title="Imprimir comanda"
                           disabled={printingId === pedido.id}
                           onClick={() => imprimirComanda(pedido)}
                         >
                           <Printer size={15} />
+                          <span className="orders-action-label">Imprimir</span>
                         </button>
 
                         <button
@@ -306,6 +341,7 @@ function PedidosTable({
                           onClick={() => onNextStatus(pedido)}
                         >
                           <ArrowRightCircle size={15} />
+                          <span className="orders-action-label">Avanzar</span>
                         </button>
 
                         <button
@@ -316,6 +352,7 @@ function PedidosTable({
                           onClick={() => onDeletePedido(pedido.id)}
                         >
                           <Trash2 size={15} />
+                          <span className="orders-action-label">Eliminar</span>
                         </button>
                       </div>
                     </td>
