@@ -1,6 +1,5 @@
-import { Player } from "@lottiefiles/react-lottie-player";
-
 import emptyOrdersAnimation from "../assets/lotties/empty_order.json";
+import LottieAnimation from "./LottieAnimation";
 
 import type { EstadoBackend } from "../services/pedidosApi";
 
@@ -41,10 +40,8 @@ function OrdersEmptyState({ estado }: OrdersEmptyStateProps) {
   return (
     <div className="orders-state orders-state--empty">
       <div className="orders-state__animation">
-        <Player
-          autoplay
-          loop
-          src={emptyOrdersAnimation}
+        <LottieAnimation
+          animationData={emptyOrdersAnimation}
           style={{ width: "100%", height: "100%" }}
         />
       </div>

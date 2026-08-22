@@ -100,7 +100,13 @@ function StockCard({
       className={`stock-card stock-card--${status.key} stock-card--mode-${mode}`}
     >
       <div className="stock-card__image-wrap">
-        <img src={image} alt={nombre} className="stock-card__image" />
+        <img
+          src={image}
+          alt={nombre}
+          className="stock-card__image"
+          loading="lazy"
+          decoding="async"
+        />
 
         <span className={`stock-card__badge stock-card__badge--${status.key}`}>
           {status.label}

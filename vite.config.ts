@@ -71,7 +71,7 @@ export default defineConfig({
               networkTimeoutSeconds: 4,
               expiration: {
                 maxEntries: 80,
-                maxAgeSeconds: 60 * 5,
+                maxAgeSeconds: 60 * 60 * 24 * 7,
               },
             },
           },

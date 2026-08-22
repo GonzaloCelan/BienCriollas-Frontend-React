@@ -62,7 +62,13 @@ function NewOrderDrawer({
   onClose,
   onCreated,
 }: NewOrderDrawerProps) {
-  const { catalogo, catalogoLoading, catalogoError } = useCatalogo();
+  const {
+    catalogo,
+    catalogoLoading,
+    catalogoError,
+    catalogoUsandoRespaldo,
+    recargarCatalogo,
+  } = useCatalogo();
   const [shouldRender, setShouldRender] = useState(open);
   const [closing, setClosing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -270,16 +276,24 @@ function NewOrderDrawer({
 
     const clienteTrim = cliente.trim();
 
-    if (tipoVenta === "PARTICULAR" && catalogoLoading) {
+    if (
+      tipoVenta === "PARTICULAR" &&
+      catalogoLoading &&
+      catalogo.length === 0 &&
+      !totalModificadoManualmente
+    ) {
       alert("El catálogo de precios todavía se está cargando.");
       return;
     }
 
     if (
       tipoVenta === "PARTICULAR" &&
-      (catalogoError || catalogo.length === 0)
+      catalogo.length === 0 &&
+      !totalModificadoManualmente
     ) {
-      alert("No se pudo cargar el catálogo de precios. Recargá la aplicación.");
+      alert(
+        "No se pudo cargar el catálogo de precios. Tocá Reintentar precios o ingresá el total manualmente."
+      );
       return;
     }
 
@@ -475,9 +489,9 @@ function NewOrderDrawer({
                 value={
                   tipoVenta === "PEDIDOS_YA" || totalModificadoManualmente
                     ? totalManual
-                    : catalogoLoading
+                    : catalogoLoading && catalogo.length === 0
                       ? "Cargando precios..."
-                      : catalogoError
+                      : catalogo.length === 0
                         ? "Precios no disponibles"
                         : totalCalculado || ""
                 }
@@ -490,7 +504,11 @@ function NewOrderDrawer({
                 onFocus={(event) => event.currentTarget.select()}
                 placeholder=" "
                 inputMode="numeric"
-                aria-busy={tipoVenta === "PARTICULAR" && catalogoLoading}
+                aria-busy={
+                  tipoVenta === "PARTICULAR" &&
+                  catalogoLoading &&
+                  catalogo.length === 0
+                }
               />
               <span>
                 {tipoVenta === "PEDIDOS_YA"
@@ -507,7 +525,11 @@ function NewOrderDrawer({
                   ? "Ingresá el importe que figura en la aplicación."
                   : totalModificadoManualmente
                     ? "Este importe reemplaza el cálculo automático."
-                    : "Se actualiza automáticamente según las cantidades."}
+                    : catalogoUsandoRespaldo
+                      ? "Usando los últimos precios guardados. Podés crear el pedido normalmente."
+                      : catalogoError
+                        ? "No se pudieron cargar los precios. Reintentá o ingresá el total manualmente."
+                        : "Se actualiza automáticamente según las cantidades."}
               </small>
 
               {tipoVenta === "PARTICULAR" && totalModificadoManualmente && (
@@ -521,6 +543,20 @@ function NewOrderDrawer({
                   Volver al cálculo automático
                 </button>
               )}
+
+              {tipoVenta === "PARTICULAR" &&
+                !totalModificadoManualmente &&
+                catalogoError && (
+                  <button
+                    type="button"
+                    onClick={() => void recargarCatalogo()}
+                    disabled={catalogoLoading}
+                  >
+                    {catalogoLoading
+                      ? "Reintentando..."
+                      : "Reintentar precios"}
+                  </button>
+                )}
             </div>
           </section>
 
@@ -612,12 +648,14 @@ function NewOrderDrawer({
               saving ||
               stockLoading ||
               (tipoVenta === "PARTICULAR" &&
-                (catalogoLoading ||
-                  Boolean(catalogoError) ||
-                  catalogo.length === 0))
+                catalogo.length === 0 &&
+                !totalModificadoManualmente)
             }
           >
-            {tipoVenta === "PARTICULAR" && catalogoLoading
+            {tipoVenta === "PARTICULAR" &&
+            catalogoLoading &&
+            catalogo.length === 0 &&
+            !totalModificadoManualmente
               ? "Cargando precios..."
               : stockLoading
                 ? "Validando stock..."

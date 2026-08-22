@@ -11,18 +11,18 @@ import {
   type StockItem,
 } from "../services/stockApi";
 
-import carneImg from "../assets/variedades/carne_ia.png";
-import verduraImg from "../assets/variedades/verdura_ia.png";
-import chocloImg from "../assets/variedades/choclo_ia.png";
-import polloImg from "../assets/variedades/pollo_ia.png";
-import atunImg from "../assets/variedades/atun_ia.png";
-import capresseImg from "../assets/variedades/capresse.png";
-import fugazzaImg from "../assets/variedades/fugazza_ia.png";
-import quesoAzulImg from "../assets/variedades/azul_ia.png";
-import bondiolaImg from "../assets/variedades/bondi_ia.png";
-import vacioImg from "../assets/variedades/vacio.jpeg";
-import campoImg from "../assets/variedades/campo_ia.png";
-import jamonQuesoImg from "../assets/variedades/jq_ia.png";
+import carneImg from "../assets/variedades/thumbs/carne.jpg";
+import verduraImg from "../assets/variedades/thumbs/verdura.jpg";
+import chocloImg from "../assets/variedades/thumbs/choclo.jpg";
+import polloImg from "../assets/variedades/thumbs/pollo.jpg";
+import atunImg from "../assets/variedades/thumbs/atun.jpg";
+import capresseImg from "../assets/variedades/thumbs/capresse.jpg";
+import fugazzaImg from "../assets/variedades/thumbs/fugazza.jpg";
+import quesoAzulImg from "../assets/variedades/thumbs/queso-azul.jpg";
+import bondiolaImg from "../assets/variedades/thumbs/bondiola.jpg";
+import vacioImg from "../assets/variedades/thumbs/vacio.jpg";
+import campoImg from "../assets/variedades/thumbs/campo.jpg";
+import jamonQuesoImg from "../assets/variedades/thumbs/jamon-queso.jpg";
 
 import "../styles/stock.css";
 

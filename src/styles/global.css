@@ -120,3 +120,7 @@ button {
     transform: scale(1);
   }
 }
+
+.app-page-loading {
+  min-height: 45vh;
+}

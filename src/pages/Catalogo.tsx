@@ -17,18 +17,18 @@ import {
   calcularTotalPedido,
 } from "../utils/calcularTotalPedido";
 
-import carneImg from "../assets/variedades/carne_ia.png";
-import verduraImg from "../assets/variedades/verdura_ia.png";
-import chocloImg from "../assets/variedades/choclo_ia.png";
-import polloImg from "../assets/variedades/pollo_ia.png";
-import atunImg from "../assets/variedades/atun_ia.png";
-import capresseImg from "../assets/variedades/capresse.png";
-import fugazzaImg from "../assets/variedades/fugazza_ia.png";
-import quesoAzulImg from "../assets/variedades/azul_ia.png";
-import bondiolaImg from "../assets/variedades/bondi_ia.png";
-import vacioImg from "../assets/variedades/vacio.jpeg";
-import campoImg from "../assets/variedades/campo_ia.png";
-import jamonQuesoImg from "../assets/variedades/jq_ia.png";
+import carneImg from "../assets/variedades/thumbs/carne.jpg";
+import verduraImg from "../assets/variedades/thumbs/verdura.jpg";
+import chocloImg from "../assets/variedades/thumbs/choclo.jpg";
+import polloImg from "../assets/variedades/thumbs/pollo.jpg";
+import atunImg from "../assets/variedades/thumbs/atun.jpg";
+import capresseImg from "../assets/variedades/thumbs/capresse.jpg";
+import fugazzaImg from "../assets/variedades/thumbs/fugazza.jpg";
+import quesoAzulImg from "../assets/variedades/thumbs/queso-azul.jpg";
+import bondiolaImg from "../assets/variedades/thumbs/bondiola.jpg";
+import vacioImg from "../assets/variedades/thumbs/vacio.jpg";
+import campoImg from "../assets/variedades/thumbs/campo.jpg";
+import jamonQuesoImg from "../assets/variedades/thumbs/jamon-queso.jpg";
 
 import "../styles/catalogo.css";
 
@@ -66,6 +66,8 @@ function Catalogo() {
     catalogo,
     catalogoLoading,
     catalogoError,
+    catalogoUsandoRespaldo,
+    recargarCatalogo,
     actualizarPreciosCatalogo,
   } = useCatalogo();
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -187,10 +189,10 @@ function Catalogo() {
 
     const detalle = variedadesPresupuesto.map(({ item, cantidad }) => {
       const subtotal = calcularSubtotalVariedad(cantidad, item);
-      return `• ${cantidad} ${item.nombre} — ${formatMoney(subtotal)}`;
+      return `- ${cantidad} ${item.nombre} — ${formatMoney(subtotal)}`;
     });
     const mensaje = [
-      "Detalle del pedido - Bien Criollas",
+      "Detalle del pedido",
       "",
       ...detalle,
       "",
@@ -218,25 +220,39 @@ function Catalogo() {
           </span>
         </div>
 
-        {!catalogoLoading && !catalogoError && (
+        {catalogo.length > 0 && (
           <div className="catalog-status">
             <span />
-            {catalogo.length} variedades activas
+            {catalogo.length} variedades
+            {catalogoUsandoRespaldo ? " · precios guardados" : " activas"}
           </div>
         )}
       </header>
 
-      {catalogoLoading && (
+      {catalogoLoading && catalogo.length === 0 && (
         <div className="catalog-message">Cargando precios del catálogo…</div>
       )}
 
       {catalogoError && (
-        <div className="catalog-message catalog-message--error">
-          {catalogoError} Recargá la aplicación para volver a intentarlo.
+        <div
+          className={`catalog-message catalog-message--with-action ${
+            catalogoUsandoRespaldo
+              ? "catalog-message--warning"
+              : "catalog-message--error"
+          }`}
+        >
+          <span>{catalogoError}</span>
+          <button
+            type="button"
+            onClick={() => void recargarCatalogo()}
+            disabled={catalogoLoading}
+          >
+            {catalogoLoading ? "Reintentando…" : "Reintentar"}
+          </button>
         </div>
       )}
 
-      {!catalogoLoading && !catalogoError && (
+      {catalogo.length > 0 && (
         <>
           {editError && <div className="catalog-edit-error">{editError}</div>}
 
@@ -404,6 +420,8 @@ function Catalogo() {
                       <img
                         src={variedadImages[item.id_variedad]}
                         alt={`Empanada de ${item.nombre}`}
+                        loading="lazy"
+                        decoding="async"
                       />
                       <strong>{item.nombre}</strong>
                     </div>

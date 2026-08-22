@@ -15,6 +15,7 @@ export type ActualizarPreciosCatalogoPayload = Pick<
 >;
 
 let catalogoPromise: Promise<CatalogoItem[]> | null = null;
+const CATALOGO_TIMEOUT_MS = 10000;
 
 function normalizarCatalogo(data: CatalogoItem[]) {
   return data
@@ -29,10 +30,23 @@ function normalizarCatalogo(data: CatalogoItem[]) {
     .filter((item) => item.activo === 1);
 }
 
-export function obtenerCatalogoApi(): Promise<CatalogoItem[]> {
+export function obtenerCatalogoApi(
+  options: { force?: boolean } = {}
+): Promise<CatalogoItem[]> {
+  if (options.force) {
+    catalogoPromise = null;
+  }
+
   if (catalogoPromise) return catalogoPromise;
 
-  catalogoPromise = fetch(`${API_URL}/api/v2/catalogo`)
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => {
+    controller.abort();
+  }, CATALOGO_TIMEOUT_MS);
+
+  catalogoPromise = fetch(`${API_URL}/api/v2/catalogo`, {
+    signal: controller.signal,
+  })
     .then(async (response) => {
       if (!response.ok) {
         throw new Error(
@@ -46,6 +60,9 @@ export function obtenerCatalogoApi(): Promise<CatalogoItem[]> {
     .catch((error) => {
       catalogoPromise = null;
       throw error;
+    })
+    .finally(() => {
+      window.clearTimeout(timeout);
     });
 
   return catalogoPromise;

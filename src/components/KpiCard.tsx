@@ -1,6 +1,4 @@
-import { useEffect, useRef } from "react";
-import lottie, { type AnimationItem } from "lottie-web";
-
+import LottieAnimation from "./LottieAnimation";
 import "../styles/kpiCard.css";
 
 type KpiCardProps = {
@@ -18,28 +16,6 @@ function KpiCard({
   active = false,
   onClick,
 }: KpiCardProps) {
-  const animationContainerRef = useRef<HTMLDivElement | null>(null);
-  const animationRef = useRef<AnimationItem | null>(null);
-
-  useEffect(() => {
-    if (!animationContainerRef.current) return;
-
-    animationRef.current?.destroy();
-
-    animationRef.current = lottie.loadAnimation({
-      container: animationContainerRef.current,
-      renderer: "svg",
-      loop: true,
-      autoplay: true,
-      animationData,
-    });
-
-    return () => {
-      animationRef.current?.destroy();
-      animationRef.current = null;
-    };
-  }, [animationData]);
-
   return (
     <button
       type="button"
@@ -47,7 +23,10 @@ function KpiCard({
       onClick={onClick}
     >
       <div className="kpi-filter-card__icon">
-        <div ref={animationContainerRef} className="kpi-filter-card__lottie" />
+        <LottieAnimation
+          animationData={animationData}
+          className="kpi-filter-card__lottie"
+        />
       </div>
 
       <div className="kpi-filter-card__content">

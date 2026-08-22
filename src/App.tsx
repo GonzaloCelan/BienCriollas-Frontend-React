@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 
 import SplashScreen from "./components/SplashScreen";
 import Sidebar, {
@@ -6,25 +6,18 @@ import Sidebar, {
   type PedidoNotificacion,
 } from "./components/Sidebar";
 
-import Pedidos from "./pages/Pedidos";
-import Catalogo from "./pages/Catalogo";
-import Stock from "./pages/Stock";
-import Estadisticas from "./pages/Estadisticas";
-import Egresos from "./pages/Egresos";
-import Ingresos from "./pages/Ingresos";
-
 import { obtenerPedidosPorEstado } from "./services/pedidosApi";
 
-import "./styles/global.css";
 import "./styles/sidebar.css";
-import "./styles/pedidos.css";
-import "./styles/catalogo.css";
-import "./styles/stock.css";
-import "./styles/estadisticas.css";
-import "./styles/kpi.css";
-import "./styles/egresos.css";
-import "./styles/ingresos.css";
 import "./styles/mobile.css";
+
+const pedidosPagePromise = import("./pages/Pedidos");
+const Pedidos = lazy(() => pedidosPagePromise);
+const Catalogo = lazy(() => import("./pages/Catalogo"));
+const Stock = lazy(() => import("./pages/Stock"));
+const Estadisticas = lazy(() => import("./pages/Estadisticas"));
+const Egresos = lazy(() => import("./pages/Egresos"));
+const Ingresos = lazy(() => import("./pages/Ingresos"));
 
 function obtenerHorarioPedido(pedido: unknown) {
   const data = pedido as {
@@ -63,6 +56,10 @@ function App() {
   const [darkMode, setDarkMode] = useState(() => {
     return localStorage.getItem("bc-theme") === "dark";
   });
+
+  const terminarSplash = useCallback(() => {
+    setShowSplash(false);
+  }, []);
 
   useEffect(() => {
     document.body.classList.toggle("dark-mode", darkMode);
@@ -105,8 +102,6 @@ function App() {
   }
 
   useEffect(() => {
-    cargarPedidosPendientesTopbar();
-
     const interval = window.setInterval(() => {
       cargarPedidosPendientesTopbar();
     }, 30000);
@@ -121,7 +116,7 @@ function App() {
   }, [activePage]);
 
   if (showSplash) {
-    return <SplashScreen onFinish={() => setShowSplash(false)} />;
+    return <SplashScreen onFinish={terminarSplash} />;
   }
 
   return (
@@ -139,12 +134,14 @@ function App() {
       <main
         className={`app-content ${collapsed ? "app-content--collapsed" : ""}`}
       >
-        {activePage === "pedidos" && <Pedidos />}
-        {activePage === "catalogo" && <Catalogo />}
-        {activePage === "stock" && <Stock />}
-        {activePage === "estadisticas" && <Estadisticas />}
-        {activePage === "egresos" && <Egresos />}
-        {activePage === "ingresos" && <Ingresos />}
+        <Suspense fallback={<div className="app-page-loading" aria-label="Cargando" />}>
+          {activePage === "pedidos" && <Pedidos />}
+          {activePage === "catalogo" && <Catalogo />}
+          {activePage === "stock" && <Stock />}
+          {activePage === "estadisticas" && <Estadisticas />}
+          {activePage === "egresos" && <Egresos />}
+          {activePage === "ingresos" && <Ingresos />}
+        </Suspense>
       </main>
     </div>
   );

@@ -1046,6 +1046,11 @@ body.dark-mode .stock-alert__panel p {
   text-underline-offset: 3px;
 }
 
+.drawer-total-mode button:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
 body.dark-mode .drawer-total-mode {
   color: #94a3b8;
 }

@@ -1,5 +1,4 @@
-import { useEffect, useRef, useState } from "react";
-import gsap from "gsap";
+import { useEffect, useRef } from "react";
 
 import "../styles/splash.css";
 
@@ -10,135 +9,103 @@ type SplashScreenProps = {
 };
 
 function SplashScreen({ onFinish }: SplashScreenProps) {
-  const [started, setStarted] = useState(false);
-
   const splashRef = useRef<HTMLElement | null>(null);
   const lettersRef = useRef<(HTMLSpanElement | null)[]>([]);
   const loaderRef = useRef<HTMLDivElement | null>(null);
 
-  function startSplash() {
-    if (started) return;
-
-    setStarted(true);
-  }
-
   useEffect(() => {
-    if (!started) return;
+    let cancelled = false;
+    let timeline: { kill: () => void } | null = null;
 
-    const letters = lettersRef.current.filter(Boolean);
+    async function reproducirSplash() {
+      const { default: gsap } = await import("gsap");
+      if (cancelled) return;
 
-    const tl = gsap.timeline({
-      onComplete: onFinish,
-    });
+      const letters = lettersRef.current.filter(Boolean);
+      const tl = gsap.timeline({ onComplete: onFinish });
+      timeline = tl;
 
-    tl.fromTo(
-      letters,
-      {
-        opacity: 0,
-        y: 72,
-        rotateX: -90,
-        scale: 0.88,
-        filter: "blur(16px)",
-      },
-      {
-        opacity: 1,
-        y: 0,
-        rotateX: 0,
-        scale: 1,
-        filter: "blur(0px)",
-        duration: 1.55,
-        ease: "expo.out",
-        stagger: 0.105,
-      }
-    );
-
-    tl.fromTo(
-      loaderRef.current,
-      {
-        opacity: 0,
-        y: 18,
-        scale: 0.88,
-      },
-      {
-        opacity: 1,
-        y: 0,
-        scale: 1,
-        duration: 0.7,
-        ease: "power3.out",
-      },
-      "-=0.55"
-    );
-
-    tl.to(
-      letters,
-      {
-        y: -6,
-        duration: 1.45,
-        ease: "sine.inOut",
-        stagger: {
-          each: 0.03,
-          from: "center",
+      tl.fromTo(
+        letters,
+        {
+          opacity: 0,
+          y: 50,
+          rotateX: -75,
+          scale: 0.9,
+          filter: "blur(12px)",
         },
-        yoyo: true,
-        repeat: 1,
-      },
-      "+=0.15"
-    );
+        {
+          opacity: 1,
+          y: 0,
+          rotateX: 0,
+          scale: 1,
+          filter: "blur(0px)",
+          duration: 0.62,
+          ease: "expo.out",
+          stagger: 0.04,
+        }
+      );
 
-    tl.to({}, { duration: 1.15 });
-
-    tl.to(loaderRef.current, {
-      opacity: 0,
-      y: -14,
-      scale: 0.85,
-      duration: 0.55,
-      ease: "power2.in",
-    });
-
-    tl.to(
-      letters,
-      {
-        opacity: 0,
-        y: -58,
-        rotateX: 88,
-        scale: 0.92,
-        filter: "blur(16px)",
-        duration: 1,
-        ease: "power3.in",
-        stagger: {
-          each: 0.055,
-          from: "end",
+      tl.fromTo(
+        loaderRef.current,
+        { opacity: 0, y: 10, scale: 0.9 },
+        {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          duration: 0.25,
+          ease: "power2.out",
         },
-      },
-      "-=0.15"
-    );
+        "-=0.3"
+      );
 
-    tl.to(
-      splashRef.current,
-      {
+      tl.to({}, { duration: 0.35 });
+
+      tl.to(loaderRef.current, {
         opacity: 0,
-        scale: 1.04,
-        filter: "blur(10px)",
-        duration: 0.75,
-        ease: "power2.inOut",
-      },
-      "-=0.15"
-    );
+        y: -8,
+        duration: 0.2,
+        ease: "power2.in",
+      });
+
+      tl.to(
+        letters,
+        {
+          opacity: 0,
+          y: -34,
+          rotateX: 70,
+          filter: "blur(10px)",
+          duration: 0.35,
+          ease: "power3.in",
+          stagger: { each: 0.018, from: "end" },
+        },
+        "-=0.08"
+      );
+
+      tl.to(
+        splashRef.current,
+        {
+          opacity: 0,
+          scale: 1.02,
+          filter: "blur(6px)",
+          duration: 0.25,
+          ease: "power2.inOut",
+        },
+        "-=0.1"
+      );
+    }
+
+    void reproducirSplash();
 
     return () => {
-      tl.kill();
+      cancelled = true;
+      timeline?.kill();
     };
-  }, [started, onFinish]);
+  }, [onFinish]);
 
   return (
     <section ref={splashRef} className="splash">
-      {!started && (
-        <button type="button" className="splash__start" onClick={startSplash}>
-          Entrar
-        </button>
-      )}
-
-      <div className={`splash__content ${started ? "is-visible" : ""}`}>
+      <div className="splash__content is-visible">
         <h1 className="splash__title" aria-label={title}>
           {title.split("").map((letter, index) => (
             <span

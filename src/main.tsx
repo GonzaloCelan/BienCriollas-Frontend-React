@@ -4,9 +4,6 @@ import App from "./App";
 import { CatalogoProvider } from "./context/CatalogoContext";
 
 import "./styles/global.css";
-import "./styles/pedidos.css";
-import "./styles/kpiCard.css";
-import "./styles/orderDetailDrawer.css";
 
 import { registerSW } from "virtual:pwa-register";
 
