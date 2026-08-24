@@ -4,11 +4,17 @@ import "../styles/orderToast.css";
 
 type OrderToastProps = {
   show: boolean;
+  title?: string;
   message: string;
   onClose: () => void;
 };
 
-function OrderToast({ show, message, onClose }: OrderToastProps) {
+function OrderToast({
+  show,
+  title = "Pedido creado",
+  message,
+  onClose,
+}: OrderToastProps) {
   if (!show) return null;
 
   return (
@@ -18,7 +24,7 @@ function OrderToast({ show, message, onClose }: OrderToastProps) {
       </div>
 
       <div className="order-toast__content">
-        <strong>Pedido creado</strong>
+        <strong>{title}</strong>
         <span>{message}</span>
       </div>
 

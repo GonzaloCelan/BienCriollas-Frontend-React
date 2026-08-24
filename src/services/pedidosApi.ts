@@ -8,7 +8,7 @@ export type EstadoBackend =
   | "CANCELADO";
 
 export type TipoVentaBackend = "PARTICULAR" | "PEDIDOS_YA";
-export type TipoPagoBackend = "EFECTIVO" | "TRANSFERENCIA";
+export type TipoPagoBackend = "EFECTIVO" | "TRANSFERENCIA" | "COMBINADO";
 
 export type PedidoDetalleRequestDTO = {
   idVariedad: number;
@@ -36,6 +36,8 @@ type PedidoResponseDTO = {
   horaEntrega: string | null;
   totalPedido: number;
   estadoPedido: EstadoBackend;
+  montoEfectivo?: number | null;
+  montoTransferencia?: number | null;
 };
 
 type PageResponse<T> = {
@@ -84,6 +86,10 @@ function normalizarTipoVenta(tipoVenta: string): string {
 function normalizarTipoPago(tipoPago: string): string {
   const value = tipoPago?.toUpperCase();
 
+  if (value === "COMBINADO") {
+    return "Combinado";
+  }
+
   if (value === "TRANSFERENCIA") {
     return "Transferencia";
   }
@@ -106,6 +112,9 @@ function mapPedido(pedido: PedidoResponseDTO): Pedido {
     horario: formatearHorario(pedido.horaEntrega),
     estado: normalizarEstado(pedido.estadoPedido),
     total: Number(pedido.totalPedido ?? 0),
+    numeroPedidoPedidosYa: pedido.numeroPedidoPedidosYa,
+    montoEfectivo: Number(pedido.montoEfectivo ?? 0),
+    montoTransferencia: Number(pedido.montoTransferencia ?? 0),
   };
 }
 
@@ -180,6 +189,26 @@ export async function crearPedidoApi(
   return mapPedido(data);
 }
 
+export async function actualizarPedidoApi(
+  idPedido: number,
+  pedido: PedidoRequestDTO
+): Promise<void> {
+  const response = await fetch(
+    `${API_URL}/api/v2/pedido/actualizar/${idPedido}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(pedido),
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(`Error al actualizar pedido. Status: ${response.status}`);
+  }
+}
+
 export async function obtenerDetallePedidoApi(
   idPedido: number
 ): Promise<Pedido["items"]> {
@@ -194,8 +223,10 @@ export async function obtenerDetallePedidoApi(
   const data: PedidoDetalleResponseDTO[] = await response.json();
 
   return data.map((item) => ({
+    idVariedad: Number(item.idVariedad),
     nombre: item.nombreVariedad,
     cantidad: Number(item.cantidad ?? 0),
+    subtotal: Number(item.subtotal ?? 0),
   }));
 }
 

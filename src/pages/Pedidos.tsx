@@ -96,6 +96,7 @@ function getNuevoPagoBackend(pagoActual: string): TipoPagoBackend {
 
 function getPagoFrontend(pagoBackend: TipoPagoBackend) {
   if (pagoBackend === "TRANSFERENCIA") return "Transferencia";
+  if (pagoBackend === "COMBINADO") return "Combinado";
   return "Efectivo";
 }
 
@@ -106,6 +107,12 @@ function Pedidos() {
 
   const [newOrderOpen, setNewOrderOpen] = useState(false);
   const [toastOpen, setToastOpen] = useState(false);
+  const [toastTitle, setToastTitle] = useState("Pedido creado");
+  const [toastMessage, setToastMessage] = useState(
+    "El pedido fue registrado correctamente."
+  );
+  const [pedidoEditando, setPedidoEditando] = useState<Pedido | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [pedidoACancelar, setPedidoACancelar] = useState<Pedido | null>(null);
   const [cancelandoPedido, setCancelandoPedido] = useState(false);
 
@@ -166,7 +173,9 @@ function Pedidos() {
     }
   }
 
-  function mostrarToastPedidoCreado() {
+  function mostrarToast(title: string, message: string) {
+    setToastTitle(title);
+    setToastMessage(message);
     setToastOpen(true);
 
     window.setTimeout(() => {
@@ -289,10 +298,32 @@ function Pedidos() {
 
   function cerrarNuevoPedido() {
     setNewOrderOpen(false);
+    setPedidoEditando(null);
   }
 
   function abrirNuevoPedidoManual() {
+    setPedidoEditando(null);
     setNewOrderOpen(true);
+  }
+
+  async function abrirEditorPedido(pedido: Pedido) {
+    if (editingId !== null) return;
+
+    try {
+      setEditingId(pedido.id);
+      const detalles = await obtenerDetallePedidoApi(pedido.id);
+
+      setPedidoEditando({
+        ...pedido,
+        items: detalles ?? [],
+      });
+      setNewOrderOpen(true);
+    } catch (error) {
+      console.error(error);
+      alert("No se pudieron cargar los datos del pedido para editarlo.");
+    } finally {
+      setEditingId(null);
+    }
   }
 
   async function handlePedidoCreado() {
@@ -304,7 +335,20 @@ function Pedidos() {
     ]);
 
     refrescarStockCritico();
-    mostrarToastPedidoCreado();
+    mostrarToast("Pedido creado", "El pedido fue registrado correctamente.");
+  }
+
+  async function handlePedidoActualizado() {
+    await Promise.all([
+      cargarPedidosPorEstado(estadoActivo),
+      cargarContadores(),
+    ]);
+
+    refrescarStockCritico();
+    mostrarToast(
+      "Pedido actualizado",
+      "Los cambios se guardaron correctamente."
+    );
   }
 
   const fechaPedidos = getFechaPedidosDelDia();
@@ -378,6 +422,8 @@ function Pedidos() {
             onDeletePedido={abrirConfirmacionCancelacion}
             onLoadDetail={cargarDetallePedido}
             onChangePayment={cambiarTipoPagoPedido}
+            onEditPedido={abrirEditorPedido}
+            editingId={editingId}
           />
         </div>
 
@@ -387,12 +433,15 @@ function Pedidos() {
       <NewOrderDrawer
         open={newOrderOpen}
         onClose={cerrarNuevoPedido}
+        pedidoEditando={pedidoEditando}
         onCreated={handlePedidoCreado}
+        onUpdated={handlePedidoActualizado}
       />
 
       <OrderToast
         show={toastOpen}
-        message="El pedido fue registrado correctamente."
+        title={toastTitle}
+        message={toastMessage}
         onClose={() => setToastOpen(false)}
       />
 

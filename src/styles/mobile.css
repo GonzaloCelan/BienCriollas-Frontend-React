@@ -362,7 +362,7 @@
       "client status"
       "payment total"
       "sale total"
-      "external total"
+      "schedule total"
       "actions actions";
     column-gap: 14px;
     row-gap: 7px;
@@ -404,7 +404,7 @@
   }
 
   .orders-table--floating tbody td:nth-child(4) {
-    grid-area: external;
+    grid-area: schedule;
   }
 
   .orders-table--floating tbody td:nth-child(5) {
@@ -465,14 +465,6 @@
     letter-spacing: 0;
   }
 
-  .orders-mobile-time {
-    display: inline;
-    color: #94a3b8;
-    font-size: 7px;
-    font-weight: 700;
-    white-space: nowrap;
-  }
-
   .orders-mobile-meta-icon {
     display: block;
     flex: 0 0 auto;
@@ -493,21 +485,17 @@
     padding: 0;
   }
 
-  .orders-external-cell {
+  .orders-schedule-cell {
     color: #94a3b8;
     font-size: 8px;
     font-weight: 800;
   }
 
-  .orders-external-cell--empty {
-    display: none !important;
-  }
-
-  .orders-mobile-external-label {
+  .orders-mobile-schedule-label {
     display: inline;
   }
 
-  .orders-external-number {
+  .orders-schedule-value {
     font-size: 8px;
   }
 
@@ -518,7 +506,7 @@
 
   .orders-actions {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     justify-content: stretch;
     gap: 0;
   }
@@ -544,6 +532,10 @@
 
   .orders-icon-btn--next {
     color: #3b82f6;
+  }
+
+  .orders-icon-btn--edit {
+    color: #f59e0b;
   }
 
   .orders-icon-btn--danger {

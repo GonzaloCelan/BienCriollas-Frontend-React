@@ -238,12 +238,20 @@
   color: #2563eb;
 }
 
+.payment-combined {
+  color: #7c3aed;
+}
+
 /* N° PEDIDO */
-.orders-external-number {
+.orders-schedule-value {
   color: #64748b;
   font-size: 12px;
   font-weight: 800;
   letter-spacing: -0.01em;
+}
+
+.orders-schedule-cell--empty .orders-schedule-value {
+  color: #94a3b8;
 }
 
 /* ESTADOS */
@@ -323,8 +331,7 @@
 }
 
 .orders-mobile-meta-icon,
-.orders-mobile-external-label,
-.orders-mobile-time,
+.orders-mobile-schedule-label,
 .orders-action-label {
   display: none;
 }
@@ -376,6 +383,15 @@
 .orders-icon-btn--danger:hover {
   color: #dc2626;
   background: #fff1f2;
+}
+
+.orders-icon-btn--edit {
+  color: #d97706;
+}
+
+.orders-icon-btn--edit:hover {
+  color: #b45309;
+  background: #fffbeb;
 }
 
 /* BOTÓN PASAR ESTADO - ANIMACIÓN */
@@ -530,7 +546,11 @@ body.dark-mode .payment-transfer {
   color: #60a5fa;
 }
 
-body.dark-mode .orders-external-number {
+body.dark-mode .payment-combined {
+  color: #c4b5fd;
+}
+
+body.dark-mode .orders-schedule-value {
   color: #94a3b8;
 }
 

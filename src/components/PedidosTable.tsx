@@ -2,6 +2,7 @@ import {
   ArrowRightCircle,
   CreditCard,
   Eye,
+  Pencil,
   Printer,
   Store,
   Trash2,
@@ -32,12 +33,17 @@ export type Pedido = {
   total: number;
 
   numeroPedido?: string | number | null;
+  numeroPedidoPedidosYa?: string | number | null;
   numeroPedidoYa?: string | number | null;
   nroPedido?: string | number | null;
+  montoEfectivo?: number;
+  montoTransferencia?: number;
 
   items?: {
+    idVariedad?: number;
     nombre: string;
     cantidad: number;
+    subtotal?: number;
   }[];
 };
 
@@ -49,6 +55,8 @@ type PedidosTableProps = {
   onDeletePedido: (idPedido: number) => void;
   onLoadDetail: (idPedido: number) => Promise<Pedido["items"]>;
   onChangePayment: (pedido: Pedido) => void;
+  onEditPedido: (pedido: Pedido) => void | Promise<void>;
+  editingId?: number | null;
 };
 
 function formatPrice(value: number) {
@@ -78,6 +86,7 @@ function getPaymentClass(pago: string) {
   const value = pago.toLowerCase();
 
   if (value.includes("transfer")) return "payment-transfer";
+  if (value.includes("combin")) return "payment-combined";
 
   return "payment-cash";
 }
@@ -92,6 +101,10 @@ function puedeCancelarPedido(estado: Pedido["estado"]) {
 
 function puedeCambiarPago(estado: Pedido["estado"]) {
   return estado !== "Cancelado";
+}
+
+function puedeEditarPedido(estado: Pedido["estado"]) {
+  return estado !== "Entregado" && estado !== "Cancelado";
 }
 
 function getDeleteTitle(estado: Pedido["estado"]) {
@@ -117,11 +130,23 @@ function getPaymentTitle(pedido: Pedido) {
 
 function getNumeroPedidoExterno(pedido: Pedido) {
   const numero =
-    pedido.numeroPedido ?? pedido.numeroPedidoYa ?? pedido.nroPedido ?? null;
+    pedido.numeroPedidoPedidosYa ??
+    pedido.numeroPedido ??
+    pedido.numeroPedidoYa ??
+    pedido.nroPedido ??
+    null;
 
   if (!numero) return "-";
 
   return `#${numero}`;
+}
+
+function getHorarioPedido(horario: string) {
+  const value = horario?.trim();
+
+  if (!value || value === "-" || value === "--:--") return "Sin horario";
+
+  return value.slice(0, 5);
 }
 
 function PedidosTable({
@@ -132,6 +157,8 @@ function PedidosTable({
   onDeletePedido,
   onLoadDetail,
   onChangePayment,
+  onEditPedido,
+  editingId = null,
 }: PedidosTableProps) {
   const [selectedPedido, setSelectedPedido] = useState<Pedido | null>(null);
   const [detalleItems, setDetalleItems] = useState<Pedido["items"]>([]);
@@ -197,7 +224,7 @@ function PedidosTable({
               <th>Cliente</th>
               <th>Pago</th>
               <th>Venta</th>
-              <th>N° Pedido</th>
+              <th>Horario</th>
               <th>Total</th>
               <th>Estado</th>
               <th>Acciones</th>
@@ -216,7 +243,9 @@ function PedidosTable({
                 const puedeAvanzar = puedeAvanzarEstado(pedido.estado);
                 const puedeCancelar = puedeCancelarPedido(pedido.estado);
                 const puedeCambiarPagoPedido = puedeCambiarPago(pedido.estado);
+                const puedeEditar = puedeEditarPedido(pedido.estado);
                 const numeroPedidoExterno = getNumeroPedidoExterno(pedido);
+                const horarioPedido = getHorarioPedido(pedido.horario);
 
                 return (
                   <tr
@@ -231,7 +260,12 @@ function PedidosTable({
                     <td data-label="Cliente">
                       <div className="orders-client-cell">
                         <strong>{pedido.cliente || "Sin cliente"}</strong>
-                        <span>Pedido #{pedido.id}</span>
+                        <span>
+                          Pedido #{pedido.id}
+                          {numeroPedidoExterno !== "-"
+                            ? ` · Pedidos Ya ${numeroPedidoExterno}`
+                            : ""}
+                        </span>
                       </div>
                     </td>
 
@@ -268,18 +302,18 @@ function PedidosTable({
                     </td>
 
                     <td
-                      className={`orders-external-cell ${
-                        numeroPedidoExterno === "-"
-                          ? "orders-external-cell--empty"
+                      className={`orders-schedule-cell ${
+                        horarioPedido === "Sin horario"
+                          ? "orders-schedule-cell--empty"
                           : ""
                       }`}
-                      data-label="N° pedido"
+                      data-label="Horario"
                     >
-                      <span className="orders-mobile-external-label">
-                        N° Pedidos Ya
+                      <span className="orders-mobile-schedule-label">
+                        Horario
                       </span>
-                      <span className="orders-external-number">
-                        {numeroPedidoExterno}
+                      <span className="orders-schedule-value">
+                        {horarioPedido}
                       </span>
                     </td>
 
@@ -298,11 +332,6 @@ function PedidosTable({
                         >
                           {pedido.estado}
                         </span>
-                        {pedido.horario && (
-                          <span className="orders-mobile-time">
-                            {pedido.horario}
-                          </span>
-                        )}
                       </div>
                     </td>
 
@@ -316,6 +345,21 @@ function PedidosTable({
                         >
                           <Eye size={15} />
                           <span className="orders-action-label">Ver</span>
+                        </button>
+
+                        <button
+                          className="orders-icon-btn orders-icon-btn--edit"
+                          type="button"
+                          title={
+                            puedeEditar
+                              ? "Editar pedido"
+                              : "No se puede editar un pedido cerrado"
+                          }
+                          disabled={!puedeEditar || editingId === pedido.id}
+                          onClick={() => onEditPedido(pedido)}
+                        >
+                          <Pencil size={15} />
+                          <span className="orders-action-label">Editar</span>
                         </button>
 
                         <button

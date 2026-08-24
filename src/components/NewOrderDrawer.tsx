@@ -4,11 +4,13 @@ import { Minus, Plus, X } from "lucide-react";
 
 
 import {
+  actualizarPedidoApi,
   crearPedidoApi,
   type PedidoRequestDTO,
   type TipoPagoBackend,
   type TipoVentaBackend,
 } from "../services/pedidosApi";
+import type { Pedido } from "./PedidosTable";
 
 import { obtenerStockActual, type StockItem } from "../services/stockApi";
 
@@ -21,7 +23,9 @@ import "../styles/newOrderDrawer.css";
 type NewOrderDrawerProps = {
   open: boolean;
   onClose: () => void;
+  pedidoEditando?: Pedido | null;
   onCreated?: () => void | Promise<void>;
+  onUpdated?: () => void | Promise<void>;
 };
 
 type StockAlert = {
@@ -57,10 +61,36 @@ function parseMoney(value: string) {
   return Number(cleanValue || 0);
 }
 
+function normalizarTipoVentaPedido(tipoVenta: string): TipoVentaBackend {
+  return tipoVenta.toLowerCase().includes("pedidos")
+    ? "PEDIDOS_YA"
+    : "PARTICULAR";
+}
+
+function normalizarTipoPagoPedido(tipoPago: string): TipoPagoBackend {
+  const value = tipoPago.toLowerCase();
+
+  if (value.includes("combin")) return "COMBINADO";
+  if (value.includes("transfer")) return "TRANSFERENCIA";
+  return "EFECTIVO";
+}
+
+function obtenerNumeroPedidosYa(pedido: Pedido) {
+  return String(
+    pedido.numeroPedidoPedidosYa ??
+      pedido.numeroPedido ??
+      pedido.numeroPedidoYa ??
+      pedido.nroPedido ??
+      ""
+  );
+}
+
 function NewOrderDrawer({
   open,
   onClose,
+  pedidoEditando = null,
   onCreated,
+  onUpdated,
 }: NewOrderDrawerProps) {
   const {
     catalogo,
@@ -82,6 +112,11 @@ function NewOrderDrawer({
   const [totalModificadoManualmente, setTotalModificadoManualmente] =
     useState(false);
   const [cantidades, setCantidades] = useState<Record<number, number>>({});
+  const [cantidadesOriginales, setCantidadesOriginales] = useState<
+    Record<number, number>
+  >({});
+  const [montoEfectivo, setMontoEfectivo] = useState("");
+  const [montoTransferencia, setMontoTransferencia] = useState("");
 
   const [stockActual, setStockActual] = useState<StockItem[]>([]);
   const [stockLoading, setStockLoading] = useState(false);
@@ -89,13 +124,56 @@ function NewOrderDrawer({
 
   const [stockAlert, setStockAlert] = useState<StockAlert | null>(null);
 
+  const esEdicion = pedidoEditando !== null;
+
+  function cargarDatosFormulario(pedido: Pedido | null) {
+    if (!pedido) {
+      resetForm();
+      return;
+    }
+
+    const cantidadesPedido = (pedido.items ?? []).reduce<Record<number, number>>(
+      (acc, item) => {
+        if (item.idVariedad && item.cantidad > 0) {
+          acc[item.idVariedad] = Number(item.cantidad);
+        }
+
+        return acc;
+      },
+      {}
+    );
+    const venta = normalizarTipoVentaPedido(pedido.tipoVenta);
+    const pago = normalizarTipoPagoPedido(pedido.pago);
+
+    setCliente(pedido.cliente ?? "");
+    setNumeroPedido(obtenerNumeroPedidosYa(pedido));
+    setHora(pedido.horario && pedido.horario !== "-" ? pedido.horario.slice(0, 5) : "");
+    setTipoVenta(venta);
+    setTipoPago(pago);
+    setCantidades(cantidadesPedido);
+    setCantidadesOriginales(cantidadesPedido);
+    setTotalManual(venta === "PEDIDOS_YA" ? String(pedido.total ?? "") : "");
+    setTotalModificadoManualmente(false);
+    setMontoEfectivo(
+      pago === "COMBINADO" && pedido.montoEfectivo
+        ? String(pedido.montoEfectivo)
+        : ""
+    );
+    setMontoTransferencia(
+      pago === "COMBINADO" && pedido.montoTransferencia
+        ? String(pedido.montoTransferencia)
+        : ""
+    );
+  }
+
   useEffect(() => {
     if (open) {
       setShouldRender(true);
       setClosing(false);
+      cargarDatosFormulario(pedidoEditando);
       cargarStockParaPedido();
     }
-  }, [open]);
+  }, [open, pedidoEditando]);
 
   useEffect(() => {
     if (!shouldRender) return;
@@ -133,6 +211,9 @@ function NewOrderDrawer({
     setTotalManual("");
     setTotalModificadoManualmente(false);
     setCantidades({});
+    setCantidadesOriginales({});
+    setMontoEfectivo("");
+    setMontoTransferencia("");
   }
 
   function closeWithAnimation(force = false) {
@@ -161,6 +242,9 @@ function NewOrderDrawer({
   const totalPedidoActual = usaTotalManual
     ? parseMoney(totalManual)
     : totalCalculado;
+  const totalPagoCombinado =
+    parseMoney(montoEfectivo) + parseMoney(montoTransferencia);
+  const diferenciaPagoCombinado = totalPedidoActual - totalPagoCombinado;
 
   function obtenerNombreVariedad(idVariedad: number) {
     return VARIEDADES[idVariedad]?.nombre ?? `Variedad #${idVariedad}`;
@@ -168,7 +252,13 @@ function NewOrderDrawer({
 
   function obtenerStockDisponible(idVariedad: number) {
     const item = stockActual.find((stock) => stock.id === idVariedad);
-    return item?.stock ?? null;
+    if (!item) return null;
+
+    const cantidadYaReservada = esEdicion
+      ? cantidadesOriginales[idVariedad] ?? 0
+      : 0;
+
+    return item.stock + cantidadYaReservada;
   }
 
   function mostrarAvisoStockInsuficiente(
@@ -321,6 +411,27 @@ function NewOrderDrawer({
       return;
     }
 
+    const montoEfectivoPedido =
+      tipoPago === "EFECTIVO"
+        ? totalPedido
+        : tipoPago === "COMBINADO"
+          ? parseMoney(montoEfectivo)
+          : 0;
+    const montoTransferenciaPedido =
+      tipoPago === "TRANSFERENCIA"
+        ? totalPedido
+        : tipoPago === "COMBINADO"
+          ? parseMoney(montoTransferencia)
+          : 0;
+
+    if (
+      tipoPago === "COMBINADO" &&
+      montoEfectivoPedido + montoTransferenciaPedido !== totalPedido
+    ) {
+      alert("Los importes de efectivo y transferencia deben sumar el total del pedido.");
+      return;
+    }
+
     if (!validarPedidoCompleto(detalles)) return;
 
     const payload: PedidoRequestDTO = {
@@ -331,15 +442,23 @@ function NewOrderDrawer({
         tipoVenta === "PEDIDOS_YA" && numeroPedido.trim()
           ? numeroPedido.trim()
           : null,
-      horaEntrega: hora || null,
-      montoEfectivo: tipoPago === "EFECTIVO" ? totalPedido : 0,
-      montoTransferencia: tipoPago === "TRANSFERENCIA" ? totalPedido : 0,
+      horaEntrega: hora ? `${hora.slice(0, 5)}:00` : null,
+      montoEfectivo: montoEfectivoPedido,
+      montoTransferencia: montoTransferenciaPedido,
       totalPedido,
       detalles,
     };
 
     try {
       setSaving(true);
+
+      if (pedidoEditando) {
+        await actualizarPedidoApi(pedidoEditando.id, payload);
+        resetForm();
+        await onUpdated?.();
+        closeWithAnimation(true);
+        return;
+      }
 
       const pedidoCreado = await crearPedidoApi(payload);
 
@@ -359,7 +478,11 @@ function NewOrderDrawer({
       }, 450);
     } catch (error) {
       console.error(error);
-      alert("No se pudo crear el pedido.");
+      alert(
+        esEdicion
+          ? "No se pudo actualizar el pedido."
+          : "No se pudo crear el pedido."
+      );
     } finally {
       setSaving(false);
     }
@@ -381,8 +504,12 @@ function NewOrderDrawer({
       <section className="new-order-drawer__panel">
         <header className="new-order-drawer__header">
           <div>
-            <h3>Nuevo pedido</h3>
-            <p>Registro rápido de venta</p>
+            <h3>{esEdicion ? `Editar pedido #${pedidoEditando.id}` : "Nuevo pedido"}</h3>
+            <p>
+              {esEdicion
+                ? "Modificá los datos y las variedades"
+                : "Registro rápido de venta"}
+            </p>
           </div>
 
           <button
@@ -434,11 +561,15 @@ function NewOrderDrawer({
             <div className="drawer-field drawer-field--full">
               <span>Tipo de pago</span>
 
-              <div className="drawer-segment">
+              <div className="drawer-segment drawer-segment--three">
                 <button
                   type="button"
                   className={tipoPago === "EFECTIVO" ? "active" : ""}
-                  onClick={() => setTipoPago("EFECTIVO")}
+                  onClick={() => {
+                    setTipoPago("EFECTIVO");
+                    setMontoEfectivo("");
+                    setMontoTransferencia("");
+                  }}
                 >
                   Efectivo
                 </button>
@@ -446,12 +577,69 @@ function NewOrderDrawer({
                 <button
                   type="button"
                   className={tipoPago === "TRANSFERENCIA" ? "active" : ""}
-                  onClick={() => setTipoPago("TRANSFERENCIA")}
+                  onClick={() => {
+                    setTipoPago("TRANSFERENCIA");
+                    setMontoEfectivo("");
+                    setMontoTransferencia("");
+                  }}
                 >
                   Transferencia
                 </button>
+
+                <button
+                  type="button"
+                  className={tipoPago === "COMBINADO" ? "active" : ""}
+                  onClick={() => setTipoPago("COMBINADO")}
+                >
+                  Combinado
+                </button>
               </div>
             </div>
+
+            {tipoPago === "COMBINADO" && (
+              <>
+                <div className="drawer-grid drawer-combined-payment">
+                  <label className="drawer-floating-field">
+                    <input
+                      value={montoEfectivo}
+                      onChange={(event) =>
+                        setMontoEfectivo(event.target.value.replace(/[^\d]/g, ""))
+                      }
+                      placeholder=" "
+                      inputMode="numeric"
+                    />
+                    <span>Monto en efectivo</span>
+                  </label>
+
+                  <label className="drawer-floating-field">
+                    <input
+                      value={montoTransferencia}
+                      onChange={(event) =>
+                        setMontoTransferencia(
+                          event.target.value.replace(/[^\d]/g, "")
+                        )
+                      }
+                      placeholder=" "
+                      inputMode="numeric"
+                    />
+                    <span>Monto por transferencia</span>
+                  </label>
+                </div>
+                <small
+                  className={`drawer-combined-payment__status ${
+                    diferenciaPagoCombinado === 0
+                      ? "drawer-combined-payment__status--ok"
+                      : ""
+                  }`}
+                >
+                  {diferenciaPagoCombinado === 0
+                    ? "Los importes coinciden con el total."
+                    : diferenciaPagoCombinado > 0
+                      ? `Faltan $${diferenciaPagoCombinado.toLocaleString("es-AR")}.`
+                      : `Te pasaste $${Math.abs(diferenciaPagoCombinado).toLocaleString("es-AR")}.`}
+                </small>
+              </>
+            )}
 
             <div className="drawer-field drawer-field--full">
               <span>Tipo de venta</span>
@@ -661,7 +849,9 @@ function NewOrderDrawer({
                 ? "Validando stock..."
                 : saving
                   ? "Guardando..."
-                  : "Confirmar"}
+                  : esEdicion
+                    ? "Guardar cambios"
+                    : "Confirmar"}
           </button>
         </footer>
 

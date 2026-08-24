@@ -339,6 +339,10 @@
   gap: 4px;
 }
 
+.drawer-segment--three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .drawer-segment button {
   border: 0;
   border-radius: 10px;
@@ -364,6 +368,22 @@
   box-shadow:
     0 6px 14px rgba(15, 23, 42, 0.06),
     inset 0 0 0 1px rgba(239, 35, 60, 0.04);
+}
+
+.drawer-combined-payment {
+  margin-top: 2px;
+}
+
+.drawer-combined-payment__status {
+  display: block;
+  margin-top: 7px;
+  color: #e11d48;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.drawer-combined-payment__status--ok {
+  color: #059669;
 }
 
 /* =========================================================
@@ -719,6 +739,14 @@ body.dark-mode .drawer-segment button.active {
   box-shadow:
     inset 0 0 0 1px rgba(243, 67, 67, 0.22),
     0 8px 18px rgba(0, 0, 0, 0.28);
+}
+
+body.dark-mode .drawer-combined-payment__status {
+  color: #fb7185;
+}
+
+body.dark-mode .drawer-combined-payment__status--ok {
+  color: #34d399;
 }
 
 /* VARIEDADES DARK */
