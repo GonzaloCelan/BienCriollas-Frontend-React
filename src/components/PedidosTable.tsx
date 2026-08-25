@@ -1,5 +1,6 @@
 import {
   ArrowRightCircle,
+  Clock3,
   CreditCard,
   Eye,
   Pencil,
@@ -107,6 +108,12 @@ function puedeEditarPedido(estado: Pedido["estado"]) {
   return estado !== "Entregado" && estado !== "Cancelado";
 }
 
+function getNextStatusLabel(estado: Pedido["estado"]) {
+  if (estado === "Pendiente") return "Pasar a preparación";
+  if (estado === "Preparado") return "Marcar como entregado";
+  return "Ver detalle";
+}
+
 function getDeleteTitle(estado: Pedido["estado"]) {
   if (estado === "Entregado") return "No se puede cancelar un pedido entregado";
   if (estado === "Cancelado") return "El pedido ya está cancelado";
@@ -169,7 +176,6 @@ function PedidosTable({
     (acc, item) => acc + item.cantidad,
     0
   );
-
   async function abrirDetalle(pedido: Pedido) {
     try {
       setSelectedPedido(pedido);
@@ -217,13 +223,96 @@ function PedidosTable({
 
   return (
     <>
+      <div className="orders-mobile-list">
+        {loading ? (
+          <div className="orders-mobile-state">
+            <OrdersLoadingState />
+          </div>
+        ) : pedidos.length > 0 ? (
+          pedidos.map((pedido, index) => {
+            const puedeAvanzar = puedeAvanzarEstado(pedido.estado);
+            const puedeCancelar = puedeCancelarPedido(pedido.estado);
+            const esPedidosYa = pedido.tipoVenta
+              .toLowerCase()
+              .includes("pedidos");
+            const numeroPedidoExterno = getNumeroPedidoExterno(pedido);
+            const horarioPedido = getHorarioPedido(pedido.horario);
+
+            return (
+              <article
+                key={pedido.id}
+                className="orders-mobile-card"
+                style={{ animationDelay: `${index * 0.045}s` }}
+              >
+                <div className="orders-mobile-card__topline">
+                  <strong>Pedido #{pedido.id}</strong>
+                  <span>
+                    <Clock3 size={15} />
+                    {horarioPedido}
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  className="orders-mobile-card__summary"
+                  onClick={() => abrirDetalle(pedido)}
+                >
+                  <span className="orders-mobile-card__client">
+                    {pedido.cliente || "Sin cliente"}
+                  </span>
+                  <span className="orders-mobile-card__meta">
+                    {esPedidosYa && numeroPedidoExterno !== "-"
+                      ? `Pedidos Ya ${numeroPedidoExterno}`
+                      : pedido.pago}
+                    {` · ${pedido.tipoVenta}`}
+                  </span>
+                </button>
+
+                <div className="orders-mobile-card__amount">
+                  <span>{pedido.tipoVenta}</span>
+                  <strong>{formatPrice(pedido.total)}</strong>
+                </div>
+
+                <div className="orders-mobile-card__actions">
+                  <button
+                    type="button"
+                    className="orders-mobile-card__primary"
+                    onClick={() =>
+                      puedeAvanzar
+                        ? onNextStatus(pedido)
+                        : abrirDetalle(pedido)
+                    }
+                  >
+                    {getNextStatusLabel(pedido.estado)}
+                  </button>
+
+                  {puedeCancelar && (
+                    <button
+                      type="button"
+                      className="orders-mobile-card__secondary"
+                      onClick={() => onDeletePedido(pedido.id)}
+                    >
+                      Cancelar pedido
+                    </button>
+                  )}
+                </div>
+              </article>
+            );
+          })
+        ) : (
+          <div className="orders-mobile-state">
+            <OrdersEmptyState estado={estadoActivo} />
+          </div>
+        )}
+      </div>
+
       <div className="orders-table-wrapper">
         <table className="orders-table orders-table--floating">
           <thead>
             <tr>
               <th>Cliente</th>
               <th>Pago</th>
-              <th>Venta</th>
+              <th>Canal</th>
               <th>Horario</th>
               <th>Total</th>
               <th>Estado</th>
@@ -244,7 +333,6 @@ function PedidosTable({
                 const puedeCancelar = puedeCancelarPedido(pedido.estado);
                 const puedeCambiarPagoPedido = puedeCambiarPago(pedido.estado);
                 const puedeEditar = puedeEditarPedido(pedido.estado);
-                const numeroPedidoExterno = getNumeroPedidoExterno(pedido);
                 const horarioPedido = getHorarioPedido(pedido.horario);
 
                 return (
@@ -260,12 +348,7 @@ function PedidosTable({
                     <td data-label="Cliente">
                       <div className="orders-client-cell">
                         <strong>{pedido.cliente || "Sin cliente"}</strong>
-                        <span>
-                          Pedido #{pedido.id}
-                          {numeroPedidoExterno !== "-"
-                            ? ` · Pedidos Ya ${numeroPedidoExterno}`
-                            : ""}
-                        </span>
+                        <span>Pedido #{pedido.id}</span>
                       </div>
                     </td>
 

@@ -24,6 +24,10 @@ import {
   type EstadoBackend,
   type TipoPagoBackend,
 } from "../services/pedidosApi";
+import {
+  usePedidosRealtime,
+  type PedidoEvento,
+} from "../hooks/usePedidosRealtime";
 
 import "../styles/pedidos.css";
 import "../styles/kpiCard.css";
@@ -104,7 +108,6 @@ function Pedidos() {
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [estadoActivo, setEstadoActivo] =
     useState<EstadoBackend>("PENDIENTE");
-
   const [newOrderOpen, setNewOrderOpen] = useState(false);
   const [toastOpen, setToastOpen] = useState(false);
   const [toastTitle, setToastTitle] = useState("Pedido creado");
@@ -132,9 +135,12 @@ function Pedidos() {
     setStockRefreshKey((prev) => prev + 1);
   }
 
-  async function cargarPedidosPorEstado(estado: EstadoBackend) {
+  async function cargarPedidosPorEstado(
+    estado: EstadoBackend,
+    silencioso = false
+  ) {
     try {
-      setLoading(true);
+      if (!silencioso) setLoading(true);
       setError("");
 
       const data = await obtenerPedidosPorEstado(estado, 0, 50);
@@ -148,7 +154,7 @@ function Pedidos() {
       console.error(error);
       setError("No se pudieron cargar los pedidos.");
     } finally {
-      setLoading(false);
+      if (!silencioso) setLoading(false);
     }
   }
 
@@ -326,6 +332,17 @@ function Pedidos() {
     }
   }
 
+  usePedidosRealtime((evento: PedidoEvento) => {
+    console.info("Pedido actualizado en tiempo real:", evento);
+
+    void Promise.all([
+      cargarPedidosPorEstado(estadoActivo, true),
+      cargarContadores(),
+    ]).then(() => {
+      refrescarStockCritico();
+    });
+  });
+
   async function handlePedidoCreado() {
     setEstadoActivo("PENDIENTE");
 
@@ -355,6 +372,13 @@ function Pedidos() {
 
   return (
     <section className="orders-page">
+      <div className="orders-mobile-heading">
+        <div>
+          <span>Bien Criollas</span>
+          <h1>Pedidos de hoy</h1>
+        </div>
+      </div>
+
       <div className="orders-hero">
         <div className="orders-hero-text">
           <p className="orders-eyebrow">Pedidos del día</p>

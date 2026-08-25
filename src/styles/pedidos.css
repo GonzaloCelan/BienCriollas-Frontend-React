@@ -88,9 +88,82 @@
 
 .orders-toolbar {
   display: flex;
-  align-items: flex-start;
+  align-items: flex-end;
+  justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
+}
+
+.orders-channel-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.orders-channel-filter__label {
+  color: #64748b;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.orders-channel-filter__options {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+}
+
+.orders-channel-filter__button {
+  position: relative;
+  min-height: 34px;
+  padding: 0 0 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 0;
+  background: transparent;
+  color: #64748b;
+  font-family: "Manrope", system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 850;
+  text-align: left;
+  cursor: pointer;
+  outline: none;
+  transition:
+    color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.orders-channel-filter__button:focus-visible {
+  border-radius: 3px;
+  box-shadow: 0 0 0 3px rgba(243, 67, 67, 0.14);
+}
+
+.orders-channel-filter__button:hover {
+  color: #1f2937;
+}
+
+.orders-channel-filter__button.is-active {
+  color: #ef233c;
+}
+
+.orders-channel-filter__button::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  border-radius: 999px;
+  background: #ef233c;
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 0.18s ease;
+}
+
+.orders-channel-filter__button.is-active::after {
+  transform: scaleX(1);
 }
 
 .orders-new-button .app-button__icon {
@@ -200,6 +273,22 @@ body.dark-mode .orders-primary-btn:hover {
 
 body.dark-mode .orders-primary-btn:active {
   transform: translateY(-1px);
+}
+
+body.dark-mode .orders-channel-filter__label {
+  color: #94a3b8;
+}
+
+body.dark-mode .orders-channel-filter__button {
+  color: #94a3b8;
+}
+
+body.dark-mode .orders-channel-filter__button:hover {
+  color: #f8fafc;
+}
+
+body.dark-mode .orders-channel-filter__button.is-active {
+  color: #ff6b6b;
 }
 
 /* ERROR OSCURO */
@@ -538,7 +627,7 @@ body.dark-mode .orders-page label {
 
 @media (max-width: 600px) {
   .orders-stats {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   .orders-toolbar {

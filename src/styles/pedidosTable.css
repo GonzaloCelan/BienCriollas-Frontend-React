@@ -254,6 +254,17 @@
   color: #94a3b8;
 }
 
+.orders-platform-number {
+  color: #ef233c;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+}
+
+.orders-platform-cell--empty .orders-platform-number {
+  color: #94a3b8;
+}
+
 /* ESTADOS */
 .orders-status {
   min-width: 94px;
@@ -554,6 +565,10 @@ body.dark-mode .orders-schedule-value {
   color: #94a3b8;
 }
 
+body.dark-mode .orders-platform-number {
+  color: #ff6b6b;
+}
+
 body.dark-mode .orders-total-price {
   color: #f8fafc;
 }
@@ -713,8 +728,30 @@ body.dark-mode .orders-payment-pill--clickable:hover:not(:disabled) {
 }
 
 /* RESPONSIVE */
-@media (max-width: 900px) {
+@media (min-width: 761px) and (max-width: 900px) {
   .orders-table--floating {
     min-width: 1040px;
+  }
+}
+
+@media (max-width: 760px) {
+  .orders-table-wrapper {
+    overflow: visible;
+  }
+
+  .orders-table--floating {
+    min-width: 0;
+  }
+
+  .orders-table--floating .orders-state-row,
+  .orders-table--floating .orders-state-row td {
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  .orders-state-row .orders-state {
+    width: 100%;
+    white-space: normal;
   }
 }
