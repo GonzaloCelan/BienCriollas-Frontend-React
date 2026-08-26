@@ -6,7 +6,7 @@ import Sidebar, {
   type PedidoNotificacion,
 } from "./components/Sidebar";
 
-import { obtenerPedidosPorEstado } from "./services/pedidosApi";
+import { obtenerTodosLosPedidosPorEstado } from "./services/pedidosApi";
 
 import "./styles/sidebar.css";
 import "./styles/mobile.css";
@@ -85,9 +85,9 @@ function App() {
 
   async function cargarPedidosPendientesTopbar() {
     try {
-      const data = await obtenerPedidosPorEstado("PENDIENTE", 0, 50);
+	      const data = await obtenerTodosLosPedidosPorEstado("PENDIENTE", 50);
 
-      const pendientes = data.map((pedido) => ({
+	      const pendientes = data.pedidos.map((pedido) => ({
         idPedido: pedido.id,
         cliente: pedido.cliente || "Sin cliente",
         horaEntrega: obtenerHorarioPedido(pedido),

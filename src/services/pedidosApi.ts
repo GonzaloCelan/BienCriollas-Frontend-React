@@ -48,6 +48,14 @@ type PageResponse<T> = {
   size: number;
 };
 
+export type PaginaPedidos = {
+  pedidos: Pedido[];
+  totalElements: number;
+  totalPages: number;
+  page: number;
+  size: number;
+};
+
 export type PedidoDetalleResponseDTO = {
   cliente: string;
   idVariedad: number;
@@ -118,11 +126,11 @@ function mapPedido(pedido: PedidoResponseDTO): Pedido {
   };
 }
 
-export async function obtenerPedidosPorEstado(
+export async function obtenerPaginaPedidosPorEstado(
   estado: EstadoBackend,
   page = 0,
   size = 20
-): Promise<Pedido[]> {
+): Promise<PaginaPedidos> {
   const response = await fetch(
     `${API_URL}/api/v2/pedido/pedido-estado/${estado}?page=${page}&size=${size}`
   );
@@ -135,18 +143,66 @@ export async function obtenerPedidosPorEstado(
 
   const data: PageResponse<PedidoResponseDTO> = await response.json();
 
-  return data.content.map(mapPedido);
+  return {
+    pedidos: data.content.map(mapPedido),
+    totalElements: data.totalElements,
+    totalPages: data.totalPages,
+    page: data.number,
+    size: data.size,
+  };
+}
+
+export async function obtenerPedidosPorEstado(
+  estado: EstadoBackend,
+  page = 0,
+  size = 20
+): Promise<Pedido[]> {
+  const pagina = await obtenerPaginaPedidosPorEstado(estado, page, size);
+  return pagina.pedidos;
+}
+
+export async function obtenerTodosLosPedidosPorEstado(
+  estado: EstadoBackend,
+  size = 50
+): Promise<{ pedidos: Pedido[]; totalElements: number }> {
+  const primeraPagina = await obtenerPaginaPedidosPorEstado(estado, 0, size);
+
+  if (primeraPagina.totalPages <= 1) {
+    return {
+      pedidos: primeraPagina.pedidos,
+      totalElements: primeraPagina.totalElements,
+    };
+  }
+
+  const paginasRestantes = await Promise.all(
+    Array.from({ length: primeraPagina.totalPages - 1 }, (_, index) =>
+      obtenerPaginaPedidosPorEstado(estado, index + 1, size)
+    )
+  );
+
+  return {
+    pedidos: [
+      ...primeraPagina.pedidos,
+      ...paginasRestantes.flatMap((pagina) => pagina.pedidos),
+    ],
+    totalElements: primeraPagina.totalElements,
+  };
 }
 
 export async function obtenerPedidosDelDia(): Promise<Pedido[]> {
   const [pendientes, preparados, entregados, cancelados] = await Promise.all([
-    obtenerPedidosPorEstado("PENDIENTE"),
-    obtenerPedidosPorEstado("PREPARADO"),
-    obtenerPedidosPorEstado("ENTREGADO"),
-    obtenerPedidosPorEstado("CANCELADO"),
+    obtenerTodosLosPedidosPorEstado("PENDIENTE"),
+    obtenerTodosLosPedidosPorEstado("PREPARADO"),
+    obtenerTodosLosPedidosPorEstado("ENTREGADO"),
+    obtenerTodosLosPedidosPorEstado("CANCELADO"),
   ]);
 
-  return [...pendientes, ...preparados, ...entregados, ...cancelados];
+  return [
+    ...pendientes.pedidos,
+    ...preparados.pedidos,
+    ...entregados.pedidos,
+    ...cancelados.pedidos,
+  ];
 }
 
 export async function actualizarEstadoPedidoApi(
@@ -233,34 +289,27 @@ export async function obtenerDetallePedidoApi(
 export async function obtenerPedidosPendientesNotificacion(): Promise<
   PedidoNotificacionDTO[]
 > {
-  const response = await fetch(
-    `${API_URL}/api/v2/pedido/pedido-estado/PENDIENTE?page=0&size=20`
-  );
+  const data = await obtenerTodosLosPedidosPorEstado("PENDIENTE");
 
-  if (!response.ok) {
-    throw new Error(
-      `Error al obtener pedidos pendientes. Status: ${response.status}`
-    );
-  }
-
-  const data: PageResponse<PedidoResponseDTO> = await response.json();
-
-  return data.content.map((pedido) => ({
-    idPedido: pedido.idPedido,
-    cliente: pedido.cliente,
-    horaEntrega: formatearHorario(pedido.horaEntrega),
-    total: Number(pedido.totalPedido ?? 0),
+  return data.pedidos.map((pedido) => ({
+	    idPedido: pedido.id,
+	    cliente: pedido.cliente,
+	    horaEntrega: pedido.horario,
+	    total: Number(pedido.total ?? 0),
   }));
 }
 
 export async function actualizarTipoPagoPedidoApi(
   idPedido: number,
-  nuevoPago: TipoPagoBackend
+  nuevoPago: TipoPagoBackend,
+  montos?: { montoEfectivo: number; montoTransferencia: number }
 ): Promise<boolean> {
   const response = await fetch(
     `${API_URL}/api/v2/pedido/actualizar-pago/${idPedido}/${nuevoPago}`,
     {
       method: "PUT",
+      headers: montos ? { "Content-Type": "application/json" } : undefined,
+      body: montos ? JSON.stringify(montos) : undefined,
     }
   );
 
