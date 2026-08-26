@@ -19,7 +19,8 @@ import cancelledAnimation from "../assets/lotties/cancel.json";
 import {
   actualizarEstadoPedidoApi,
   actualizarTipoPagoPedidoApi,
-  obtenerPedidosPorEstado,
+  obtenerPaginaPedidosPorEstado,
+  obtenerTodosLosPedidosPorEstado,
   obtenerDetallePedidoApi,
   type EstadoBackend,
   type TipoPagoBackend,
@@ -143,12 +144,12 @@ function Pedidos() {
       if (!silencioso) setLoading(true);
       setError("");
 
-      const data = await obtenerPedidosPorEstado(estado, 0, 50);
-      setPedidos(data);
+	      const data = await obtenerTodosLosPedidosPorEstado(estado, 50);
+	      setPedidos(data.pedidos);
 
-      setCounts((prev) => ({
-        ...prev,
-        [getCountKey(estado)]: data.length,
+	      setCounts((prev) => ({
+	        ...prev,
+	        [getCountKey(estado)]: data.totalElements,
       }));
     } catch (error) {
       console.error(error);
@@ -162,17 +163,17 @@ function Pedidos() {
     try {
       const [pendientes, preparados, entregados, cancelados] =
         await Promise.all([
-          obtenerPedidosPorEstado("PENDIENTE", 0, 50),
-          obtenerPedidosPorEstado("PREPARADO", 0, 50),
-          obtenerPedidosPorEstado("ENTREGADO", 0, 50),
-          obtenerPedidosPorEstado("CANCELADO", 0, 50),
-        ]);
+	          obtenerPaginaPedidosPorEstado("PENDIENTE", 0, 1),
+	          obtenerPaginaPedidosPorEstado("PREPARADO", 0, 1),
+	          obtenerPaginaPedidosPorEstado("ENTREGADO", 0, 1),
+	          obtenerPaginaPedidosPorEstado("CANCELADO", 0, 1),
+	        ]);
 
-      setCounts({
-        pendientes: pendientes.length,
-        preparados: preparados.length,
-        entregados: entregados.length,
-        cancelados: cancelados.length,
+	      setCounts({
+	        pendientes: pendientes.totalElements,
+	        preparados: preparados.totalElements,
+	        entregados: entregados.totalElements,
+	        cancelados: cancelados.totalElements,
       });
     } catch (error) {
       console.error(error);
