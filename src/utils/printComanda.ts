@@ -8,6 +8,17 @@ type ComandaItem = {
 const DIRECCION_LOCAL = "Brasil Oeste 2388";
 const CEL_LOCAL = "+549244449895";
 const PRINTABLE_MM = 56;
+const LOGO_COMANDA_PATH =
+  "/icons/logo_bien_criollas_transparente_negro_fino.png";
+
+function precargarLogoComanda() {
+  if (typeof window === "undefined") return;
+
+  const logo = new Image();
+  logo.src = new URL(LOGO_COMANDA_PATH, window.location.origin).href;
+}
+
+precargarLogoComanda();
 
 function escapeHtml(value: string) {
   return value
@@ -38,6 +49,9 @@ export function imprimirComandaPedido(pedido: Pedido, items: ComandaItem[]) {
   const tipoVentaLabel = escapeHtml(pedido.tipoVenta || "-");
   const tipoPagoLabel = escapeHtml(pedido.pago || "-");
   const totalPedidoFmt = formatMoney(pedido.total);
+  const logoUrl = escapeHtml(
+    new URL(LOGO_COMANDA_PATH, window.location.origin).href
+  );
 
   const totalEmpanadas = items.reduce(
     (acc, item) => acc + Number(item.cantidad || 0),
@@ -68,10 +82,10 @@ export function imprimirComandaPedido(pedido: Pedido, items: ComandaItem[]) {
   <!DOCTYPE html>
   <html>
     <head>
-      <head>
   <meta charset="UTF-8" />
   <title>Comanda Pedido ${numeroPedido}</title>
 
+  <link rel="preload" href="${logoUrl}" as="image" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
@@ -251,7 +265,7 @@ export function imprimirComandaPedido(pedido: Pedido, items: ComandaItem[]) {
       <div class="logo-wrap">
           <img
   class="logo"
-  src="/icons/logo_bien_criollas_transparente_negro_fino.png"
+  src="${logoUrl}"
   alt="Bien Criollas"
 />
         </div>
@@ -308,10 +322,49 @@ export function imprimirComandaPedido(pedido: Pedido, items: ComandaItem[]) {
       </div>
 
       <script>
-        setTimeout(() => {
+        async function esperarImagen(imagen) {
+          if (!imagen) return;
+
+          if (imagen.complete && imagen.naturalWidth > 0) {
+            if (typeof imagen.decode === "function") {
+              await imagen.decode().catch(() => undefined);
+            }
+            return;
+          }
+
+          await new Promise((resolve) => {
+            imagen.addEventListener("load", resolve, { once: true });
+            imagen.addEventListener("error", resolve, { once: true });
+          });
+
+          if (typeof imagen.decode === "function") {
+            await imagen.decode().catch(() => undefined);
+          }
+        }
+
+        async function imprimirCuandoEsteLista() {
+          const logo = document.querySelector(".logo");
+          const fuentesListas = document.fonts?.ready ?? Promise.resolve();
+          const recursosListos = Promise.all([
+            esperarImagen(logo),
+            fuentesListas,
+          ]);
+          const tiempoMaximo = new Promise((resolve) =>
+            setTimeout(resolve, 3000)
+          );
+
+          await Promise.race([recursosListos, tiempoMaximo]);
+          await new Promise((resolve) =>
+            requestAnimationFrame(() => requestAnimationFrame(resolve))
+          );
+
           window.print();
-          window.close();
-        }, 150);
+          window.setTimeout(() => window.close(), 250);
+        }
+
+        window.addEventListener("load", imprimirCuandoEsteLista, {
+          once: true,
+        });
       </script>
     </body>
   </html>
