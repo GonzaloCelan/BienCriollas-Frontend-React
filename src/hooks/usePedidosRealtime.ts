@@ -4,6 +4,7 @@ import SockJS from "sockjs-client";
 
 import { BACKEND_URL } from "../config/api";
 import type { EstadoBackend } from "../services/pedidosApi";
+import { obtenerAccessToken } from "../services/httpClient";
 
 export type PedidoEventoTipo = "CREADO" | "ACTUALIZADO" | "CANCELADO";
 
@@ -46,13 +47,18 @@ export function usePedidosRealtime(
   }, [onEvento]);
 
   useEffect(() => {
-    if (!BACKEND_URL) {
-      console.error("Falta configurar VITE_BACKEND_URL");
+    const token = obtenerAccessToken();
+
+    if (!BACKEND_URL || !token) {
+      console.error("No se puede conectar el WebSocket sin URL y sesión activa.");
       return;
     }
 
     const client = new Client({
       webSocketFactory: () => new SockJS(`${BACKEND_URL}/ws`),
+      connectHeaders: {
+        Authorization: `Bearer ${token}`,
+      },
       reconnectDelay: 5000,
       heartbeatIncoming: 10000,
       heartbeatOutgoing: 10000,

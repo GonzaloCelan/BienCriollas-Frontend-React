@@ -765,7 +765,8 @@ body.dark-mode .topbar__notifications-empty {
 
   .topbar__theme-btn,
   .topbar__icon-btn,
-  .topbar__notifications {
+  .topbar__notifications,
+  .topbar__account {
     width: 44px;
     height: 44px;
   }
@@ -808,7 +809,8 @@ body.dark-mode .topbar__notifications-empty {
 
   .topbar__theme-btn,
   .topbar__icon-btn,
-  .topbar__notifications {
+  .topbar__notifications,
+  .topbar__account {
     width: 42px;
     height: 42px;
   }
@@ -824,4 +826,93 @@ body.dark-mode .topbar__notifications-empty {
   .topbar__notifications-panel::before {
     display: none;
   }
+}
+.topbar__account {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+}
+
+.topbar__account-trigger {
+  color: #f34343;
+}
+
+.topbar__account-trigger--open {
+  color: #f34343;
+  background: rgba(243, 67, 67, 0.08);
+}
+
+.topbar__account-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 500;
+  width: 220px;
+  padding: 7px;
+  border: 1px solid #dde3eb;
+  border-radius: 9px;
+  background: #fff;
+  box-shadow: 0 18px 50px rgba(22, 30, 45, 0.19);
+}
+
+.topbar__account-summary {
+  display: grid;
+  gap: 2px;
+  padding: 9px 10px 11px;
+  border-bottom: 1px solid #edf0f4;
+}
+
+.topbar__account-summary strong {
+  color: #243046;
+  font-size: 12px;
+}
+
+.topbar__account-summary span {
+  color: #8a96a8;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.topbar__account-menu > button {
+  width: 100%;
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 6px;
+  color: #536077;
+  background: transparent;
+  font-size: 10px;
+  font-weight: 850;
+  text-align: left;
+}
+
+.topbar__account-menu > button:hover {
+  background: #f5f7fa;
+}
+
+.topbar__account-menu > .topbar__account-logout {
+  color: #c02e3b;
+}
+
+.dark-mode .topbar__account-menu {
+  border-color: #293442;
+  color: #d9e1ec;
+  background: #111923;
+}
+
+.dark-mode .topbar__account-summary strong {
+  color: #eef2f8;
+}
+
+.dark-mode .topbar__account-summary {
+  border-color: #293442;
+}
+
+.dark-mode .topbar__account-menu > button:hover {
+  background: #1a2430;
 }

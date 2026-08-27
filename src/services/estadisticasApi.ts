@@ -1,4 +1,5 @@
 import { API_URL } from "../config/api";
+import { apiFetch } from "./httpClient";
 
 export type PeriodoEstadistica = "hoy" | "ultimos7" | "mes";
 
@@ -124,7 +125,7 @@ export async function obtenerResumenEstadisticas(
     hasta,
   });
 
-  const response = await fetch(
+  const response = await apiFetch(
     `${API_URL}/api/v2/estadisticas/resumen?${params.toString()}`
   );
 

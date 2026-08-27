@@ -1,4 +1,5 @@
 import { API_URL } from "../config/api";
+import { apiFetch } from "./httpClient";
 
 export type StockApiResponse = {
   id_variedad: number;
@@ -78,7 +79,7 @@ async function handleResponse(response: Response, errorMessage: string) {
 }
 
 export const obtenerStockActual = async (): Promise<StockItem[]> => {
-  const response = await fetch(`${API_URL}/api/v2/stock/obtener-stock-actual`);
+  const response = await apiFetch(`${API_URL}/api/v2/stock/obtener-stock-actual`);
 
   await handleResponse(response, "Error al obtener el stock actual");
 
@@ -112,7 +113,7 @@ export const actualizarStock = async (
 
   console.log("Payload producción enviado al back:", payload);
 
-  const response = await fetch(`${API_URL}/api/v2/stock/actualizar`, {
+  const response = await apiFetch(`${API_URL}/api/v2/stock/actualizar`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -126,7 +127,7 @@ export const actualizarStock = async (
 export const registrarPerdidas = async (
   perdidas: PerdidaEmpanadaRequest[]
 ): Promise<void> => {
-  const response = await fetch(`${API_URL}/api/v2/stock/perdidas`, {
+  const response = await apiFetch(`${API_URL}/api/v2/stock/perdidas`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -140,7 +141,7 @@ export const registrarPerdidas = async (
 export const ajustarStockDisponible = async (
   ajustes: AjusteStockRequest[]
 ): Promise<void> => {
-  const response = await fetch(`${API_URL}/api/v2/stock/ajustar`, {
+  const response = await apiFetch(`${API_URL}/api/v2/stock/ajustar`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

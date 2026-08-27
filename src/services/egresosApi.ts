@@ -1,4 +1,5 @@
 import { API_URL } from "../config/api";
+import { apiFetch } from "./httpClient";
 
 export type TipoEgreso = "PERSONAL" | "PRODUCCION" | "OTROS";
 
@@ -60,7 +61,7 @@ async function handleResponse<T>(
 export async function registrarEgreso(
   payload: EgresoTipoDTO
 ): Promise<Egreso> {
-  const response = await fetch(`${API_URL}/api/v2/egreso/registrar`, {
+  const response = await apiFetch(`${API_URL}/api/v2/egreso/registrar`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -72,7 +73,7 @@ export async function registrarEgreso(
 }
 
 export async function obtenerEgresoAcumulado(): Promise<EgresoResponseDTO> {
-  const response = await fetch(`${API_URL}/api/v2/egreso/acumulado`);
+  const response = await apiFetch(`${API_URL}/api/v2/egreso/acumulado`);
 
   return handleResponse<EgresoResponseDTO>(
     response,
@@ -81,7 +82,7 @@ export async function obtenerEgresoAcumulado(): Promise<EgresoResponseDTO> {
 }
 
 export async function obtenerEgresosDiarios(): Promise<Egreso[]> {
-  const response = await fetch(`${API_URL}/api/v2/egreso/diario`);
+  const response = await apiFetch(`${API_URL}/api/v2/egreso/diario`);
 
   return handleResponse<Egreso[]>(response, "Error al obtener egresos diarios");
 }
@@ -96,7 +97,7 @@ export async function listarEgresosPorTipo(params: {
   query.set("page", String(params.page ?? 0));
   query.set("size", String(params.size ?? 10));
 
-  const response = await fetch(
+  const response = await apiFetch(
     `${API_URL}/api/v2/egreso/tipo/${params.tipo}?${query.toString()}`
   );
 
@@ -109,7 +110,7 @@ export async function listarEgresosPorTipo(params: {
 export async function obtenerPorcentajesEgresos(): Promise<
   EgresosPorcentajeDTO[]
 > {
-  const response = await fetch(`${API_URL}/api/v2/egreso/porcentajes`);
+  const response = await apiFetch(`${API_URL}/api/v2/egreso/porcentajes`);
 
   return handleResponse<EgresosPorcentajeDTO[]>(
     response,
@@ -126,7 +127,7 @@ export async function obtenerTotalesPorTipo(params: {
   query.set("anio", String(params.anio));
   query.set("mes", String(params.mes));
 
-  const response = await fetch(
+  const response = await apiFetch(
     `${API_URL}/api/v2/egreso/totales-tipo?${query.toString()}`
   );
 
@@ -154,7 +155,7 @@ export async function listarHistorialEgresos(params: {
     query.set("tipo", params.tipo);
   }
 
-  const response = await fetch(
+  const response = await apiFetch(
     `${API_URL}/api/v2/egreso/historial?${query.toString()}`
   );
 
@@ -165,7 +166,7 @@ export async function listarHistorialEgresos(params: {
 }
 
 export async function obtenerUltimosMovimientos(): Promise<Egreso[]> {
-  const response = await fetch(`${API_URL}/api/v2/egreso/ultimos`);
+  const response = await apiFetch(`${API_URL}/api/v2/egreso/ultimos`);
 
   return handleResponse<Egreso[]>(
     response,

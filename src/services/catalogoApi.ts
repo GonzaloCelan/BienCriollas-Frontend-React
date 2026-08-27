@@ -1,4 +1,5 @@
 import { API_URL } from "../config/api";
+import { apiFetch } from "./httpClient";
 
 export type CatalogoItem = {
   id_variedad: number;
@@ -44,7 +45,7 @@ export function obtenerCatalogoApi(
     controller.abort();
   }, CATALOGO_TIMEOUT_MS);
 
-  catalogoPromise = fetch(`${API_URL}/api/v2/catalogo`, {
+  catalogoPromise = apiFetch(`${API_URL}/api/v2/catalogo`, {
     signal: controller.signal,
   })
     .then(async (response) => {
@@ -72,7 +73,7 @@ export async function actualizarPreciosCatalogoApi(
   idVariedad: number,
   precios: ActualizarPreciosCatalogoPayload
 ): Promise<void> {
-  const response = await fetch(`${API_URL}/api/v2/catalogo/${idVariedad}`, {
+  const response = await apiFetch(`${API_URL}/api/v2/catalogo/${idVariedad}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",

@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 
 import { useCatalogo } from "../context/CatalogoContext";
+import { useAuth } from "../context/useAuth";
 import type { CatalogoItem } from "../services/catalogoApi";
 import AppConfirmDialog from "../components/AppConfirmDialog";
 import {
@@ -62,6 +63,7 @@ function formatMoney(value: number) {
 }
 
 function Catalogo() {
+  const { esAdministrador } = useAuth();
   const {
     catalogo,
     catalogoLoading,
@@ -401,7 +403,7 @@ function Catalogo() {
                 <th>Unidad</th>
                 <th>Media docena</th>
                 <th>Docena</th>
-                <th>Acciones</th>
+                {esAdministrador && <th>Acciones</th>}
               </tr>
             </thead>
 
@@ -483,7 +485,7 @@ function Catalogo() {
                       formatMoney(item.precioDocena)
                     )}
                   </td>
-                  <td data-label="Acciones">
+                  {esAdministrador && <td data-label="Acciones">
                     <div className="catalog-table__actions">
                       {isEditing ? (
                         <>
@@ -521,7 +523,7 @@ function Catalogo() {
                         </button>
                       )}
                     </div>
-                  </td>
+                  </td>}
                 </tr>
                 );
               })}

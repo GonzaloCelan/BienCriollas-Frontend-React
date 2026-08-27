@@ -1,5 +1,6 @@
 import type { Pedido, EstadoPedidoFrontend } from "../components/PedidosTable";
 import { API_URL } from "../config/api";
+import { apiFetch } from "./httpClient";
 
 export type EstadoBackend =
   | "PENDIENTE"
@@ -131,7 +132,7 @@ export async function obtenerPaginaPedidosPorEstado(
   page = 0,
   size = 20
 ): Promise<PaginaPedidos> {
-  const response = await fetch(
+  const response = await apiFetch(
     `${API_URL}/api/v2/pedido/pedido-estado/${estado}?page=${page}&size=${size}`
   );
 
@@ -209,7 +210,7 @@ export async function actualizarEstadoPedidoApi(
   idPedido: number,
   nuevoEstado: EstadoBackend
 ): Promise<boolean> {
-  const response = await fetch(
+  const response = await apiFetch(
     `${API_URL}/api/v2/pedido/actualizar-estado/${idPedido}/${nuevoEstado}`,
     {
       method: "PUT",
@@ -228,7 +229,7 @@ export async function actualizarEstadoPedidoApi(
 export async function crearPedidoApi(
   pedido: PedidoRequestDTO
 ): Promise<Pedido> {
-  const response = await fetch(`${API_URL}/api/v2/pedido/crear`, {
+  const response = await apiFetch(`${API_URL}/api/v2/pedido/crear`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -249,7 +250,7 @@ export async function actualizarPedidoApi(
   idPedido: number,
   pedido: PedidoRequestDTO
 ): Promise<void> {
-  const response = await fetch(
+  const response = await apiFetch(
     `${API_URL}/api/v2/pedido/actualizar/${idPedido}`,
     {
       method: "PUT",
@@ -268,7 +269,7 @@ export async function actualizarPedidoApi(
 export async function obtenerDetallePedidoApi(
   idPedido: number
 ): Promise<Pedido["items"]> {
-  const response = await fetch(`${API_URL}/api/v2/pedido/detalle/${idPedido}`);
+  const response = await apiFetch(`${API_URL}/api/v2/pedido/detalle/${idPedido}`);
 
   if (!response.ok) {
     throw new Error(
@@ -304,7 +305,7 @@ export async function actualizarTipoPagoPedidoApi(
   nuevoPago: TipoPagoBackend,
   montos?: { montoEfectivo: number; montoTransferencia: number }
 ): Promise<boolean> {
-  const response = await fetch(
+  const response = await apiFetch(
     `${API_URL}/api/v2/pedido/actualizar-pago/${idPedido}/${nuevoPago}`,
     {
       method: "PUT",

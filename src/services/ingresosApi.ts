@@ -1,4 +1,5 @@
 import { API_URL } from "../config/api";
+import { apiFetch } from "./httpClient";
 
 export type PeriodoIngreso = "hoy" | "ultimos7" | "mes";
 
@@ -120,7 +121,7 @@ export async function obtenerResumenIngresos(
     hasta,
   });
 
-  const response = await fetch(
+  const response = await apiFetch(
     `${API_URL}/api/v2/ingresos/resumen?${params.toString()}`
   );
 
@@ -132,7 +133,7 @@ export async function obtenerResumenIngresos(
 export async function registrarLiquidacionPedidosYa(
   request: LiquidacionPedidosYaRequest
 ): Promise<void> {
-  const response = await fetch(
+  const response = await apiFetch(
     `${API_URL}/api/v2/ingresos/liquidaciones-pedidos-ya`,
     {
       method: "POST",
