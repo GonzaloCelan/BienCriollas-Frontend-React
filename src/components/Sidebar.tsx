@@ -48,6 +48,7 @@ type MenuItem = {
   page: AppPage;
   enabled: boolean;
   adminOnly?: boolean;
+  hidden?: boolean;
 };
 
 const menuItems: MenuItem[] = [
@@ -57,7 +58,7 @@ const menuItems: MenuItem[] = [
   { label: "Ingresos", page: "ingresos", enabled: true, adminOnly: true },
   { label: "Egresos", page: "egresos", enabled: true, adminOnly: true },
   { label: "Estadísticas", page: "estadisticas", enabled: true, adminOnly: true },
-  { label: "Usuarios", page: "usuarios", enabled: true, adminOnly: true },
+  { label: "Usuarios", page: "usuarios", enabled: true, adminOnly: true, hidden: true },
 ];
 
 function formatMoney(value?: number | null) {
@@ -86,7 +87,8 @@ function Sidebar({
   const [activePill, setActivePill] = useState({ left: 0, width: 0, ready: false });
 
   const visibleMenuItems = menuItems.filter(
-    (item) => !item.adminOnly || usuario.rol === "ADMINISTRADOR"
+    (item) =>
+      !item.hidden && (!item.adminOnly || usuario.rol === "ADMINISTRADOR")
   );
   const cantidadPendientes = pedidosPendientes.length;
   const tienePendientes = cantidadPendientes > 0;
