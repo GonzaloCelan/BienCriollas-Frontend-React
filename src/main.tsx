@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import App from "./App";
 
 import "./styles/global.css";
+import "goey-toast/styles.css";
 
 import { registerSW } from "virtual:pwa-register";
 

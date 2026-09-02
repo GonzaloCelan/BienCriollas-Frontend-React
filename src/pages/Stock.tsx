@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
+import { gooeyToast } from "goey-toast";
 
 import StockCard from "../components/StockCard";
 import AppConfirmDialog from "../components/AppConfirmDialog";
+import { TOAST_RAPIDO_TIMING } from "../config/toast";
 
 import {
   obtenerStockActual,
@@ -208,7 +210,11 @@ function Stock() {
     const hayCantidades = items.some((item) => item.cantidad > 0);
 
     if (!hayCantidades) {
-      alert("No cargaste cantidades en ninguna variedad.");
+      gooeyToast.warning("Faltan cantidades", {
+        description: "Cargá al menos una variedad para continuar.",
+        timing: TOAST_RAPIDO_TIMING,
+        showTimestamp: false,
+      });
       return;
     }
 
@@ -225,7 +231,11 @@ function Stock() {
 
     if (payload.length === 0) {
       setConfirmOpen(false);
-      alert("No cargaste cantidades en ninguna variedad.");
+      gooeyToast.warning("Faltan cantidades", {
+        description: "Cargá al menos una variedad para continuar.",
+        timing: TOAST_RAPIDO_TIMING,
+        showTimestamp: false,
+      });
       return;
     }
 
@@ -254,19 +264,55 @@ function Stock() {
       await cargarStock();
       limpiarCantidades();
       setConfirmOpen(false);
+
+      if (mode === "produccion") {
+        gooeyToast.success("Producción cargada", {
+          description: `Se sumaron ${totalIngresado} empanadas al stock.`,
+          timing: TOAST_RAPIDO_TIMING,
+          showTimestamp: false,
+        });
+      }
+
+      if (mode === "mermas") {
+        gooeyToast.success("Pérdidas registradas", {
+          description: `Se descontaron ${totalIngresado} empanadas del stock.`,
+          timing: TOAST_RAPIDO_TIMING,
+          showTimestamp: false,
+        });
+      }
+
+      if (mode === "conteo") {
+        gooeyToast.success("Conteo real aplicado", {
+          description: `Se ajustaron ${payload.length} variedades según el conteo ingresado.`,
+          timing: TOAST_RAPIDO_TIMING,
+          showTimestamp: false,
+        });
+      }
     } catch (error) {
       console.error(error);
 
       if (mode === "produccion") {
-        alert("No se pudo guardar la producción.");
+        gooeyToast.error("No se pudo guardar la producción", {
+          description: "El stock no fue modificado.",
+          timing: TOAST_RAPIDO_TIMING,
+          showTimestamp: false,
+        });
       }
 
       if (mode === "mermas") {
-        alert("No se pudieron registrar las pérdidas.");
+        gooeyToast.error("No se pudieron registrar las pérdidas", {
+          description: "El stock no fue modificado.",
+          timing: TOAST_RAPIDO_TIMING,
+          showTimestamp: false,
+        });
       }
 
       if (mode === "conteo") {
-        alert("No se pudo aplicar el conteo real.");
+        gooeyToast.error("No se pudo aplicar el conteo real", {
+          description: "El stock mantiene los valores anteriores.",
+          timing: TOAST_RAPIDO_TIMING,
+          showTimestamp: false,
+        });
       }
     } finally {
       setSaving(false);

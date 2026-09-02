@@ -6,6 +6,7 @@ import {
   useState,
 } from "react";
 import { X } from "lucide-react";
+import { GooeyToaster } from "goey-toast";
 
 import SplashScreen from "./components/SplashScreen";
 import LoginScreen, { SessionLoadingScreen } from "./components/LoginScreen";
@@ -154,6 +155,17 @@ function AuthenticatedApp({
 
   return (
     <CatalogoProvider>
+      <GooeyToaster
+        position="top-left"
+        theme={darkMode ? "dark" : "light"}
+        duration={2000}
+        offset={20}
+        closeButton="top-right"
+        preset="bouncy"
+        showProgress
+        showTimestamp={false}
+      />
+
       <div className="app-shell">
         <Sidebar
           collapsed={collapsed}

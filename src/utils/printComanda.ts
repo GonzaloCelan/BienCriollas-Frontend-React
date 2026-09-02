@@ -43,7 +43,10 @@ function getFechaActual() {
   }).format(new Date());
 }
 
-export function imprimirComandaPedido(pedido: Pedido, items: ComandaItem[]) {
+export function imprimirComandaPedido(
+  pedido: Pedido,
+  items: ComandaItem[]
+): Promise<void> {
   const numeroPedido = pedido.id;
   const cliente = escapeHtml(pedido.cliente || "Sin cliente");
   const tipoVentaLabel = escapeHtml(pedido.tipoVenta || "-");
@@ -374,10 +377,25 @@ export function imprimirComandaPedido(pedido: Pedido, items: ComandaItem[]) {
 
   if (!printWindow) {
     alert("El navegador bloqueó la ventana de impresión.");
-    return;
+    return Promise.resolve();
   }
 
   printWindow.document.open();
   printWindow.document.write(html);
   printWindow.document.close();
+
+  return new Promise((resolve) => {
+    const closedCheck = window.setInterval(() => {
+      if (!printWindow.closed) return;
+
+      window.clearInterval(closedCheck);
+      window.clearTimeout(safetyTimeout);
+      resolve();
+    }, 150);
+
+    const safetyTimeout = window.setTimeout(() => {
+      window.clearInterval(closedCheck);
+      resolve();
+    }, 10 * 60 * 1000);
+  });
 }

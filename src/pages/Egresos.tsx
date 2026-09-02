@@ -1,5 +1,7 @@
 import AppConfirmDialog from "../components/AppConfirmDialog";
 import Kpi from "../components/Kpi";
+import { TOAST_RAPIDO_TIMING } from "../config/toast";
+import { gooeyToast } from "goey-toast";
 
 import {
   CalendarDays,
@@ -310,12 +312,20 @@ function Egresos() {
     const montoNumber = parseMoney(monto);
 
     if (!descripcionTrim) {
-      alert("Cargá una descripción.");
+      gooeyToast.warning("Falta la descripción", {
+        description: "Indicá el motivo del egreso para continuar.",
+        timing: TOAST_RAPIDO_TIMING,
+        showTimestamp: false,
+      });
       return;
     }
 
     if (montoNumber <= 0) {
-      alert("Cargá un monto válido.");
+      gooeyToast.warning("Monto inválido", {
+        description: "Cargá un monto mayor a cero.",
+        timing: TOAST_RAPIDO_TIMING,
+        showTimestamp: false,
+      });
       return;
     }
 
@@ -345,9 +355,19 @@ function Egresos() {
       setPage(0);
 
       await Promise.all([cargarDatosGenerales(), cargarHistorial(0)]);
+
+      gooeyToast.success("Egreso registrado", {
+        description: `${descripcionTrim}: ${formatMoney(montoNumber)}.`,
+        timing: TOAST_RAPIDO_TIMING,
+        showTimestamp: false,
+      });
     } catch (error) {
       console.error(error);
-      alert("No se pudo registrar el egreso.");
+      gooeyToast.error("No se pudo registrar el egreso", {
+        description: "El movimiento no fue guardado.",
+        timing: TOAST_RAPIDO_TIMING,
+        showTimestamp: false,
+      });
     } finally {
       setSaving(false);
     }

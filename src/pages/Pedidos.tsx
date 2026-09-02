@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
+import { gooeyToast } from "goey-toast";
+import { TOAST_RAPIDO_TIMING } from "../config/toast";
 
 import KpiCard from "../components/KpiCard";
 import PedidosTable from "../components/PedidosTable";
 import NewOrderDrawer from "../components/NewOrderDrawer";
 import CriticalStockPanel from "../components/CriticalStockPanel";
-import OrderToast from "../components/OrderToast";
 import AppButton from "../components/AppButton";
 import AppConfirmDialog from "../components/AppConfirmDialog";
 
@@ -34,7 +35,6 @@ import "../styles/pedidos.css";
 import "../styles/kpiCard.css";
 import "../styles/newOrderDrawer.css";
 import "../styles/criticalStockPanel.css";
-import "../styles/orderToast.css";
 import "../styles/ordersStates.css";
 import "../styles/pedidosTable.css";
 import "../styles/appButton.css";
@@ -110,11 +110,6 @@ function Pedidos() {
   const [estadoActivo, setEstadoActivo] =
     useState<EstadoBackend>("PENDIENTE");
   const [newOrderOpen, setNewOrderOpen] = useState(false);
-  const [toastOpen, setToastOpen] = useState(false);
-  const [toastTitle, setToastTitle] = useState("Pedido creado");
-  const [toastMessage, setToastMessage] = useState(
-    "El pedido fue registrado correctamente."
-  );
   const [pedidoEditando, setPedidoEditando] = useState<Pedido | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [pedidoACancelar, setPedidoACancelar] = useState<Pedido | null>(null);
@@ -180,16 +175,6 @@ function Pedidos() {
     }
   }
 
-  function mostrarToast(title: string, message: string) {
-    setToastTitle(title);
-    setToastMessage(message);
-    setToastOpen(true);
-
-    window.setTimeout(() => {
-      setToastOpen(false);
-    }, 3200);
-  }
-
   useEffect(() => {
     cargarPedidosPorEstado(estadoActivo);
   }, [estadoActivo]);
@@ -222,9 +207,19 @@ function Pedidos() {
           [nuevoEstadoKey]: prev[nuevoEstadoKey] + 1,
         };
       });
+
+      gooeyToast.success("Estado actualizado", {
+        description: `Pedido #${pedido.id} pasó a ${nuevoEstadoFrontend}.`,
+        timing: TOAST_RAPIDO_TIMING,
+        showTimestamp: false,
+      });
     } catch (error) {
       console.error(error);
-      alert("No se pudo actualizar el estado del pedido.");
+      gooeyToast.error("No se pudo cambiar el estado", {
+        description: `El pedido #${pedido.id} no fue modificado.`,
+        timing: TOAST_RAPIDO_TIMING,
+        showTimestamp: false,
+      });
     }
   }
 
@@ -247,9 +242,19 @@ function Pedidos() {
             : item
         )
       );
+
+      gooeyToast.success("Medio de pago actualizado", {
+        description: `Pedido #${pedido.id}: ${nuevoPagoFrontend}.`,
+        timing: TOAST_RAPIDO_TIMING,
+        showTimestamp: false,
+      });
     } catch (error) {
       console.error(error);
-      alert("No se pudo cambiar el medio de pago del pedido.");
+      gooeyToast.error("No se pudo cambiar el pago", {
+        description: `El pedido #${pedido.id} mantiene su medio de pago anterior.`,
+        timing: TOAST_RAPIDO_TIMING,
+        showTimestamp: false,
+      });
     }
   }
 
@@ -261,7 +266,11 @@ function Pedidos() {
     const pedido = pedidos.find((item) => item.id === idPedido);
 
     if (!pedido) {
-      alert("No se encontró el pedido.");
+      gooeyToast.error("Pedido no encontrado", {
+        description: "Actualizá la lista e intentá nuevamente.",
+        timing: TOAST_RAPIDO_TIMING,
+        showTimestamp: false,
+      });
       return;
     }
 
@@ -293,11 +302,22 @@ function Pedidos() {
         };
       });
 
+      const pedidoCanceladoId = pedidoACancelar.id;
       setPedidoACancelar(null);
       refrescarStockCritico();
+
+      gooeyToast.success("Pedido cancelado", {
+        description: `El pedido #${pedidoCanceladoId} fue cancelado correctamente.`,
+        timing: TOAST_RAPIDO_TIMING,
+        showTimestamp: false,
+      });
     } catch (error) {
       console.error(error);
-      alert("No se pudo cancelar el pedido.");
+      gooeyToast.error("No se pudo cancelar el pedido", {
+        description: `El pedido #${pedidoACancelar.id} continúa en su estado anterior.`,
+        timing: TOAST_RAPIDO_TIMING,
+        showTimestamp: false,
+      });
     } finally {
       setCancelandoPedido(false);
     }
@@ -327,7 +347,11 @@ function Pedidos() {
       setNewOrderOpen(true);
     } catch (error) {
       console.error(error);
-      alert("No se pudieron cargar los datos del pedido para editarlo.");
+      gooeyToast.error("No se pudo abrir el pedido", {
+        description: `No se pudieron cargar los datos del pedido #${pedido.id}.`,
+        timing: TOAST_RAPIDO_TIMING,
+        showTimestamp: false,
+      });
     } finally {
       setEditingId(null);
     }
@@ -353,7 +377,13 @@ function Pedidos() {
     ]);
 
     refrescarStockCritico();
-    mostrarToast("Pedido creado", "El pedido fue registrado correctamente.");
+    gooeyToast.success("Pedido creado", {
+      description: "El pedido fue registrado correctamente.",
+      timing: TOAST_RAPIDO_TIMING,
+      showProgress: true,
+      showTimestamp: false,
+      preset: "bouncy",
+    });
   }
 
   async function handlePedidoActualizado() {
@@ -363,10 +393,11 @@ function Pedidos() {
     ]);
 
     refrescarStockCritico();
-    mostrarToast(
-      "Pedido actualizado",
-      "Los cambios se guardaron correctamente."
-    );
+    gooeyToast.success("Pedido actualizado", {
+      description: "Los cambios se guardaron correctamente.",
+      timing: TOAST_RAPIDO_TIMING,
+      showTimestamp: false,
+    });
   }
 
   const fechaPedidos = getFechaPedidosDelDia();
@@ -461,13 +492,6 @@ function Pedidos() {
         pedidoEditando={pedidoEditando}
         onCreated={handlePedidoCreado}
         onUpdated={handlePedidoActualizado}
-      />
-
-      <OrderToast
-        show={toastOpen}
-        title={toastTitle}
-        message={toastMessage}
-        onClose={() => setToastOpen(false)}
       />
 
       <AppConfirmDialog

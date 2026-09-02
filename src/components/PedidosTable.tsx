@@ -9,6 +9,8 @@ import {
   Trash2,
 } from "lucide-react";
 import { useState } from "react";
+import { gooeyToast } from "goey-toast";
+import { TOAST_RAPIDO_TIMING } from "../config/toast";
 
 import OrderDetailDrawer from "./OrderDetailDrawer";
 import OrdersEmptyState from "./OrdersEmptyState";
@@ -187,7 +189,11 @@ function PedidosTable({
     } catch (error) {
       console.error(error);
       setDetalleItems([]);
-      alert("No se pudo cargar el detalle del pedido.");
+      gooeyToast.error("No se pudo cargar el detalle", {
+        description: `No se pudo obtener la información del pedido #${pedido.id}.`,
+        timing: TOAST_RAPIDO_TIMING,
+        showTimestamp: false,
+      });
     } finally {
       setLoadingDetail(false);
     }
@@ -208,14 +214,22 @@ function PedidosTable({
       const detalle = await onLoadDetail(pedido.id);
 
       if (!detalle || detalle.length === 0) {
-        alert("Este pedido no tiene variedades cargadas.");
+        gooeyToast.warning("Pedido sin variedades", {
+          description: `El pedido #${pedido.id} no tiene un detalle para imprimir.`,
+          timing: TOAST_RAPIDO_TIMING,
+          showTimestamp: false,
+        });
         return;
       }
 
-      imprimirComandaPedido(pedido, detalle);
+      await imprimirComandaPedido(pedido, detalle);
     } catch (error) {
       console.error(error);
-      alert("No se pudo imprimir la comanda.");
+      gooeyToast.error("No se pudo imprimir la comanda", {
+        description: `Ocurrió un problema con el pedido #${pedido.id}.`,
+        timing: TOAST_RAPIDO_TIMING,
+        showTimestamp: false,
+      });
     } finally {
       setPrintingId(null);
     }

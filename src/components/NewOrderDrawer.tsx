@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { Minus, Plus, X } from "lucide-react";
+import { gooeyToast } from "goey-toast";
+import { TOAST_RAPIDO_TIMING } from "../config/toast";
 
 
 import {
@@ -470,18 +472,22 @@ function NewOrderDrawer({
       }));
 
       resetForm();
-      await onCreated?.();
       closeWithAnimation(true);
 
-      window.setTimeout(() => {
-        imprimirComandaPedido(pedidoCreado, itemsComanda);
-      }, 450);
+      await new Promise<void>((resolve) => {
+        window.setTimeout(resolve, 450);
+      });
+      await imprimirComandaPedido(pedidoCreado, itemsComanda);
+      await onCreated?.();
     } catch (error) {
       console.error(error);
-      alert(
-        esEdicion
-          ? "No se pudo actualizar el pedido."
-          : "No se pudo crear el pedido."
+      gooeyToast.error(
+        esEdicion ? "No se pudo actualizar el pedido" : "No se pudo crear el pedido",
+        {
+          description: "Revisá los datos e intentá nuevamente.",
+          timing: TOAST_RAPIDO_TIMING,
+          showTimestamp: false,
+        }
       );
     } finally {
       setSaving(false);

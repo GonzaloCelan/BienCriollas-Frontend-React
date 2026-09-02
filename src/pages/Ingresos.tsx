@@ -9,12 +9,14 @@ import {
 } from "lucide-react";
 
 import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { gooeyToast } from "goey-toast";
 
 import "../styles/ingresos.css";
 
 import Kpi from "../components/Kpi";
 import AppConfirmDialog from "../components/AppConfirmDialog";
 import AnimatedNumber from "../components/AnimatedNumber";
+import { TOAST_RAPIDO_TIMING } from "../config/toast";
 
 import {
   obtenerResumenIngresos,
@@ -359,11 +361,21 @@ function Ingresos() {
 
     if (!fechaLiquidacion) {
       setError("Seleccioná una fecha para la liquidación.");
+      gooeyToast.warning("Falta la fecha", {
+        description: "Seleccioná la fecha de la liquidación.",
+        timing: TOAST_RAPIDO_TIMING,
+        showTimestamp: false,
+      });
       return false;
     }
 
     if (!montoNumber || montoNumber <= 0) {
       setError("Cargá un monto válido.");
+      gooeyToast.warning("Monto inválido", {
+        description: "Cargá un monto de liquidación mayor a cero.",
+        timing: TOAST_RAPIDO_TIMING,
+        showTimestamp: false,
+      });
       return false;
     }
 
@@ -398,9 +410,20 @@ function Ingresos() {
       setDescripcion("Liquidación Pedidos Ya");
 
       await cargarIngresos();
+
+      gooeyToast.success("Liquidación registrada", {
+        description: `Se registraron ${formatMoney(montoNumber)} de Pedidos Ya.`,
+        timing: TOAST_RAPIDO_TIMING,
+        showTimestamp: false,
+      });
     } catch (error) {
       console.error(error);
       setError("No se pudo registrar la liquidación de Pedidos Ya.");
+      gooeyToast.error("No se pudo registrar la liquidación", {
+        description: "El ingreso de Pedidos Ya no fue guardado.",
+        timing: TOAST_RAPIDO_TIMING,
+        showTimestamp: false,
+      });
     } finally {
       setSaving(false);
     }
