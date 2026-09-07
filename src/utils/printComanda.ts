@@ -6,16 +6,20 @@ type ComandaItem = {
 };
 
 const DIRECCION_LOCAL = "Brasil Oeste 2388";
-const CEL_LOCAL = "+549244449895";
+const CEL_LOCAL = "+54 9 264 4449895";
+const INSTAGRAM_LOCAL = "@biencriollas.sanjuan";
 const PRINTABLE_MM = 56;
-const LOGO_COMANDA_PATH =
-  "/icons/logo_bien_criollas_transparente_negro_fino.png";
+const LOGO_COMANDA_PATH = "/icons/logo_comanda_hd.png";
+const EMPANADA_COMANDA_PATH = "/icons/empanada_comanda_hd.png";
 
 function precargarLogoComanda() {
   if (typeof window === "undefined") return;
 
   const logo = new Image();
   logo.src = new URL(LOGO_COMANDA_PATH, window.location.origin).href;
+
+  const empanada = new Image();
+  empanada.src = new URL(EMPANADA_COMANDA_PATH, window.location.origin).href;
 }
 
 precargarLogoComanda();
@@ -55,6 +59,9 @@ export function imprimirComandaPedido(
   const logoUrl = escapeHtml(
     new URL(LOGO_COMANDA_PATH, window.location.origin).href
   );
+  const empanadaUrl = escapeHtml(
+    new URL(EMPANADA_COMANDA_PATH, window.location.origin).href
+  );
 
   const totalEmpanadas = items.reduce(
     (acc, item) => acc + Number(item.cantidad || 0),
@@ -89,6 +96,7 @@ export function imprimirComandaPedido(
   <title>Comanda Pedido ${numeroPedido}</title>
 
   <link rel="preload" href="${logoUrl}" as="image" />
+  <link rel="preload" href="${empanadaUrl}" as="image" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
@@ -112,28 +120,25 @@ export function imprimirComandaPedido(
 
         .ticket { width: ${PRINTABLE_MM}mm; }
 
-        .logo-wrap { text-align: center; margin: 0 0 1.5mm 0; }
+        .logo-wrap {
+          text-align: center;
+          height: 25mm;
+          margin: 0;
+          overflow: hidden;
+        }
         .logo {
-          max-width: 40mm;
-          max-height: 24mm;
-          width: auto;
+          width: 38mm;
+          max-width: none;
+          max-height: none;
           height: auto;
           object-fit: contain;
           display: inline-block;
-        }
-
-        .titulo {
-          text-align: center;
-          font-weight: 950;
-          font-family: "Parisienne", "Ephesis", cursive;
-          margin: 0 0 1mm 0;
-          font-size: 28px;
-          letter-spacing: 0.2px;
+          transform: translateY(-6.5mm);
         }
 
         .datos-local {
           text-align: center;
-          margin: 0 0 1.4mm 0;
+          margin: 0 0 1.8mm 0;
           font-size: 10px;
           font-weight: 700;
           line-height: 1.15;
@@ -143,11 +148,16 @@ export function imprimirComandaPedido(
           margin: 0.2mm 0;
         }
 
+        .separador-punteado {
+          border-top: 1px dashed #000;
+          margin: 0 0 1.6mm 0;
+        }
+
         .subtitulo {
           text-align: center;
           font-size: 10.5px;
-          margin: 0 0 1.2mm 0;
-          font-weight: 800;
+          margin: 0 0 0.8mm 0;
+          font-weight: 900;
         }
 
         .fecha {
@@ -225,6 +235,13 @@ export function imprimirComandaPedido(
           align-items: center;
           text-align: center;
           width: 100%;
+          box-sizing: border-box;
+          padding: 1.8mm 0 1.2mm;
+        }
+
+        .total-wrap::before,
+        .total-wrap::after {
+          display: none;
         }
 
         .total-wrap .total-label {
@@ -236,27 +253,136 @@ export function imprimirComandaPedido(
         }
 
         .total-wrap .total-value {
-          margin-top: 1.2mm;
-          font-size: 22px;
+          margin-top: 0.8mm;
+          font-size: 24px;
           font-weight: 900;
           letter-spacing: 0.2px;
           line-height: 1.05;
           white-space: nowrap;
         }
 
+        .despedida {
+          margin-top: 2.5mm;
+          text-align: center;
+        }
+
+        .despedida-adorno {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 2mm;
+          margin-bottom: 0.8mm;
+        }
+
+        .despedida-adorno .linea {
+          width: 19mm;
+          border-top: 1px solid #000;
+        }
+
+        .empanada-icono-wrap {
+          width: 9mm;
+          height: 7mm;
+          overflow: hidden;
+          flex: 0 0 9mm;
+        }
+
+        .empanada-icono {
+          width: 10mm;
+          height: 10mm;
+          display: block;
+          transform: translate(-0.5mm, -1.7mm);
+        }
+
+        .gracias {
+          font-family: "Parisienne", "Ephesis", cursive;
+          font-size: 24px;
+          font-weight: 950;
+          letter-spacing: 0.1px;
+          line-height: 1;
+          margin: 0;
+          white-space: nowrap;
+        }
+
+        .disfrute {
+          margin: 0.8mm 0 2mm;
+          font-size: 10px;
+          font-weight: 700;
+        }
+
+        .contacto-whatsapp,
+        .instagram {
+          border-top: 1px dashed #000;
+          display: grid;
+          grid-template-columns: 8mm 1fr;
+          align-items: center;
+          gap: 2mm;
+          margin-top: 2mm;
+          padding: 1.8mm 5mm 1.4mm;
+          text-align: left;
+          box-sizing: border-box;
+        }
+
+        .whatsapp-icono,
+        .instagram-icono {
+          width: 8mm;
+          height: 8mm;
+          flex: 0 0 8mm;
+        }
+
+        .contacto-pregunta {
+          font-size: 9.5px;
+          font-weight: 700;
+          line-height: 1.05;
+        }
+
+        .contacto-accion {
+          font-size: 9.5px;
+          font-weight: 900;
+          line-height: 1.05;
+          margin-top: 0.4mm;
+        }
+
+        .contacto-numero {
+          font-size: 11.5px;
+          font-weight: 900;
+          line-height: 1.1;
+          margin-top: 0.4mm;
+          white-space: nowrap;
+        }
+
+        .instagram-titulo {
+          font-size: 8.5px;
+          font-weight: 700;
+          line-height: 1.05;
+        }
+
+        .instagram-usuario {
+          font-size: 10px;
+          font-weight: 900;
+          line-height: 1.1;
+          margin-top: 0.4mm;
+        }
+
+        .instagram-bajada {
+          font-size: 8px;
+          font-weight: 600;
+          line-height: 1.05;
+          margin-top: 0.4mm;
+        }
+
         .nota-wrap {
-          margin-top: 3mm;
+          margin-top: 0;
         }
 
         .nota-sep {
-          border-top: 1px dotted #000;
-          margin: 0 0 1.5mm 0;
+          border-top: 1px dashed #000;
+          margin: 0 0 1.8mm 0;
         }
 
         .nota-fiscal {
           text-align: center;
           font-size: 10px;
-          font-weight: 700;
+          font-weight: 900;
           color: #000;
           letter-spacing: 0.2px;
         }
@@ -267,17 +393,17 @@ export function imprimirComandaPedido(
       <div class="ticket">
       <div class="logo-wrap">
           <img
-  class="logo"
+  class="logo print-image"
   src="${logoUrl}"
   alt="Bien Criollas"
 />
         </div>
-        <div class="titulo">Bien Criollas</div>
 
         <div class="datos-local">
           <div class="linea">${DIRECCION_LOCAL}</div>
-          <div class="linea">Cel: ${CEL_LOCAL}</div>
         </div>
+
+        <div class="separador-punteado"></div>
 
         <div class="subtitulo">
           Pedido #${numeroPedido} - ${tipoVentaLabel}
@@ -318,6 +444,44 @@ export function imprimirComandaPedido(
           </tfoot>
         </table>
 
+        <div class="despedida">
+          <div class="despedida-adorno">
+            <span class="linea"></span>
+            <span class="empanada-icono-wrap">
+              <img class="empanada-icono print-image" src="${empanadaUrl}" alt="" />
+            </span>
+            <span class="linea"></span>
+          </div>
+
+          <p class="gracias">¡Gracias por elegirnos!</p>
+          <p class="disfrute">¡Que disfrutes tu pedido!</p>
+        </div>
+
+        <div class="contacto-whatsapp">
+          <svg class="whatsapp-icono" viewBox="0 0 32 32" aria-hidden="true">
+            <path d="M16 3a12 12 0 0 0-10.3 18.2L4 28l7-1.7A12 12 0 1 0 16 3Z" fill="none" stroke="#000" stroke-width="2.2" stroke-linejoin="round"/>
+            <path d="M11.2 9.7c.4-.5.8-.5 1.1-.5h.8c.3 0 .6.1.8.7l1.1 2.6c.2.5.1.8-.2 1.2l-.8 1c-.3.3-.2.6 0 .9 1.1 1.8 2.7 3.2 4.6 4.1.4.2.7.1.9-.2l1.2-1.5c.3-.4.7-.4 1.1-.2l2.4 1.1c.5.2.8.4.8.7 0 .3-.1 1.9-1.3 3-1.1 1-2.7 1.4-4.2 1-1.5-.4-4.6-1.6-7.7-4.4-2.5-2.3-4.2-5.1-4.7-6.6-.5-1.5 0-2.3.5-2.9Z" fill="#000"/>
+          </svg>
+          <div>
+            <div class="contacto-pregunta">¿Tu próximo pedido?</div>
+            <div class="contacto-accion">Hacelo por WhatsApp</div>
+            <div class="contacto-numero">${CEL_LOCAL}</div>
+          </div>
+        </div>
+
+        <div class="instagram">
+          <svg class="instagram-icono" viewBox="0 0 32 32" aria-hidden="true">
+            <rect x="4" y="4" width="24" height="24" rx="7" fill="none" stroke="#000" stroke-width="2.5"/>
+            <circle cx="16" cy="16" r="5.5" fill="none" stroke="#000" stroke-width="2.5"/>
+            <circle cx="23.5" cy="8.8" r="1.6" fill="#000"/>
+          </svg>
+          <div>
+            <div class="instagram-titulo">Seguinos en Instagram</div>
+            <div class="instagram-usuario">${INSTAGRAM_LOCAL}</div>
+            <div class="instagram-bajada">Novedades, promos y más</div>
+          </div>
+        </div>
+
         <div class="nota-wrap">
           <div class="nota-sep"></div>
           <div class="nota-fiscal">NO VÁLIDO COMO FACTURA</div>
@@ -346,10 +510,10 @@ export function imprimirComandaPedido(
         }
 
         async function imprimirCuandoEsteLista() {
-          const logo = document.querySelector(".logo");
+          const imagenes = Array.from(document.querySelectorAll(".print-image"));
           const fuentesListas = document.fonts?.ready ?? Promise.resolve();
           const recursosListos = Promise.all([
-            esperarImagen(logo),
+            ...imagenes.map(esperarImagen),
             fuentesListas,
           ]);
           const tiempoMaximo = new Promise((resolve) =>
