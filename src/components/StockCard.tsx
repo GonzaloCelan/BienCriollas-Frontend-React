@@ -16,9 +16,18 @@ type StockCardProps = {
 function formatDate(value: string | null) {
   if (!value) return "-";
 
-  const date = new Date(value);
+  const [year, month, day] = value.slice(0, 10).split("-").map(Number);
+  const date = new Date(year, month - 1, day);
 
-  if (Number.isNaN(date.getTime())) {
+  const isValidDate =
+    Number.isInteger(year) &&
+    Number.isInteger(month) &&
+    Number.isInteger(day) &&
+    date.getFullYear() === year &&
+    date.getMonth() === month - 1 &&
+    date.getDate() === day;
+
+  if (!isValidDate) {
     return value;
   }
 

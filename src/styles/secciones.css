@@ -1,0 +1,15 @@
+.section-page { min-height: 100%; padding: 32px 28px; color: var(--bc-text); }
+.section-page-header { margin-bottom: 28px; }
+.section-page-header > p { margin: 0 0 6px; color: #f34343; font-size: 10px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+.section-page-header h2 { margin: 0; font-family: "Birthstone", cursive; font-size: 48px; font-weight: 400; line-height: 1.1; }
+.section-page-header > span { display: block; margin-top: 8px; color: var(--bc-muted); font-size: 13px; font-weight: 600; }
+.section-empty { min-height: 360px; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 40px 24px; border: 1px solid var(--bc-border); border-radius: 12px; background: var(--bc-surface); text-align: center; box-shadow: 0 8px 26px #11182704; }
+.section-empty-icon { display: grid; place-items: center; width: 76px; height: 76px; margin-bottom: 20px; border-radius: 22px; background: var(--bc-accent-soft); color: #f34343; }
+.section-status { padding: 4px 9px; border-radius: 5px; background: var(--bc-hover); color: var(--bc-muted); font-size: 9px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+.section-empty h3 { margin: 14px 0 8px; font-size: 18px; font-weight: 800; letter-spacing: -.03em; }
+.section-empty p { max-width: 370px; margin: 0; color: var(--bc-muted); font-size: 12px; line-height: 1.8; }
+@media (max-width: 760px) {
+  .section-page { padding: 24px 14px; }
+  .section-page-header h2 { font-size: 43px; }
+  .section-empty { min-height: 330px; padding: 30px 20px; }
+}

@@ -34,7 +34,7 @@ function mensajeError(error: unknown, fallback: string) {
   return error instanceof ApiError ? error.message : fallback;
 }
 
-function Usuarios() {
+function Usuarios({ title = "Usuarios" }: { title?: string }) {
   const { usuario: usuarioActual } = useAuth();
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [loading, setLoading] = useState(true);
@@ -153,7 +153,7 @@ function Usuarios() {
       <header className="users-page__header">
         <div>
           <p>SEGURIDAD Y ACCESOS</p>
-          <h2>Usuarios</h2>
+          <h2>{title}</h2>
           <span>Administrá quién puede ingresar y qué permisos tiene.</span>
         </div>
         <div className="users-page__header-actions">

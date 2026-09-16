@@ -1,8 +1,5 @@
 @import "./kpiCard.css";
 @import "./criticalStockPanel.css";
-@import url("https://fonts.googleapis.com/css2?family=Ephesis&family=Parisienne&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800;900&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Birthstone&display=swap");
 
 .orders-page {
   width: 100%;
@@ -20,7 +17,7 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 18px;
-  margin-bottom: 22px;
+  margin-bottom: 18px;
 }
 
 .orders-eyebrow {
@@ -87,11 +84,13 @@
 }
 
 .orders-toolbar {
+  width: 100%;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
+  margin-bottom: 12px;
 }
 
 .orders-channel-filter {
@@ -170,13 +169,113 @@
   display: none;
 }
 
+.orders-hero__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-right: auto;
+  gap: 9px;
+  flex-shrink: 0;
+}
+
+.orders-actions-row {
+  width: 100%;
+  margin: 32px 0;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.orders-actions-row + .orders-content-grid > .orders-panel,
+.orders-actions-row + .orders-content-grid > .critical-stock {
+  margin-top: 0;
+}
+
+.orders-hero__actions .orders-new-button .app-button__icon,
+.orders-hero__actions .orders-schedule-button .app-button__icon {
+  display: inline-flex;
+}
+
+.orders-schedule-button {
+  background: #ffffff;
+  color: #ef4040;
+  box-shadow: 0 9px 24px rgba(31, 41, 55, 0.09);
+}
+
+.orders-view-tabs {
+  width: max-content;
+  padding: 5px;
+  display: flex;
+  gap: 4px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.74);
+  box-shadow: 0 9px 24px rgba(31, 41, 55, 0.08);
+}
+
+.orders-view-tabs button {
+  min-height: 36px;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border: 0;
+  border-radius: 5px;
+  color: #718096;
+  background: transparent;
+  font-size: 10px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.orders-view-tabs button:hover { color: #ef4040; transform: translateY(-1px); }
+.orders-view-tabs button.is-active { color: #ffffff; background: #f33f46; box-shadow: 0 7px 17px rgba(243, 63, 70, 0.22); }
+.orders-view-tabs strong { min-width: 20px; height: 20px; padding: 0 5px; display: grid; place-items: center; border-radius: 5px; color: #ef4040; background: #ffffff; font-size: 8px; }
+
+.orders-scheduled-alerts {
+  margin-top: 12px;
+  display: flex;
+  align-items: stretch;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.orders-scheduled-alerts:empty {
+  display: none;
+  margin: 0;
+}
+
+.orders-scheduled-alert {
+  width: fit-content;
+  max-width: min(100%, 520px);
+  min-height: 64px;
+  margin: 0;
+  padding: 11px 14px;
+  display: inline-grid;
+  grid-template-columns: 30px minmax(230px, auto) auto;
+  align-items: center;
+  gap: 11px;
+  border-radius: 5px;
+  box-shadow: 0 11px 28px rgba(31, 41, 55, 0.09);
+  will-change: opacity, transform;
+}
+
+.orders-scheduled-alert--today { color: #a81f2e; background: linear-gradient(110deg, #ffe9eb, #ffffff); }
+.orders-scheduled-alert--tomorrow { grid-template-columns: 30px minmax(0, 1fr); color: #4e6290; background: linear-gradient(110deg, #eef3ff, #ffffff); }
+.orders-scheduled-alert>svg { justify-self:center; }
+.orders-scheduled-alert div { display:grid; gap:3px; }.orders-scheduled-alert strong { font-size:11px; font-weight:950; text-transform:uppercase; }.orders-scheduled-alert span { color:#7f8b9d; font-size:9px; font-weight:700; }
+
+body.dark-mode .orders-schedule-button { color:#ff7373; background:#111923; box-shadow:0 9px 24px rgba(0,0,0,.25); }
+body.dark-mode .orders-view-tabs { background:#111923; box-shadow:0 9px 24px rgba(0,0,0,.25); }
+body.dark-mode .orders-view-tabs button { color:#9eabbc; } body.dark-mode .orders-view-tabs button.is-active { color:#fff; background:#f33f46; }
+body.dark-mode .orders-scheduled-alert--today { color:#ff7a85; background:linear-gradient(110deg,#352027,#111923); } body.dark-mode .orders-scheduled-alert--tomorrow { color:#8ea9e8; background:linear-gradient(110deg,#182641,#111923); } body.dark-mode .orders-scheduled-alert span { color:#a8b3c2; }
+
 /* KPI */
 .orders-stats {
   width: 100%;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
-  margin: 40px 0;
+  margin: 40px 0 0;
 }
 
 /* CONTENIDO: TABLA + STOCK */
@@ -648,4 +747,15 @@ body.dark-mode .orders-page label {
   .orders-primary-btn {
     width: fit-content;
   }
+
+  .orders-hero__actions { width:fit-content; max-width:100%; }
+}
+
+@media (max-width: 600px) {
+  .orders-hero__actions { flex-direction:column; align-items:stretch; }
+  .orders-actions-row { margin-block:28px; }
+  .orders-view-tabs { width:100%; }
+  .orders-view-tabs button { flex:1; justify-content:center; }
+  .orders-scheduled-alerts { gap:10px; }
+  .orders-scheduled-alert { width:100%; max-width:none; display:grid; grid-template-columns:30px 1fr; }
 }

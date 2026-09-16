@@ -14,7 +14,7 @@ import {
   Save,
 } from "lucide-react";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import {
   listarHistorialEgresos,
@@ -218,7 +218,7 @@ function Egresos() {
   const nombreMesActual = getCurrentMonthName();
   const nombreDiaActual = getCurrentDayName();
 
-  async function cargarDatosGenerales() {
+  const cargarDatosGenerales = useCallback(async () => {
     try {
       setLoadingInicial(true);
       setError("");
@@ -241,9 +241,9 @@ function Egresos() {
     } finally {
       setLoadingInicial(false);
     }
-  }
+  }, []);
 
-  async function cargarHistorial(pageToLoad = page) {
+  const cargarHistorial = useCallback(async (pageToLoad = page) => {
     try {
       setLoadingTabla(true);
       setError("");
@@ -297,15 +297,17 @@ function Egresos() {
     } finally {
       setLoadingTabla(false);
     }
-  }
+  }, [filtroMes, filtroTipo, page, pageSize]);
 
   useEffect(() => {
-    cargarDatosGenerales();
-  }, []);
+    const timer = window.setTimeout(() => void cargarDatosGenerales(), 0);
+    return () => window.clearTimeout(timer);
+  }, [cargarDatosGenerales]);
 
   useEffect(() => {
-    cargarHistorial();
-  }, [filtroMes, filtroTipo, page]);
+    const timer = window.setTimeout(() => void cargarHistorial(), 0);
+    return () => window.clearTimeout(timer);
+  }, [cargarHistorial]);
 
   function abrirConfirmacionEgreso() {
     const descripcionTrim = descripcion.trim();

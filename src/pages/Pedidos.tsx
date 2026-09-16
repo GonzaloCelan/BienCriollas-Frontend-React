@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
-import { Plus } from "lucide-react";
+import { CalendarClock } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 import { gooeyToast } from "goey-toast";
 import { TOAST_RAPIDO_TIMING } from "../config/toast";
 
 import KpiCard from "../components/KpiCard";
 import PedidosTable from "../components/PedidosTable";
 import NewOrderDrawer from "../components/NewOrderDrawer";
+import ScheduledOrdersView from "../components/ScheduledOrdersView";
 import CriticalStockPanel from "../components/CriticalStockPanel";
 import AppButton from "../components/AppButton";
 import AppConfirmDialog from "../components/AppConfirmDialog";
@@ -20,11 +22,14 @@ import cancelledAnimation from "../assets/lotties/cancel.json";
 import {
   actualizarEstadoPedidoApi,
   actualizarTipoPagoPedidoApi,
+  obtenerPedidosProgramadosApi,
+  obtenerResumenPedidosProgramadosApi,
   obtenerPaginaPedidosPorEstado,
   obtenerTodosLosPedidosPorEstado,
   obtenerDetallePedidoApi,
   type EstadoBackend,
   type TipoPagoBackend,
+  type ScheduledOrdersSummary,
 } from "../services/pedidosApi";
 import {
   usePedidosRealtime,
@@ -44,6 +49,15 @@ type StatusCounts = {
   preparados: number;
   entregados: number;
   cancelados: number;
+};
+
+type OrdersView = "TODAY" | "SCHEDULED";
+
+const EMPTY_SCHEDULED_SUMMARY: ScheduledOrdersSummary = {
+  totalPedidosProgramados: 0,
+  pedidosParaHoy: 0,
+  pedidosParaManana: 0,
+  totalUnidadesComprometidas: 0,
 };
 
 function getFechaPedidosDelDia() {
@@ -105,11 +119,29 @@ function getPagoFrontend(pagoBackend: TipoPagoBackend) {
   return "Efectivo";
 }
 
+function formatScheduledDelivery(dateValue: string, timeValue: string) {
+  const [year, month, day] = dateValue.split("-").map(Number);
+  const date = new Date(year, month - 1, day);
+  const label = new Intl.DateTimeFormat("es-AR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  }).format(date);
+  return `${label.charAt(0).toUpperCase() + label.slice(1)} · ${timeValue.slice(0, 5)}`;
+}
+
 function Pedidos() {
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
+  const [view, setView] = useState<OrdersView>("TODAY");
+  const [scheduledOrders, setScheduledOrders] = useState<Pedido[]>([]);
+  const [scheduledSummary, setScheduledSummary] = useState<ScheduledOrdersSummary>(EMPTY_SCHEDULED_SUMMARY);
+  const [scheduledDate, setScheduledDate] = useState("");
+  const [scheduledLoading, setScheduledLoading] = useState(true);
+  const [scheduledError, setScheduledError] = useState("");
   const [estadoActivo, setEstadoActivo] =
     useState<EstadoBackend>("PENDIENTE");
   const [newOrderOpen, setNewOrderOpen] = useState(false);
+  const [newOrderMode, setNewOrderMode] = useState<"IMMEDIATE" | "SCHEDULED">("IMMEDIATE");
   const [pedidoEditando, setPedidoEditando] = useState<Pedido | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [pedidoACancelar, setPedidoACancelar] = useState<Pedido | null>(null);
@@ -129,6 +161,40 @@ function Pedidos() {
 
   function refrescarStockCritico() {
     setStockRefreshKey((prev) => prev + 1);
+  }
+
+  async function cargarPedidosProgramados(
+    fecha = scheduledDate,
+    silencioso = false
+  ) {
+    try {
+      if (!silencioso) setScheduledLoading(true);
+      setScheduledError("");
+      const [orders, summary] = await Promise.all([
+        obtenerPedidosProgramadosApi(fecha || undefined),
+        obtenerResumenPedidosProgramadosApi(),
+      ]);
+      const withDetails = await Promise.all(
+        orders.map(async (pedido) => {
+          try {
+            return { ...pedido, items: await obtenerDetallePedidoApi(pedido.id) };
+          } catch {
+            return pedido;
+          }
+        })
+      );
+      setScheduledOrders(withDetails);
+      setScheduledSummary(summary);
+    } catch (scheduledLoadError) {
+      console.error(scheduledLoadError);
+      setScheduledError(
+        scheduledLoadError instanceof Error
+          ? scheduledLoadError.message
+          : "No se pudieron cargar los pedidos programados."
+      );
+    } finally {
+      if (!silencioso) setScheduledLoading(false);
+    }
   }
 
   async function cargarPedidosPorEstado(
@@ -176,12 +242,44 @@ function Pedidos() {
   }
 
   useEffect(() => {
-    cargarPedidosPorEstado(estadoActivo);
+    const task = window.setTimeout(() => void cargarPedidosPorEstado(estadoActivo), 0);
+    return () => window.clearTimeout(task);
   }, [estadoActivo]);
 
   useEffect(() => {
-    cargarContadores();
+    const task = window.setTimeout(() => {
+      void cargarContadores();
+      void cargarPedidosProgramados();
+    }, 0);
+    return () => window.clearTimeout(task);
+    // Initial dashboard load only.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (view !== "SCHEDULED") return;
+    const task = window.setTimeout(
+      () => void cargarPedidosProgramados(scheduledDate),
+      0
+    );
+    return () => window.clearTimeout(task);
+    // Refetch when the selected scheduled date changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scheduledDate]);
+
+  useEffect(() => {
+    function refreshOnFocus() {
+      void Promise.all([
+        cargarPedidosPorEstado(estadoActivo, true),
+        cargarContadores(),
+        cargarPedidosProgramados(scheduledDate, true),
+      ]);
+    }
+    window.addEventListener("focus", refreshOnFocus);
+    return () => window.removeEventListener("focus", refreshOnFocus);
+    // The handler is rebound when the active filters change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [estadoActivo, scheduledDate]);
 
   async function avanzarEstadoPedido(pedido: Pedido) {
     if (pedido.estado === "Entregado" || pedido.estado === "Cancelado") return;
@@ -213,10 +311,18 @@ function Pedidos() {
         timing: TOAST_RAPIDO_TIMING,
         showTimestamp: false,
       });
+      await Promise.all([
+        cargarPedidosProgramados(scheduledDate, true),
+        cargarContadores(),
+      ]);
+      refrescarStockCritico();
     } catch (error) {
       console.error(error);
       gooeyToast.error("No se pudo cambiar el estado", {
-        description: `El pedido #${pedido.id} no fue modificado.`,
+        description:
+          error instanceof Error
+            ? error.message
+            : `El pedido #${pedido.id} no fue modificado.`,
         timing: TOAST_RAPIDO_TIMING,
         showTimestamp: false,
       });
@@ -263,7 +369,9 @@ function Pedidos() {
   }
 
   function abrirConfirmacionCancelacion(idPedido: number) {
-    const pedido = pedidos.find((item) => item.id === idPedido);
+    const pedido = [...pedidos, ...scheduledOrders].find(
+      (item) => item.id === idPedido
+    );
 
     if (!pedido) {
       gooeyToast.error("Pedido no encontrado", {
@@ -288,23 +396,18 @@ function Pedidos() {
       setPedidos((prev) =>
         prev.filter((pedido) => pedido.id !== pedidoACancelar.id)
       );
-
-      setCounts((prev) => {
-        const estadoActualKey = getCountKey(estadoActivo);
-
-        return {
-          ...prev,
-          [estadoActualKey]: Math.max(prev[estadoActualKey] - 1, 0),
-          cancelados:
-            pedidoACancelar.estado === "Cancelado"
-              ? prev.cancelados
-              : prev.cancelados + 1,
-        };
-      });
+      setScheduledOrders((prev) =>
+        prev.filter((pedido) => pedido.id !== pedidoACancelar.id)
+      );
 
       const pedidoCanceladoId = pedidoACancelar.id;
       setPedidoACancelar(null);
       refrescarStockCritico();
+      await Promise.all([
+        cargarPedidosPorEstado(estadoActivo, true),
+        cargarContadores(),
+        cargarPedidosProgramados(scheduledDate, true),
+      ]);
 
       gooeyToast.success("Pedido cancelado", {
         description: `El pedido #${pedidoCanceladoId} fue cancelado correctamente.`,
@@ -314,7 +417,10 @@ function Pedidos() {
     } catch (error) {
       console.error(error);
       gooeyToast.error("No se pudo cancelar el pedido", {
-        description: `El pedido #${pedidoACancelar.id} continúa en su estado anterior.`,
+        description:
+          error instanceof Error
+            ? error.message
+            : `El pedido #${pedidoACancelar.id} continúa en su estado anterior.`,
         timing: TOAST_RAPIDO_TIMING,
         showTimestamp: false,
       });
@@ -330,6 +436,13 @@ function Pedidos() {
 
   function abrirNuevoPedidoManual() {
     setPedidoEditando(null);
+    setNewOrderMode("IMMEDIATE");
+    setNewOrderOpen(true);
+  }
+
+  function abrirProgramarPedido() {
+    setPedidoEditando(null);
+    setNewOrderMode("SCHEDULED");
     setNewOrderOpen(true);
   }
 
@@ -344,6 +457,7 @@ function Pedidos() {
         ...pedido,
         items: detalles ?? [],
       });
+      setNewOrderMode(pedido.fechaEntrega ? "SCHEDULED" : "IMMEDIATE");
       setNewOrderOpen(true);
     } catch (error) {
       console.error(error);
@@ -363,22 +477,34 @@ function Pedidos() {
     void Promise.all([
       cargarPedidosPorEstado(estadoActivo, true),
       cargarContadores(),
+      cargarPedidosProgramados(scheduledDate, true),
     ]).then(() => {
       refrescarStockCritico();
     });
   });
 
-  async function handlePedidoCreado() {
-    setEstadoActivo("PENDIENTE");
+  async function handlePedidoCreado(pedido: Pedido, totalUnidades: number) {
+    const programado = Boolean(pedido.fechaEntrega || pedido.scheduled);
+    if (programado) {
+      setView("SCHEDULED");
+      setScheduledDate("");
+    } else {
+      setView("TODAY");
+      setEstadoActivo("PENDIENTE");
+    }
 
     await Promise.all([
-      cargarPedidosPorEstado("PENDIENTE"),
+      cargarPedidosPorEstado("PENDIENTE", programado),
       cargarContadores(),
+      cargarPedidosProgramados("", programado),
     ]);
 
-    refrescarStockCritico();
-    gooeyToast.success("Pedido creado", {
-      description: "El pedido fue registrado correctamente.",
+    if (!programado) refrescarStockCritico();
+    gooeyToast.success(programado ? "Pedido programado correctamente" : "Pedido creado", {
+      description:
+        programado && pedido.fechaEntrega
+          ? `${formatScheduledDelivery(pedido.fechaEntrega, pedido.horario)} · ${pedido.cliente} · ${totalUnidades} empanadas`
+          : "El pedido fue registrado correctamente.",
       timing: TOAST_RAPIDO_TIMING,
       showProgress: true,
       showTimestamp: false,
@@ -390,6 +516,7 @@ function Pedidos() {
     await Promise.all([
       cargarPedidosPorEstado(estadoActivo),
       cargarContadores(),
+      cargarPedidosProgramados(scheduledDate),
     ]);
 
     refrescarStockCritico();
@@ -401,25 +528,108 @@ function Pedidos() {
   }
 
   const fechaPedidos = getFechaPedidosDelDia();
+  const orderActions = (
+    <div className="orders-hero__actions">
+      <AppButton
+        className="orders-new-button"
+        variant="primary"
+        size="md"
+        onClick={abrirNuevoPedidoManual}
+      >
+        Nuevo pedido
+      </AppButton>
+      <AppButton
+        className="orders-schedule-button"
+        variant="secondary"
+        size="md"
+        icon={<CalendarClock size={17} />}
+        onClick={abrirProgramarPedido}
+      >
+        Programar pedido
+      </AppButton>
+    </div>
+  );
+  const scheduledOrderAction = (
+    <div className="orders-hero__actions">
+      <AppButton
+        className="orders-schedule-button"
+        variant="secondary"
+        size="md"
+        icon={<CalendarClock size={17} />}
+        onClick={abrirProgramarPedido}
+      >
+        Programar pedido
+      </AppButton>
+    </div>
+  );
 
   return (
     <section className="orders-page">
       <div className="orders-mobile-heading">
         <div>
           <span>Bien Criollas</span>
-          <h1>Pedidos de hoy</h1>
+          <h1>{view === "TODAY" ? "Pedidos de hoy" : "Programados"}</h1>
         </div>
       </div>
 
       <div className="orders-hero">
         <div className="orders-hero-text">
-          <p className="orders-eyebrow">Pedidos del día</p>
-          <h2>{fechaPedidos}</h2>
-          <span>Estás registrando pedidos para esta fecha.</span>
+          <p className="orders-eyebrow">
+            {view === "TODAY" ? "Pedidos del día" : "Agenda de pedidos"}
+          </p>
+          <h2>{view === "TODAY" ? fechaPedidos : "Próximas entregas"}</h2>
+          <span>
+            {view === "TODAY"
+              ? "Estás registrando pedidos para esta fecha."
+              : "Todo lo que fue encargado para los próximos días."}
+          </span>
         </div>
       </div>
 
-      <div className="orders-stats">
+      <nav className="orders-view-tabs" aria-label="Vista de pedidos">
+        <button type="button" className={view === "TODAY" ? "is-active" : ""} onClick={() => setView("TODAY")}>Pedidos de hoy</button>
+        <button type="button" className={view === "SCHEDULED" ? "is-active" : ""} onClick={() => setView("SCHEDULED")}>
+          Programados
+          {scheduledSummary.totalPedidosProgramados > 0 && <strong>{scheduledSummary.totalPedidosProgramados}</strong>}
+        </button>
+      </nav>
+
+      <div className="orders-scheduled-alerts">
+        <AnimatePresence initial={false}>
+          {scheduledSummary.pedidosParaHoy > 0 && (
+            <motion.section
+              layout
+              key="scheduled-today"
+              className="orders-scheduled-alert orders-scheduled-alert--today"
+              initial={{ opacity: 0, y: -10, scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -8, scale: 0.97 }}
+              transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <CalendarClock size={20} />
+              <div><strong>Tenés {scheduledSummary.pedidosParaHoy} {scheduledSummary.pedidosParaHoy === 1 ? "pedido programado" : "pedidos programados"} para hoy</strong><span>Ya están incluidos en la operación del día.</span></div>
+            </motion.section>
+          )}
+
+          {scheduledSummary.pedidosParaManana > 0 && (
+            <motion.section
+              layout
+              key="scheduled-tomorrow"
+              className="orders-scheduled-alert orders-scheduled-alert--tomorrow"
+              initial={{ opacity: 0, y: -10, scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -8, scale: 0.97 }}
+              transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <CalendarClock size={18} />
+              <div><strong>Mañana hay {scheduledSummary.pedidosParaManana} {scheduledSummary.pedidosParaManana === 1 ? "pedido programado" : "pedidos programados"}.</strong><span>Revisá la agenda y el stock comprometido con anticipación.</span></div>
+            </motion.section>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {view === "TODAY" ? <>
+        <div className="orders-stats">
         <KpiCard
           title="Pendientes"
           value={counts.pendientes}
@@ -451,22 +661,11 @@ function Pedidos() {
           active={estadoActivo === "CANCELADO"}
           onClick={() => setEstadoActivo("CANCELADO")}
         />
-      </div>
+        </div>
 
-      <div className="orders-toolbar">
-        <AppButton
-          className="orders-new-button"
-          variant="primary"
-          size="md"
-          icon={<Plus size={18} />}
-          onClick={abrirNuevoPedidoManual}
-        >
-          Nuevo pedido
-        </AppButton>
+        <div className="orders-actions-row">{orderActions}</div>
 
-      </div>
-
-      <div className="orders-content-grid">
+        <div className="orders-content-grid">
         <div className="orders-panel">
           {error && <div className="orders-error">{error}</div>}
 
@@ -484,11 +683,30 @@ function Pedidos() {
         </div>
 
         <CriticalStockPanel key={stockRefreshKey} />
-      </div>
+        </div>
+      </> : (
+        <>
+          <div className="orders-actions-row">{scheduledOrderAction}</div>
+          <ScheduledOrdersView
+            pedidos={scheduledOrders}
+            summary={scheduledSummary}
+            loading={scheduledLoading}
+            error={scheduledError}
+            selectedDate={scheduledDate}
+            onDateChange={setScheduledDate}
+            onClearDate={() => setScheduledDate("")}
+            onProgram={abrirProgramarPedido}
+            onEdit={abrirEditorPedido}
+            onCancel={abrirConfirmacionCancelacion}
+            onLoadDetail={cargarDetallePedido}
+          />
+        </>
+      )}
 
       <NewOrderDrawer
         open={newOrderOpen}
         onClose={cerrarNuevoPedido}
+        mode={newOrderMode}
         pedidoEditando={pedidoEditando}
         onCreated={handlePedidoCreado}
         onUpdated={handlePedidoActualizado}
@@ -496,12 +714,12 @@ function Pedidos() {
 
       <AppConfirmDialog
         open={pedidoACancelar !== null}
-        title="Cancelar pedido"
+        title={pedidoACancelar?.fechaEntrega ? "¿Cancelar pedido programado?" : "Cancelar pedido"}
         description={
           pedidoACancelar
-            ? `Vas a cancelar el pedido de ${
-                pedidoACancelar.cliente || "sin cliente"
-              }. Esta acción lo moverá al estado Cancelado.`
+            ? pedidoACancelar.fechaEntrega
+              ? `${pedidoACancelar.cliente || "Sin cliente"} · ${formatScheduledDelivery(pedidoACancelar.fechaEntrega, pedidoACancelar.horario)}. El backend actualizará automáticamente el stock comprometido.`
+              : `Vas a cancelar el pedido de ${pedidoACancelar.cliente || "sin cliente"}. Esta acción lo moverá al estado Cancelado.`
             : "Vas a cancelar este pedido."
         }
         confirmText="Cancelar pedido"

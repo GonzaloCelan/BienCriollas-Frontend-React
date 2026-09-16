@@ -7,6 +7,7 @@ import {
 } from "react";
 import { X } from "lucide-react";
 import { GooeyToaster } from "goey-toast";
+import { AnimatePresence, motion } from "framer-motion";
 
 import SplashScreen from "./components/SplashScreen";
 import LoginScreen, { SessionLoadingScreen } from "./components/LoginScreen";
@@ -23,6 +24,7 @@ import {
   limpiarBadgePedidos,
 } from "./services/appBadge";
 import { obtenerTodosLosPedidosPorEstado } from "./services/pedidosApi";
+import { isPageAvailable } from "./config/navigation";
 
 import "./styles/sidebar.css";
 import "./styles/mobile.css";
@@ -36,12 +38,20 @@ const Estadisticas = lazy(() => import("./pages/Estadisticas"));
 const Egresos = lazy(() => import("./pages/Egresos"));
 const Ingresos = lazy(() => import("./pages/Ingresos"));
 const Usuarios = lazy(() => import("./pages/Usuarios"));
+const Ingredientes = lazy(() => import("./pages/Ingredientes"));
+const Recetas = lazy(() => import("./pages/Recetas"));
+const Proceso = lazy(() => import("./pages/Proceso"));
+const NuevaProduccion = lazy(() => import("./pages/NuevaProduccion"));
+const CostosRendimiento = lazy(() => import("./pages/CostosRendimiento"));
+const SeccionEnPreparacion = lazy(() => import("./pages/SeccionEnPreparacion"));
 
 const ADMIN_PAGES: AppPage[] = [
   "ingresos",
   "egresos",
   "estadisticas",
   "usuarios",
+  "empleados",
+  "proveedores",
 ];
 
 function obtenerHorarioPedido(pedido: unknown) {
@@ -91,21 +101,9 @@ function AuthenticatedApp({
   const [changePasswordOpen, setChangePasswordOpen] = useState(false);
 
   const paginaActiva =
-    !esAdministrador && ADMIN_PAGES.includes(activePage)
+    !isPageAvailable(activePage) || (!esAdministrador && ADMIN_PAGES.includes(activePage))
       ? "pedidos"
       : activePage;
-
-  useEffect(() => {
-    const mobileViewport = window.matchMedia("(max-width: 760px)");
-
-    function mantenerPedidosEnMovil() {
-      if (mobileViewport.matches) setActivePage("pedidos");
-    }
-
-    mantenerPedidosEnMovil();
-    mobileViewport.addEventListener("change", mantenerPedidosEnMovil);
-    return () => mobileViewport.removeEventListener("change", mantenerPedidosEnMovil);
-  }, []);
 
   const cargarPedidosPendientesTopbar = useCallback(async () => {
     try {
@@ -148,7 +146,23 @@ function AuthenticatedApp({
     };
   }, []);
 
+  useEffect(() => {
+    if (collapsed) return;
+
+    const autoCollapse = window.setTimeout(() => {
+      const isDesktop = window.matchMedia("(min-width: 761px)").matches;
+      if (isDesktop) setCollapsed(true);
+    }, 4000);
+
+    return () => window.clearTimeout(autoCollapse);
+  }, [collapsed]);
+
+  const toggleSidebar = useCallback(() => {
+    setCollapsed((previous) => !previous);
+  }, []);
+
   function cambiarPagina(page: AppPage) {
+    if (!isPageAvailable(page)) return;
     if (!esAdministrador && ADMIN_PAGES.includes(page)) return;
     setActivePage(page);
   }
@@ -166,10 +180,10 @@ function AuthenticatedApp({
         showTimestamp={false}
       />
 
-      <div className="app-shell">
+      <div className={`app-shell app-shell--sidebar ${collapsed ? "app-shell--collapsed" : ""}`}>
         <Sidebar
           collapsed={collapsed}
-          onToggle={() => setCollapsed((prev) => !prev)}
+          onToggle={toggleSidebar}
           activePage={paginaActiva}
           onChangePage={cambiarPagina}
           pedidosPendientes={pedidosPendientes}
@@ -190,19 +204,33 @@ function AuthenticatedApp({
         )}
 
         <main
+          id="app-main"
           className={`app-content ${collapsed ? "app-content--collapsed" : ""}`}
         >
-          <Suspense
-            fallback={<div className="app-page-loading" aria-label="Cargando" />}
-          >
-            {paginaActiva === "pedidos" && <Pedidos />}
-            {paginaActiva === "catalogo" && <Catalogo />}
-            {paginaActiva === "stock" && <Stock />}
-            {esAdministrador && paginaActiva === "estadisticas" && <Estadisticas />}
-            {esAdministrador && paginaActiva === "egresos" && <Egresos />}
-            {esAdministrador && paginaActiva === "ingresos" && <Ingresos />}
-            {esAdministrador && paginaActiva === "usuarios" && <Usuarios />}
-          </Suspense>
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div key={paginaActiva} className="bc-page-transition"
+              initial={{ opacity: 0, y: 14, scale: .995, filter: "blur(3px)" }}
+              animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+              exit={{ opacity: 0, y: -8, scale: .998, filter: "blur(2px)" }}
+              transition={{ duration: .28, ease: [.22, 1, .36, 1] }}>
+              <Suspense fallback={<div className="app-page-loading" aria-label="Cargando" />}>
+                {paginaActiva === "pedidos" && <Pedidos />}
+                {paginaActiva === "catalogo" && <Catalogo />}
+                {paginaActiva === "stock" && <Stock />}
+                {esAdministrador && paginaActiva === "estadisticas" && <Estadisticas />}
+                {esAdministrador && paginaActiva === "egresos" && <Egresos />}
+                {esAdministrador && paginaActiva === "ingresos" && <Ingresos />}
+                {esAdministrador && paginaActiva === "usuarios" && <Usuarios />}
+                {esAdministrador && paginaActiva === "empleados" && <Usuarios title="Usuarios" />}
+                {esAdministrador && paginaActiva === "proveedores" && <SeccionEnPreparacion section="proveedores" />}
+                {paginaActiva === "ingredientes" && <Ingredientes />}
+                {paginaActiva === "recetas" && <Recetas />}
+                {paginaActiva === "proceso" && <Proceso />}
+                {paginaActiva === "produccion-real" && <NuevaProduccion />}
+                {paginaActiva === "costos-rendimiento" && <CostosRendimiento />}
+              </Suspense>
+            </motion.div>
+          </AnimatePresence>
         </main>
 
         <ChangePasswordDialog

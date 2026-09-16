@@ -10,7 +10,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import Kpi from "../components/Kpi";
 
@@ -293,7 +293,7 @@ function Estadisticas() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  async function cargarEstadisticas() {
+  const cargarEstadisticas = useCallback(async () => {
     try {
       setLoading(true);
       setError("");
@@ -314,11 +314,12 @@ function Estadisticas() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [periodo, fecha, mesSeleccionado]);
 
   useEffect(() => {
-    cargarEstadisticas();
-  }, [periodo, fecha, mesSeleccionado]);
+    const timer = window.setTimeout(() => void cargarEstadisticas(), 0);
+    return () => window.clearTimeout(timer);
+  }, [cargarEstadisticas]);
 
   const rankingVariedades = useMemo(
     () => buildRanking(estadistica),

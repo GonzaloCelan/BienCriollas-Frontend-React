@@ -1,20 +1,8 @@
 /* Adaptación táctil y responsive. Se importa al final para preservar escritorio. */
 
-.topbar__mobile-page,
-.topbar__mobile-menu-btn,
-.topbar__mobile-overlay {
-  display: none;
-}
-
 .orders-mobile-heading,
 .orders-mobile-list {
   display: none;
-}
-
-@media (max-width: 1100px) {
-  .app-content {
-    padding-top: 74px;
-  }
 }
 
 @media (max-width: 760px) {
@@ -60,143 +48,6 @@
     max-width: 100%;
     font-size: clamp(48px, 17vw, 68px);
     white-space: normal;
-  }
-
-  /* Barra superior y navegación móvil */
-  .topbar {
-    top: 8px;
-    width: calc(100% - 16px);
-    height: 48px;
-    grid-template-columns: 48px minmax(0, 1fr) auto;
-    column-gap: 8px;
-  }
-
-  .topbar__brand-button,
-  .topbar__brand {
-    width: 48px;
-    height: 48px;
-  }
-
-  .topbar__brand-logo {
-    width: 40px;
-    height: 40px;
-  }
-
-  .topbar__mobile-page {
-    display: block;
-    min-width: 0;
-    overflow: hidden;
-    color: #111827;
-    font-family: "Inter", sans-serif;
-    font-size: 14px;
-    font-weight: 900;
-    line-height: 48px;
-    text-align: left;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    pointer-events: none;
-  }
-
-  body.dark-mode .topbar__mobile-page {
-    color: #f8fafc;
-  }
-
-  .topbar__nav {
-    position: fixed;
-    top: 64px;
-    right: 8px;
-    left: 8px;
-    z-index: 1002;
-    display: none;
-    width: auto;
-    height: auto;
-    max-height: calc(100dvh - 76px);
-    padding: 8px;
-    flex-direction: column;
-    align-items: stretch;
-    justify-content: flex-start;
-    gap: 4px;
-    overflow-y: auto;
-    border-radius: 12px;
-    animation: mobileNavIn 0.18s ease both;
-  }
-
-  .topbar__nav--mobile-open {
-    display: flex;
-  }
-
-  .topbar__active-pill {
-    display: none;
-  }
-
-  .topbar__item {
-    width: 100%;
-    min-height: 46px;
-    padding: 0 16px;
-    flex: 0 0 auto;
-    justify-content: flex-start;
-    border-radius: 8px;
-    font-size: 14px;
-  }
-
-  .topbar__item.active,
-  body.dark-mode .topbar__item.active {
-    background: #f34343;
-    color: #ffffff;
-    transform: none;
-  }
-
-  .topbar__actions {
-    gap: 5px;
-  }
-
-  .topbar__theme-btn,
-  .topbar__icon-btn,
-  .topbar__notifications,
-  .topbar__mobile-menu-btn {
-    width: 40px;
-    height: 40px;
-  }
-
-  .topbar__mobile-menu-btn {
-    display: none;
-    place-items: center;
-    padding: 0;
-    border: 0;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.92);
-    color: #374151;
-    box-shadow:
-      rgba(50, 50, 105, 0.14) 0 2px 5px,
-      inset 0 0 0 1px rgba(226, 232, 240, 0.75);
-  }
-
-  body.dark-mode .topbar__mobile-menu-btn {
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    background: rgba(15, 21, 30, 0.92);
-    color: #f8fafc;
-    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.32);
-  }
-
-  .topbar__mobile-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 999;
-    display: block;
-    padding: 0;
-    border: 0;
-    background: rgba(15, 23, 42, 0.3);
-    backdrop-filter: blur(3px);
-    -webkit-backdrop-filter: blur(3px);
-  }
-
-  .topbar__notifications-panel {
-    top: 62px;
-    right: 8px;
-    width: calc(100vw - 16px);
-    max-height: calc(100dvh - 78px);
-    overflow-y: auto;
-    border-radius: 12px;
   }
 
   /* Espaciado común de todas las pantallas */
@@ -1215,10 +1066,6 @@
 }
 
 @media (max-width: 430px) {
-  .topbar__theme-btn {
-    display: none;
-  }
-
   .orders-stats {
     gap: 5px;
   }
@@ -1259,28 +1106,8 @@
   }
 }
 
-@keyframes mobileNavIn {
-  from {
-    opacity: 0;
-    transform: translateY(-8px) scale(0.98);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
 /* Pedidos móvil: vista operativa compacta */
 @media (max-width: 760px) {
-  body .topbar {
-    display: none;
-  }
-
-  body .app-content {
-    padding-top: 0;
-  }
-
   body .orders-page {
     padding: 0 14px 28px;
   }
@@ -1485,6 +1312,9 @@
   .orders-mobile-card__client {
     max-width: 100%;
     overflow: hidden;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     color: #201d1a;
     font-size: 13px;
     font-weight: 900;

@@ -1,7 +1,5 @@
 import {
   useCallback,
-  createContext,
-  useContext,
   useEffect,
   useRef,
   useState,
@@ -14,20 +12,7 @@ import {
   type ActualizarPreciosCatalogoPayload,
   type CatalogoItem,
 } from "../services/catalogoApi";
-
-type CatalogoContextValue = {
-  catalogo: CatalogoItem[];
-  catalogoLoading: boolean;
-  catalogoError: string;
-  catalogoUsandoRespaldo: boolean;
-  recargarCatalogo: () => Promise<boolean>;
-  actualizarPreciosCatalogo: (
-    idVariedad: number,
-    precios: ActualizarPreciosCatalogoPayload
-  ) => Promise<void>;
-};
-
-const CatalogoContext = createContext<CatalogoContextValue | null>(null);
+import { CatalogoContext } from "./catalogoContextBase";
 
 const CATALOGO_CACHE_KEY = "bien-criollas-catalogo-v1";
 const RETRY_DELAYS = [0, 1500, 4000];
@@ -223,14 +208,4 @@ export function CatalogoProvider({ children }: PropsWithChildren) {
       {children}
     </CatalogoContext.Provider>
   );
-}
-
-export function useCatalogo() {
-  const context = useContext(CatalogoContext);
-
-  if (!context) {
-    throw new Error("useCatalogo debe usarse dentro de CatalogoProvider.");
-  }
-
-  return context;
 }

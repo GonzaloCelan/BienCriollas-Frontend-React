@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type AnimatedNumberProps = {
   value: number;
@@ -26,13 +26,14 @@ function AnimatedNumber({
   money = false,
 }: AnimatedNumberProps) {
   const [displayValue, setDisplayValue] = useState(0);
+  const displayValueRef = useRef(0);
 
   const targetValue = useMemo(() => Number(value ?? 0), [value]);
 
   useEffect(() => {
     let animationFrame: number;
     const startTime = performance.now();
-    const startValue = displayValue;
+    const startValue = displayValueRef.current;
     const difference = targetValue - startValue;
 
     function animate(currentTime: number) {
@@ -42,6 +43,7 @@ function AnimatedNumber({
       const easedProgress = 1 - Math.pow(1 - progress, 3);
       const currentValue = startValue + difference * easedProgress;
 
+      displayValueRef.current = currentValue;
       setDisplayValue(currentValue);
 
       if (progress < 1) {

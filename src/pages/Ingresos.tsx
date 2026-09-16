@@ -8,7 +8,7 @@ import {
   Search,
 } from "lucide-react";
 
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 import { gooeyToast } from "goey-toast";
 
 import "../styles/ingresos.css";
@@ -234,7 +234,7 @@ function Ingresos() {
   const [filtroTipo, setFiltroTipo] = useState<FiltroTipo>("TODOS");
   const [paginaActual, setPaginaActual] = useState(1);
 
-  async function cargarIngresos() {
+  const cargarIngresos = useCallback(async () => {
     try {
       setLoading(true);
       setError("");
@@ -264,15 +264,12 @@ function Ingresos() {
     } finally {
       setLoading(false);
     }
-  }
-
-  useEffect(() => {
-    cargarIngresos();
   }, [periodo, fecha, mesSeleccionado]);
 
   useEffect(() => {
-    setPaginaActual(1);
-  }, [busqueda, filtroTipo]);
+    const timer = window.setTimeout(() => void cargarIngresos(), 0);
+    return () => window.clearTimeout(timer);
+  }, [cargarIngresos]);
 
   const movimientos = useMemo(() => data?.movimientos ?? [], [data]);
 
@@ -619,9 +616,10 @@ function Ingresos() {
                 <label className="income-filter-select">
                   <select
                     value={filtroTipo}
-                    onChange={(event) =>
-                      setFiltroTipo(event.target.value as FiltroTipo)
-                    }
+                    onChange={(event) => {
+                      setFiltroTipo(event.target.value as FiltroTipo);
+                      setPaginaActual(1);
+                    }}
                   >
                     <option value="TODOS">Todos los tipos</option>
                     <option value="EFECTIVO">Efectivo</option>
@@ -635,7 +633,10 @@ function Ingresos() {
                 <div className="income-search">
                   <input
                     value={busqueda}
-                    onChange={(event) => setBusqueda(event.target.value)}
+                    onChange={(event) => {
+                      setBusqueda(event.target.value);
+                      setPaginaActual(1);
+                    }}
                     placeholder="Buscar movimiento..."
                   />
                   <Search size={15} />

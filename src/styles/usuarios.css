@@ -1,7 +1,7 @@
 .users-page { min-height: 100%; padding: 28px; color: #1d2738; }
 .users-page__header { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; margin-bottom: 22px; }
 .users-page__header p { margin: 0 0 6px; color: #f34343; font-size: 10px; font-weight: 900; letter-spacing: 0.14em; }
-.users-page__header h2 { margin: 0; font-family: "Mrs Saint Delafield", cursive; font-size: 48px; font-weight: 400; line-height: 0.95; }
+.users-page__header h2 { margin: 0; font-family: "Birthstone", cursive; font-size: 48px; font-weight: 400; line-height: 0.95; }
 .users-page__header span { display: block; margin-top: 10px; color: #708097; font-size: 13px; font-weight: 650; }
 .users-page__header-actions { display: flex; gap: 9px; }
 .users-page__header-actions button { min-height: 42px; display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 7px; font-size: 12px; font-weight: 900; }

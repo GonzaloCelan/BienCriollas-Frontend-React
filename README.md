@@ -1,5 +1,15 @@
 # React + TypeScript + Vite
 
+## Habilitación de Producción
+
+La aplicación usa el sidebar lateral en todos los entornos. Producción y sus cinco subsecciones permanecen visibles con candados, pero no se pueden seleccionar mientras `VITE_PRODUCTION_ENABLED=false`.
+
+El bloqueo está configurado tanto en `.env` como en `.env.production`. Si la variable no se define, Producción también queda bloqueada. La aplicación impide navegar a estas pantallas y no las monta mientras están deshabilitadas.
+
+Cuando el dueño apruebe el módulo, cambiar `VITE_PRODUCTION_ENABLED=true` en el entorno correspondiente y en las variables del servicio de despliegue si allí se define esta variable. Reiniciar el servidor local o generar y desplegar una nueva compilación. La PWA recibe el cambio con esa actualización.
+
+Esta configuración controla la interfaz; los permisos de los endpoints siguen siendo responsabilidad del backend.
+
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:

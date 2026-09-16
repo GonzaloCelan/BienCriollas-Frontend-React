@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import { Minus, Plus, X } from "lucide-react";
+import { CalendarClock, Minus, Plus, X } from "lucide-react";
 import { gooeyToast } from "goey-toast";
 import { TOAST_RAPIDO_TIMING } from "../config/toast";
 
@@ -8,6 +8,8 @@ import { TOAST_RAPIDO_TIMING } from "../config/toast";
 import {
   actualizarPedidoApi,
   crearPedidoApi,
+  obtenerStockComprometidoApi,
+  type CommittedStock,
   type PedidoRequestDTO,
   type TipoPagoBackend,
   type TipoVentaBackend,
@@ -18,15 +20,16 @@ import { obtenerStockActual, type StockItem } from "../services/stockApi";
 
 import { imprimirComandaPedido } from "../utils/printComanda";
 import { calcularTotalPedido } from "../utils/calcularTotalPedido";
-import { useCatalogo } from "../context/CatalogoContext";
+import { useCatalogo } from "../context/useCatalogo";
 
 import "../styles/newOrderDrawer.css";
 
 type NewOrderDrawerProps = {
   open: boolean;
   onClose: () => void;
+  mode?: "IMMEDIATE" | "SCHEDULED";
   pedidoEditando?: Pedido | null;
-  onCreated?: () => void | Promise<void>;
+  onCreated?: (pedido: Pedido, totalUnidades: number) => void | Promise<void>;
   onUpdated?: () => void | Promise<void>;
 };
 
@@ -63,6 +66,19 @@ function parseMoney(value: string) {
   return Number(cleanValue || 0);
 }
 
+function localDateValue(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function minimumScheduledDate() {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  return localDateValue(tomorrow);
+}
+
 function normalizarTipoVentaPedido(tipoVenta: string): TipoVentaBackend {
   return tipoVenta.toLowerCase().includes("pedidos")
     ? "PEDIDOS_YA"
@@ -90,6 +106,7 @@ function obtenerNumeroPedidosYa(pedido: Pedido) {
 function NewOrderDrawer({
   open,
   onClose,
+  mode = "IMMEDIATE",
   pedidoEditando = null,
   onCreated,
   onUpdated,
@@ -108,6 +125,7 @@ function NewOrderDrawer({
   const [cliente, setCliente] = useState("");
   const [numeroPedido, setNumeroPedido] = useState("");
   const [hora, setHora] = useState("");
+  const [fechaEntrega, setFechaEntrega] = useState("");
   const [tipoPago, setTipoPago] = useState<TipoPagoBackend>("EFECTIVO");
   const [tipoVenta, setTipoVenta] = useState<TipoVentaBackend>("PARTICULAR");
   const [totalManual, setTotalManual] = useState("");
@@ -121,12 +139,14 @@ function NewOrderDrawer({
   const [montoTransferencia, setMontoTransferencia] = useState("");
 
   const [stockActual, setStockActual] = useState<StockItem[]>([]);
+  const [stockComprometido, setStockComprometido] = useState<CommittedStock[]>([]);
   const [stockLoading, setStockLoading] = useState(false);
   const [stockError, setStockError] = useState("");
 
   const [stockAlert, setStockAlert] = useState<StockAlert | null>(null);
 
   const esEdicion = pedidoEditando !== null;
+  const esProgramado = mode === "SCHEDULED" || Boolean(pedidoEditando?.fechaEntrega);
 
   function cargarDatosFormulario(pedido: Pedido | null) {
     if (!pedido) {
@@ -150,6 +170,7 @@ function NewOrderDrawer({
     setCliente(pedido.cliente ?? "");
     setNumeroPedido(obtenerNumeroPedidosYa(pedido));
     setHora(pedido.horario && pedido.horario !== "-" ? pedido.horario.slice(0, 5) : "");
+    setFechaEntrega(pedido.fechaEntrega ?? "");
     setTipoVenta(venta);
     setTipoPago(pago);
     setCantidades(cantidadesPedido);
@@ -169,13 +190,17 @@ function NewOrderDrawer({
   }
 
   useEffect(() => {
-    if (open) {
+    if (!open) return;
+    const task = window.setTimeout(() => {
       setShouldRender(true);
       setClosing(false);
       cargarDatosFormulario(pedidoEditando);
-      cargarStockParaPedido();
-    }
-  }, [open, pedidoEditando]);
+      void cargarStockParaPedido();
+    }, 0);
+    return () => window.clearTimeout(task);
+    // The drawer intentionally resets only when a new open cycle starts.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, pedidoEditando, mode]);
 
   useEffect(() => {
     if (!shouldRender) return;
@@ -193,8 +218,15 @@ function NewOrderDrawer({
       setStockLoading(true);
       setStockError("");
 
-      const data = await obtenerStockActual();
-      setStockActual(data);
+      if (esProgramado) {
+        const data = await obtenerStockComprometidoApi();
+        setStockComprometido(data);
+        setStockActual([]);
+      } else {
+        const data = await obtenerStockActual();
+        setStockActual(data);
+        setStockComprometido([]);
+      }
     } catch (error) {
       console.error(error);
       setStockError("No se pudo validar el stock actual.");
@@ -208,6 +240,7 @@ function NewOrderDrawer({
     setCliente("");
     setNumeroPedido("");
     setHora("");
+    setFechaEntrega("");
     setTipoPago("EFECTIVO");
     setTipoVenta("PARTICULAR");
     setTotalManual("");
@@ -278,6 +311,7 @@ function NewOrderDrawer({
 
   function validarCantidadContraStock(idVariedad: number, nuevaCantidad: number) {
     if (nuevaCantidad <= 0) return true;
+    if (esProgramado) return true;
 
     if (stockLoading) {
       setStockAlert({
@@ -351,6 +385,7 @@ function NewOrderDrawer({
   }
 
   function validarPedidoCompleto(detalles: { idVariedad: number; cantidad: number }[]) {
+    if (esProgramado) return true;
     for (const detalle of detalles) {
       const valido = validarCantidadContraStock(
         detalle.idVariedad,
@@ -403,6 +438,21 @@ function NewOrderDrawer({
       return;
     }
 
+    if (esProgramado && !fechaEntrega) {
+      alert("Seleccioná la fecha de entrega.");
+      return;
+    }
+
+    if (esProgramado && fechaEntrega < minimumScheduledDate()) {
+      alert("La fecha de entrega debe ser posterior a hoy.");
+      return;
+    }
+
+    if (esProgramado && !hora) {
+      alert("Seleccioná la hora de entrega.");
+      return;
+    }
+
     if (detalles.length === 0) {
       alert("Cargá al menos una variedad.");
       return;
@@ -444,6 +494,7 @@ function NewOrderDrawer({
         tipoVenta === "PEDIDOS_YA" && numeroPedido.trim()
           ? numeroPedido.trim()
           : null,
+      fechaEntrega: esProgramado ? fechaEntrega : null,
       horaEntrega: hora ? `${hora.slice(0, 5)}:00` : null,
       montoEfectivo: montoEfectivoPedido,
       montoTransferencia: montoTransferenciaPedido,
@@ -477,14 +528,19 @@ function NewOrderDrawer({
       await new Promise<void>((resolve) => {
         window.setTimeout(resolve, 450);
       });
-      await imprimirComandaPedido(pedidoCreado, itemsComanda);
-      await onCreated?.();
+      if (!esProgramado) {
+        await imprimirComandaPedido(pedidoCreado, itemsComanda);
+      }
+      await onCreated?.(pedidoCreado, totalEmpanadas);
     } catch (error) {
       console.error(error);
       gooeyToast.error(
         esEdicion ? "No se pudo actualizar el pedido" : "No se pudo crear el pedido",
         {
-          description: "Revisá los datos e intentá nuevamente.",
+          description:
+            error instanceof Error
+              ? error.message
+              : "Revisá los datos e intentá nuevamente.",
           timing: TOAST_RAPIDO_TIMING,
           showTimestamp: false,
         }
@@ -510,11 +566,19 @@ function NewOrderDrawer({
       <section className="new-order-drawer__panel">
         <header className="new-order-drawer__header">
           <div>
-            <h3>{esEdicion ? `Editar pedido #${pedidoEditando.id}` : "Nuevo pedido"}</h3>
+            <h3>
+              {esEdicion
+                ? `Editar pedido #${pedidoEditando.id}`
+                : esProgramado
+                  ? "Programar pedido"
+                  : "Nuevo pedido"}
+            </h3>
             <p>
               {esEdicion
                 ? "Modificá los datos y las variedades"
-                : "Registro rápido de venta"}
+                : esProgramado
+                  ? "Registrá ahora un pedido para una fecha futura."
+                  : "Registro rápido de venta"}
             </p>
           </div>
 
@@ -529,6 +593,41 @@ function NewOrderDrawer({
 
         <div className="new-order-drawer__body">
           <section className="drawer-section">
+            {esProgramado && (
+              <div className="drawer-scheduled-block">
+                <div className="drawer-scheduled-block__heading">
+                  <CalendarClock size={18} />
+                  <div>
+                    <strong>Entrega programada</strong>
+                    <span>El stock físico se descontará cuando el pedido pase a preparación.</span>
+                  </div>
+                </div>
+                <div className="drawer-grid">
+                  <label className="drawer-floating-field">
+                    <input
+                      type="date"
+                      min={minimumScheduledDate()}
+                      value={fechaEntrega}
+                      onChange={(event) => setFechaEntrega(event.target.value)}
+                      placeholder=" "
+                      required
+                    />
+                    <span>Fecha de entrega *</span>
+                  </label>
+                  <label className="drawer-floating-field">
+                    <input
+                      type="time"
+                      value={hora}
+                      onChange={(event) => setHora(event.target.value)}
+                      placeholder=" "
+                      required
+                    />
+                    <span>Hora de entrega *</span>
+                  </label>
+                </div>
+              </div>
+            )}
+
             <div className="drawer-section__title">
               <span>Datos del pedido</span>
             </div>
@@ -542,7 +641,7 @@ function NewOrderDrawer({
               <span>Nombre del cliente</span>
             </label>
 
-            <div className="drawer-grid">
+            <div className={`drawer-grid ${esProgramado ? "drawer-grid--single" : ""}`}>
               <label className="drawer-floating-field">
                 <input
                   value={numeroPedido}
@@ -553,15 +652,17 @@ function NewOrderDrawer({
                 <span>Número de pedido</span>
               </label>
 
-              <label className="drawer-floating-field">
-                <input
-                  value={hora}
-                  onChange={(event) => setHora(event.target.value)}
-                  type="time"
-                  placeholder=" "
-                />
-                <span>Hora</span>
-              </label>
+              {!esProgramado && (
+                <label className="drawer-floating-field">
+                  <input
+                    value={hora}
+                    onChange={(event) => setHora(event.target.value)}
+                    type="time"
+                    placeholder=" "
+                  />
+                  <span>Hora</span>
+                </label>
+              )}
             </div>
 
             <div className="drawer-field drawer-field--full">
@@ -758,6 +859,12 @@ function NewOrderDrawer({
             <div className="drawer-varieties">
               {variedadesList.map((variedad) => {
                 const cantidad = cantidades[variedad.id] ?? 0;
+                const compromiso = stockComprometido.find(
+                  (item) => item.variedadId === variedad.id
+                );
+                const disponibleLuego = compromiso
+                  ? compromiso.stockDisponible - cantidad
+                  : null;
 
                 return (
                   <article className="drawer-variety" key={variedad.id}>
@@ -766,6 +873,19 @@ function NewOrderDrawer({
 
                       {cantidad > 0 && (
                         <span>{cantidad} seleccionadas</span>
+                      )}
+                      {esProgramado && compromiso && (
+                        <small
+                          className={
+                            disponibleLuego !== null && disponibleLuego < 0
+                              ? "is-missing"
+                              : ""
+                          }
+                        >
+                          {disponibleLuego !== null && disponibleLuego < 0
+                            ? `Faltarán producir ${Math.abs(disponibleLuego)} unidades`
+                            : `Físico ${compromiso.stockFisico} · comprometido ${compromiso.stockComprometido} · libre ${compromiso.stockDisponible}`}
+                        </small>
                       )}
                     </div>
 
@@ -840,7 +960,7 @@ function NewOrderDrawer({
             onClick={confirmarPedido}
             disabled={
               saving ||
-              stockLoading ||
+              (!esProgramado && stockLoading) ||
               (tipoVenta === "PARTICULAR" &&
                 catalogo.length === 0 &&
                 !totalModificadoManualmente)
@@ -851,13 +971,15 @@ function NewOrderDrawer({
             catalogo.length === 0 &&
             !totalModificadoManualmente
               ? "Cargando precios..."
-              : stockLoading
+              : !esProgramado && stockLoading
                 ? "Validando stock..."
                 : saving
                   ? "Guardando..."
                   : esEdicion
                     ? "Guardar cambios"
-                    : "Confirmar"}
+                    : esProgramado
+                      ? "Programar pedido"
+                      : "Confirmar"}
           </button>
         </footer>
 

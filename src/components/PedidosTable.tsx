@@ -1,5 +1,6 @@
 import {
   ArrowRightCircle,
+  CalendarClock,
   Clock3,
   CreditCard,
   Eye,
@@ -8,7 +9,7 @@ import {
   Store,
   Trash2,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { gooeyToast } from "goey-toast";
 import { TOAST_RAPIDO_TIMING } from "../config/toast";
 
@@ -41,6 +42,11 @@ export type Pedido = {
   nroPedido?: string | number | null;
   montoEfectivo?: number;
   montoTransferencia?: number;
+  fechaPedido?: string | null;
+  fechaEntrega?: string | null;
+  scheduled?: boolean;
+  deliveryToday?: boolean;
+  stockDiscounted?: boolean;
 
   items?: {
     idVariedad?: number;
@@ -158,6 +164,45 @@ function getHorarioPedido(horario: string) {
   return value.slice(0, 5);
 }
 
+type ScheduleTone = "normal" | "soon" | "urgent" | "critical" | "late";
+
+function getSchedulePresentation(pedido: Pedido, now: number) {
+  const horario = getHorarioPedido(pedido.horario);
+  const isClosed = pedido.estado === "Entregado" || pedido.estado === "Cancelado";
+  const timeMatch = horario.match(/^(\d{1,2}):(\d{2})$/);
+
+  if (horario === "Sin horario" || isClosed || !timeMatch) {
+    return { tone: "normal" as ScheduleTone, label: horario, title: undefined };
+  }
+
+  const currentDate = new Date(now);
+  const rawDate = pedido.fechaEntrega || pedido.fechaPedido || "";
+  const dateMatch = rawDate.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  const target = dateMatch
+    ? new Date(Number(dateMatch[1]), Number(dateMatch[2]) - 1, Number(dateMatch[3]))
+    : new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
+
+  target.setHours(Number(timeMatch[1]), Number(timeMatch[2]), 0, 0);
+  const minutesRemaining = Math.ceil((target.getTime() - now) / 60000);
+
+  if (minutesRemaining <= 0) {
+    const delayedMinutes = Math.abs(minutesRemaining);
+    return {
+      tone: "late" as ScheduleTone,
+      label: `Demorado · ${horario}`,
+      title: delayedMinutes > 0
+        ? `El horario se superó hace ${delayedMinutes} min`
+        : "El horario de entrega ya llegó",
+    };
+  }
+
+  const title = `Faltan ${minutesRemaining} min para la entrega`;
+  if (minutesRemaining <= 10) return { tone: "critical" as ScheduleTone, label: horario, title };
+  if (minutesRemaining <= 30) return { tone: "urgent" as ScheduleTone, label: horario, title };
+  if (minutesRemaining <= 60) return { tone: "soon" as ScheduleTone, label: horario, title };
+  return { tone: "normal" as ScheduleTone, label: horario, title: `Entrega prevista a las ${horario}` };
+}
+
 function PedidosTable({
   pedidos,
   loading = false,
@@ -173,6 +218,12 @@ function PedidosTable({
   const [detalleItems, setDetalleItems] = useState<Pedido["items"]>([]);
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [printingId, setPrintingId] = useState<number | null>(null);
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const interval = window.setInterval(() => setNow(Date.now()), 30000);
+    return () => window.clearInterval(interval);
+  }, []);
 
   const totalItems = (detalleItems ?? []).reduce(
     (acc, item) => acc + item.cantidad,
@@ -273,6 +324,13 @@ function PedidosTable({
                 >
                   <span className="orders-mobile-card__client">
                     {pedido.cliente || "Sin cliente"}
+                    {pedido.deliveryToday && (
+                      <CalendarClock
+                        className="orders-programmed-client-icon"
+                        size={15}
+                        aria-label="Pedido programado"
+                      />
+                    )}
                   </span>
                   <span className="orders-mobile-card__meta">
                     {esPedidosYa && numeroPedidoExterno !== "-"
@@ -348,6 +406,7 @@ function PedidosTable({
                 const puedeCambiarPagoPedido = puedeCambiarPago(pedido.estado);
                 const puedeEditar = puedeEditarPedido(pedido.estado);
                 const horarioPedido = getHorarioPedido(pedido.horario);
+                const schedulePresentation = getSchedulePresentation(pedido, now);
 
                 return (
                   <tr
@@ -361,7 +420,16 @@ function PedidosTable({
                   >
                     <td data-label="Cliente">
                       <div className="orders-client-cell">
-                        <strong>{pedido.cliente || "Sin cliente"}</strong>
+                        <div className="orders-client-cell__name">
+                          <strong>{pedido.cliente || "Sin cliente"}</strong>
+                          {pedido.deliveryToday && (
+                            <CalendarClock
+                              className="orders-programmed-client-icon"
+                              size={15}
+                              aria-label="Pedido programado"
+                            />
+                          )}
+                        </div>
                         <span>Pedido #{pedido.id}</span>
                       </div>
                     </td>
@@ -409,8 +477,17 @@ function PedidosTable({
                       <span className="orders-mobile-schedule-label">
                         Horario
                       </span>
-                      <span className="orders-schedule-value">
-                        {horarioPedido}
+                      <span
+                        className={`orders-schedule-value orders-schedule-value--${schedulePresentation.tone} ${
+                          pedido.estado === "Preparado" ? "orders-schedule-value--ready" : ""
+                        }`}
+                        title={schedulePresentation.title}
+                        aria-label={schedulePresentation.title || schedulePresentation.label}
+                      >
+                        {schedulePresentation.tone !== "normal" && (
+                          <span className="orders-schedule-dot" aria-hidden="true" />
+                        )}
+                        {schedulePresentation.label}
                       </span>
                     </td>
 

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { gooeyToast } from "goey-toast";
 
 import StockCard from "../components/StockCard";
@@ -125,7 +125,7 @@ function Stock() {
   const [mode, setMode] = useState<StockMode>("produccion");
   const [confirmOpen, setConfirmOpen] = useState(false);
 
-  async function cargarStock() {
+  const cargarStock = useCallback(async () => {
     try {
       setLoading(true);
       setError("");
@@ -144,11 +144,12 @@ function Stock() {
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
   useEffect(() => {
-    cargarStock();
-  }, []);
+    const timer = window.setTimeout(() => void cargarStock(), 0);
+    return () => window.clearTimeout(timer);
+  }, [cargarStock]);
 
   function limpiarCantidades() {
     setItems((prev) =>

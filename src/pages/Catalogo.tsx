@@ -9,7 +9,7 @@ import {
   X,
 } from "lucide-react";
 
-import { useCatalogo } from "../context/CatalogoContext";
+import { useCatalogo } from "../context/useCatalogo";
 import { useAuth } from "../context/useAuth";
 import type { CatalogoItem } from "../services/catalogoApi";
 import AppConfirmDialog from "../components/AppConfirmDialog";

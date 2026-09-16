@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { AlertTriangle } from "lucide-react";
 
 import { obtenerStockActual, type StockItem } from "../services/stockApi";
@@ -40,7 +40,7 @@ function CriticalStockPanel() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  async function cargarStock() {
+  const cargarStock = useCallback(async () => {
     try {
       setError("");
 
@@ -52,17 +52,20 @@ function CriticalStockPanel() {
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
   useEffect(() => {
-    cargarStock();
+    const initialLoad = window.setTimeout(() => void cargarStock(), 0);
 
     const interval = window.setInterval(() => {
-      cargarStock();
+      void cargarStock();
     }, 30000);
 
-    return () => window.clearInterval(interval);
-  }, []);
+    return () => {
+      window.clearTimeout(initialLoad);
+      window.clearInterval(interval);
+    };
+  }, [cargarStock]);
 
   const stockCritico = useMemo(() => {
     return stock

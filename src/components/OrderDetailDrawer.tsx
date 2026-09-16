@@ -19,6 +19,17 @@ function formatPrice(value: number) {
   }).format(value);
 }
 
+function formatDeliveryDate(value?: string | null) {
+  if (!value) return "-";
+  const [year, month, day] = value.split("-").map(Number);
+  if (!year || !month || !day) return value;
+  return new Intl.DateTimeFormat("es-AR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  }).format(new Date(year, month - 1, day));
+}
+
 function OrderDetailDrawer({
   pedido,
   items,
@@ -66,6 +77,20 @@ function OrderDetailDrawer({
             <span>Horario</span>
             <strong>{pedido.horario || "-"}</strong>
           </div>
+
+          {pedido.fechaEntrega && (
+            <div className="order-detail-row">
+              <span>Fecha de entrega</span>
+              <strong>{formatDeliveryDate(pedido.fechaEntrega)}</strong>
+            </div>
+          )}
+
+          {pedido.fechaEntrega && (
+            <div className="order-detail-row">
+              <span>Stock</span>
+              <strong>{pedido.stockDiscounted ? "Descontado" : "Reservado"}</strong>
+            </div>
+          )}
 
           <div className="order-detail-row">
             <span>Estado</span>

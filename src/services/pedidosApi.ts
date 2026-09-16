@@ -1,6 +1,6 @@
 import type { Pedido, EstadoPedidoFrontend } from "../components/PedidosTable";
 import { API_URL } from "../config/api";
-import { apiFetch } from "./httpClient";
+import { apiFetch, crearApiError } from "./httpClient";
 
 export type EstadoBackend =
   | "PENDIENTE"
@@ -21,6 +21,7 @@ export type PedidoRequestDTO = {
   tipoVenta: TipoVentaBackend;
   tipoPago: TipoPagoBackend;
   numeroPedidoPedidosYa: string | null;
+  fechaEntrega?: string | null;
   horaEntrega: string | null;
   montoEfectivo: number;
   montoTransferencia: number;
@@ -39,6 +40,26 @@ type PedidoResponseDTO = {
   estadoPedido: EstadoBackend;
   montoEfectivo?: number | null;
   montoTransferencia?: number | null;
+  fechaPedido?: string | null;
+  fechaEntrega?: string | null;
+  scheduled?: boolean;
+  deliveryToday?: boolean;
+  stockDiscounted?: boolean;
+};
+
+export type ScheduledOrdersSummary = {
+  totalPedidosProgramados: number;
+  pedidosParaHoy: number;
+  pedidosParaManana: number;
+  totalUnidadesComprometidas: number;
+};
+
+export type CommittedStock = {
+  variedadId: number;
+  variedad: string;
+  stockFisico: number;
+  stockComprometido: number;
+  stockDisponible: number;
 };
 
 type PageResponse<T> = {
@@ -124,7 +145,17 @@ function mapPedido(pedido: PedidoResponseDTO): Pedido {
     numeroPedidoPedidosYa: pedido.numeroPedidoPedidosYa,
     montoEfectivo: Number(pedido.montoEfectivo ?? 0),
     montoTransferencia: Number(pedido.montoTransferencia ?? 0),
+    fechaPedido: pedido.fechaPedido ?? null,
+    fechaEntrega: pedido.fechaEntrega ?? null,
+    scheduled: Boolean(pedido.scheduled),
+    deliveryToday: Boolean(pedido.deliveryToday),
+    stockDiscounted: Boolean(pedido.stockDiscounted),
   };
+}
+
+async function procesar<T>(response: Response, fallback: string): Promise<T> {
+  if (!response.ok) throw await crearApiError(response, fallback);
+  return (await response.json()) as T;
 }
 
 export async function obtenerPaginaPedidosPorEstado(
@@ -206,6 +237,32 @@ export async function obtenerPedidosDelDia(): Promise<Pedido[]> {
   ];
 }
 
+export async function obtenerPedidosProgramadosApi(
+  fecha?: string
+): Promise<Pedido[]> {
+  const params = fecha ? `?fecha=${encodeURIComponent(fecha)}` : "";
+  const data = await procesar<PedidoResponseDTO[] | PageResponse<PedidoResponseDTO>>(
+    await apiFetch(`${API_URL}/api/v2/pedido/programados${params}`),
+    "No se pudieron cargar los pedidos programados."
+  );
+  const pedidos = Array.isArray(data) ? data : data.content;
+  return pedidos.map(mapPedido);
+}
+
+export async function obtenerResumenPedidosProgramadosApi(): Promise<ScheduledOrdersSummary> {
+  return procesar<ScheduledOrdersSummary>(
+    await apiFetch(`${API_URL}/api/v2/pedido/programados/resumen`),
+    "No se pudo cargar el resumen de pedidos programados."
+  );
+}
+
+export async function obtenerStockComprometidoApi(): Promise<CommittedStock[]> {
+  return procesar<CommittedStock[]>(
+    await apiFetch(`${API_URL}/api/v2/pedido/programados/stock-comprometido`),
+    "No se pudo cargar el stock comprometido."
+  );
+}
+
 export async function actualizarEstadoPedidoApi(
   idPedido: number,
   nuevoEstado: EstadoBackend
@@ -218,9 +275,7 @@ export async function actualizarEstadoPedidoApi(
   );
 
   if (!response.ok) {
-    throw new Error(
-      `Error al actualizar estado del pedido. Status: ${response.status}`
-    );
+    throw await crearApiError(response, "No se pudo actualizar el estado del pedido.");
   }
 
   return await response.json();
@@ -238,7 +293,7 @@ export async function crearPedidoApi(
   });
 
   if (!response.ok) {
-    throw new Error(`Error al crear pedido. Status: ${response.status}`);
+    throw await crearApiError(response, "No se pudo crear el pedido.");
   }
 
   const data: PedidoResponseDTO = await response.json();
@@ -262,7 +317,7 @@ export async function actualizarPedidoApi(
   );
 
   if (!response.ok) {
-    throw new Error(`Error al actualizar pedido. Status: ${response.status}`);
+    throw await crearApiError(response, "No se pudo actualizar el pedido.");
   }
 }
 

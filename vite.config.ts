@@ -19,26 +19,32 @@ export default defineConfig({
         short_name: "Bien Criollas",
         description: "Sistema de gestión para Bien Criollas",
         lang: "es-AR",
+        dir: "ltr",
         theme_color: "#f34343",
         background_color: "#ffffff",
         display: "standalone",
+        display_override: ["window-controls-overlay", "standalone"],
         orientation: "any",
         start_url: "/",
         scope: "/",
+        categories: ["business", "productivity"],
+        prefer_related_applications: false,
 
         icons: [
           {
-            src: "/icons/logo.png",
+            src: "/icons/icon-192.png",
             sizes: "192x192",
             type: "image/png",
+            purpose: "any",
           },
           {
-            src: "/icons/logo.png",
+            src: "/icons/icon-512.png",
             sizes: "512x512",
             type: "image/png",
+            purpose: "any",
           },
           {
-            src: "/icons/logo-maskable.png",
+            src: "/icons/icon-maskable-512.png",
             sizes: "512x512",
             type: "image/png",
             purpose: "maskable",
@@ -53,6 +59,12 @@ export default defineConfig({
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
     
         globPatterns: ["**/*.{js,css,html,ico,png,svg,webp,mp3}"],
+        globIgnores: [
+          "icons/logo.png",
+          "icons.svg",
+          "sound/intro.mp3",
+          "sound/intro2.mp3",
+        ],
 
         runtimeCaching: [
           {
@@ -68,13 +80,30 @@ export default defineConfig({
               url.pathname.startsWith("/api") &&
               url.hostname ===
                 "biencriollas-backend-production.up.railway.app",
-            handler: "NetworkFirst",
+            handler: "NetworkOnly",
+          },
+          {
+            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+            handler: "StaleWhileRevalidate",
             options: {
-              cacheName: "bien-criollas-api",
-              networkTimeoutSeconds: 4,
+              cacheName: "bien-criollas-google-fonts-stylesheets",
               expiration: {
-                maxEntries: 80,
-                maxAgeSeconds: 60 * 60 * 24 * 7,
+                maxEntries: 10,
+                maxAgeSeconds: 60 * 60 * 24 * 365,
+              },
+            },
+          },
+          {
+            urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "bien-criollas-google-fonts-webfonts",
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+              expiration: {
+                maxEntries: 20,
+                maxAgeSeconds: 60 * 60 * 24 * 365,
               },
             },
           },
@@ -82,4 +111,21 @@ export default defineConfig({
       },
     }),
   ],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes("/node_modules/react/") || id.includes("/node_modules/react-dom/")) {
+            return "react-vendor";
+          }
+          if (id.includes("/node_modules/framer-motion/")) {
+            return "motion-vendor";
+          }
+          if (id.includes("/node_modules/@stomp/") || id.includes("/node_modules/sockjs-client/")) {
+            return "realtime-vendor";
+          }
+        },
+      },
+    },
+  },
 });
