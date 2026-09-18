@@ -1,7 +1,56 @@
 import { API_URL } from "../config/api";
-import { apiFetch } from "./httpClient";
+import { apiFetch, crearApiError } from "./httpClient";
 
 export type PeriodoEstadistica = "hoy" | "ultimos7" | "mes";
+
+export type ClienteRankingDTO = {
+  posicion: number;
+  cliente: string;
+  cantidadPedidos: number;
+  totalAcumulado: number;
+  ticketPromedio: number;
+  totalUnidades: number;
+};
+
+export type ClientesRankingDTO = {
+  periodo: { tipo: "DIA" | "ULTIMOS_7_DIAS" | "MES"; desde: string; hasta: string };
+  orden: "IMPORTE" | "PEDIDOS";
+  totalClientes: number;
+  ventasParticularesPeriodo: number;
+  totalTopClientes: number;
+  porcentajeVentasTop: number;
+  clientes: ClienteRankingDTO[];
+};
+
+export type FranjaHoraPicoDTO = {
+  inicio: string;
+  fin: string;
+  pedidos: number;
+  montoVendido: number;
+  porcentajeDelTotal: number;
+};
+
+export type TurnoHoraPicoDTO = {
+  desde: string;
+  hasta: string;
+  totalPedidos: number;
+  totalMontoVendido: number;
+  franjas: FranjaHoraPicoDTO[];
+};
+
+export type HoraPicoDTO = {
+  periodo: {
+    tipo: "DIA" | "ULTIMOS_7_DIAS" | "MES";
+    desde: string;
+    hasta: string;
+  };
+  totalPedidosAnalizados: number;
+  totalMontoVendido: number;
+  horaPico: (FranjaHoraPicoDTO & { turno: "MEDIODIA" | "NOCHE" }) | null;
+  turnos: { mediodia: TurnoHoraPicoDTO; noche: TurnoHoraPicoDTO };
+  pedidosFueraDeHorario: number;
+  montoFueraDeHorario: number;
+};
 
 export type VariedadMasVendidaDTO = {
   idVariedad: number;
@@ -82,7 +131,7 @@ export function obtenerRangoEstadistica(
   }
 
   if (periodo === "ultimos7") {
-    const hoy = new Date();
+    const hoy = new Date(`${fechaSeleccionada ?? formatDate(new Date())}T00:00:00`);
 
     const desde = new Date(hoy);
     desde.setDate(desde.getDate() - 6);
@@ -118,7 +167,8 @@ async function handleResponse(response: Response, errorMessage: string) {
 
 export async function obtenerResumenEstadisticas(
   desde: string,
-  hasta: string
+  hasta: string,
+  signal?: AbortSignal
 ): Promise<EstadisticaResumenDTO> {
   const params = new URLSearchParams({
     desde,
@@ -126,10 +176,57 @@ export async function obtenerResumenEstadisticas(
   });
 
   const response = await apiFetch(
-    `${API_URL}/api/v2/estadisticas/resumen?${params.toString()}`
+    `${API_URL}/api/v2/estadisticas/resumen?${params.toString()}`,
+    { signal }
   );
 
   await handleResponse(response, "Error al obtener estadísticas");
 
   return await response.json();
+}
+
+export async function obtenerHoraPico(
+  periodo: PeriodoEstadistica,
+  fecha: string,
+  mes: string,
+  signal?: AbortSignal
+): Promise<HoraPicoDTO> {
+  const params = periodo === "mes"
+    ? new URLSearchParams({ periodo: "MES", mes })
+    : new URLSearchParams({
+      periodo: periodo === "hoy" ? "DIA" : "ULTIMOS_7_DIAS",
+      fecha,
+    });
+
+  const response = await apiFetch(
+    `${API_URL}/api/v2/estadisticas/hora-pico?${params.toString()}`,
+    { headers: { Accept: "application/json" }, signal }
+  );
+
+  if (!response.ok) {
+    throw await crearApiError(response, "No se pudo cargar la hora pico del negocio.");
+  }
+
+  return response.json();
+}
+
+export async function obtenerRankingClientes(
+  periodo: PeriodoEstadistica,
+  fecha: string,
+  mes: string,
+  signal?: AbortSignal
+): Promise<ClientesRankingDTO> {
+  const params = periodo === "mes"
+    ? new URLSearchParams({ periodo: "MES", mes })
+    : new URLSearchParams({ periodo: periodo === "hoy" ? "DIA" : "ULTIMOS_7_DIAS", fecha });
+  params.set("orden", "IMPORTE");
+  params.set("limit", "5");
+  const response = await apiFetch(
+    `${API_URL}/api/v2/estadisticas/clientes-ranking?${params.toString()}`,
+    { headers: { Accept: "application/json" }, signal }
+  );
+  if (!response.ok) {
+    throw await crearApiError(response, "No se pudo cargar el ranking de clientes.");
+  }
+  return response.json();
 }

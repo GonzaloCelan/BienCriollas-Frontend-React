@@ -13,6 +13,7 @@ import {
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import Kpi from "../components/Kpi";
+import BusinessBehaviorStats from "../components/BusinessBehaviorStats";
 
 import {
   obtenerResumenEstadisticas,
@@ -293,7 +294,7 @@ function Estadisticas() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const cargarEstadisticas = useCallback(async () => {
+  const cargarEstadisticas = useCallback(async (signal: AbortSignal) => {
     try {
       setLoading(true);
       setError("");
@@ -304,21 +305,27 @@ function Estadisticas() {
         mesSeleccionado
       );
 
-      const data = await obtenerResumenEstadisticas(desde, hasta);
+      const data = await obtenerResumenEstadisticas(desde, hasta, signal);
 
+      if (signal.aborted) return;
       setEstadistica(data);
     } catch (error) {
+      if (signal.aborted) return;
       console.error(error);
       setError("No se pudieron cargar las estadísticas.");
       setEstadistica(null);
     } finally {
-      setLoading(false);
+      if (!signal.aborted) setLoading(false);
     }
   }, [periodo, fecha, mesSeleccionado]);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => void cargarEstadisticas(), 0);
-    return () => window.clearTimeout(timer);
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => void cargarEstadisticas(controller.signal), 0);
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
   }, [cargarEstadisticas]);
 
   const rankingVariedades = useMemo(
@@ -584,6 +591,8 @@ function Estadisticas() {
           )}
         </article>
       </section>
+
+      <BusinessBehaviorStats periodo={periodo} fecha={fecha} mes={mesSeleccionado} />
 
       <section className="stats-secondary-grid">
         <article className="stats-card stats-channel-card">
