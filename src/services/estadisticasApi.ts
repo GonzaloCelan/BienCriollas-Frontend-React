@@ -1,7 +1,14 @@
 import { API_URL } from "../config/api";
 import { apiFetch, crearApiError } from "./httpClient";
 
-export type PeriodoEstadistica = "hoy" | "ultimos7" | "mes";
+export type PeriodoEstadistica = "hoy" | "ultimos7" | "mes" | "anio";
+
+export type FiltrosEstadisticas = {
+  periodo: PeriodoEstadistica;
+  fecha: string;
+  mes: string;
+  anio: number;
+};
 
 export type ClienteRankingDTO = {
   posicion: number;
@@ -13,7 +20,7 @@ export type ClienteRankingDTO = {
 };
 
 export type ClientesRankingDTO = {
-  periodo: { tipo: "DIA" | "ULTIMOS_7_DIAS" | "MES"; desde: string; hasta: string };
+  periodo: { tipo: "DIA" | "ULTIMOS_7_DIAS" | "MES" | "ANIO"; desde: string; hasta: string };
   orden: "IMPORTE" | "PEDIDOS";
   totalClientes: number;
   ventasParticularesPeriodo: number;
@@ -40,7 +47,7 @@ export type TurnoHoraPicoDTO = {
 
 export type HoraPicoDTO = {
   periodo: {
-    tipo: "DIA" | "ULTIMOS_7_DIAS" | "MES";
+    tipo: "DIA" | "ULTIMOS_7_DIAS" | "MES" | "ANIO";
     desde: string;
     hasta: string;
   };
@@ -113,11 +120,16 @@ function formatDate(date: Date): string {
 export function obtenerRangoEstadistica(
   periodo: PeriodoEstadistica,
   fechaSeleccionada?: string,
-  mesSeleccionado?: string
+  mesSeleccionado?: string,
+  anioSeleccionado?: number
 ): {
   desde: string;
   hasta: string;
 } {
+  if (periodo === "anio") {
+    const anio = anioSeleccionado ?? new Date().getFullYear();
+    return { desde: `${anio}-01-01`, hasta: `${anio + 1}-01-01` };
+  }
   if (periodo === "hoy") {
     const desde = fechaSeleccionada ?? formatDate(new Date());
 
@@ -165,15 +177,19 @@ async function handleResponse(response: Response, errorMessage: string) {
   }
 }
 
+function crearParametrosPeriodo({ periodo, fecha, mes, anio }: FiltrosEstadisticas) {
+  if (periodo === "anio") return new URLSearchParams({ periodo: "ANIO", anio: String(anio) });
+  if (periodo === "mes") return new URLSearchParams({ periodo: "MES", mes });
+  return new URLSearchParams({ periodo: periodo === "hoy" ? "DIA" : "ULTIMOS_7_DIAS", fecha });
+}
+
 export async function obtenerResumenEstadisticas(
-  desde: string,
-  hasta: string,
+  filtros: FiltrosEstadisticas,
   signal?: AbortSignal
 ): Promise<EstadisticaResumenDTO> {
-  const params = new URLSearchParams({
-    desde,
-    hasta,
-  });
+  const params = filtros.periodo === "anio"
+    ? crearParametrosPeriodo(filtros)
+    : new URLSearchParams(obtenerRangoEstadistica(filtros.periodo, filtros.fecha, filtros.mes));
 
   const response = await apiFetch(
     `${API_URL}/api/v2/estadisticas/resumen?${params.toString()}`,
@@ -186,17 +202,10 @@ export async function obtenerResumenEstadisticas(
 }
 
 export async function obtenerHoraPico(
-  periodo: PeriodoEstadistica,
-  fecha: string,
-  mes: string,
+  filtros: FiltrosEstadisticas,
   signal?: AbortSignal
 ): Promise<HoraPicoDTO> {
-  const params = periodo === "mes"
-    ? new URLSearchParams({ periodo: "MES", mes })
-    : new URLSearchParams({
-      periodo: periodo === "hoy" ? "DIA" : "ULTIMOS_7_DIAS",
-      fecha,
-    });
+  const params = crearParametrosPeriodo(filtros);
 
   const response = await apiFetch(
     `${API_URL}/api/v2/estadisticas/hora-pico?${params.toString()}`,
@@ -211,14 +220,10 @@ export async function obtenerHoraPico(
 }
 
 export async function obtenerRankingClientes(
-  periodo: PeriodoEstadistica,
-  fecha: string,
-  mes: string,
+  filtros: FiltrosEstadisticas,
   signal?: AbortSignal
 ): Promise<ClientesRankingDTO> {
-  const params = periodo === "mes"
-    ? new URLSearchParams({ periodo: "MES", mes })
-    : new URLSearchParams({ periodo: periodo === "hoy" ? "DIA" : "ULTIMOS_7_DIAS", fecha });
+  const params = crearParametrosPeriodo(filtros);
   params.set("orden", "IMPORTE");
   params.set("limit", "5");
   const response = await apiFetch(

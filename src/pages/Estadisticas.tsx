@@ -17,7 +17,6 @@ import BusinessBehaviorStats from "../components/BusinessBehaviorStats";
 
 import {
   obtenerResumenEstadisticas,
-  obtenerRangoEstadistica,
   type EstadisticaResumenDTO,
   type PeriodoEstadistica,
   type VentaDiaSemanaDTO,
@@ -289,6 +288,8 @@ function Estadisticas() {
   const [periodo, setPeriodo] = useState<PeriodoEstadistica>("hoy");
   const [fecha, setFecha] = useState(getTodayISO());
   const [mesSeleccionado, setMesSeleccionado] = useState(getCurrentMonthISO());
+  const [anioSeleccionado, setAnioSeleccionado] = useState(() => new Date().getFullYear());
+  const [anioInput, setAnioInput] = useState(() => String(new Date().getFullYear()));
   const [estadistica, setEstadistica] =
     useState<EstadisticaResumenDTO | null>(null);
   const [loading, setLoading] = useState(true);
@@ -299,13 +300,9 @@ function Estadisticas() {
       setLoading(true);
       setError("");
 
-      const { desde, hasta } = obtenerRangoEstadistica(
-        periodo,
-        fecha,
-        mesSeleccionado
-      );
-
-      const data = await obtenerResumenEstadisticas(desde, hasta, signal);
+      const data = await obtenerResumenEstadisticas({
+        periodo, fecha, mes: mesSeleccionado, anio: anioSeleccionado,
+      }, signal);
 
       if (signal.aborted) return;
       setEstadistica(data);
@@ -317,7 +314,7 @@ function Estadisticas() {
     } finally {
       if (!signal.aborted) setLoading(false);
     }
-  }, [periodo, fecha, mesSeleccionado]);
+  }, [periodo, fecha, mesSeleccionado, anioSeleccionado]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -434,6 +431,13 @@ function Estadisticas() {
     >
       Mes
     </button>
+    <button
+      type="button"
+      className={periodo === "anio" ? "active" : ""}
+      onClick={() => setPeriodo("anio")}
+    >
+      Año
+    </button>
   </div>
 
   <div className="stats-filter-group">
@@ -471,6 +475,29 @@ function Estadisticas() {
       />
 
       <ChevronDown size={15} />
+    </label>
+  </div>
+  <div className="stats-filter-group">
+    <small>Buscar año</small>
+    <label className="stats-date-btn stats-year-btn">
+      <CalendarDays size={15} />
+      <input
+        type="number"
+        aria-label="Buscar año"
+        min="1000"
+        max="9999"
+        step="1"
+        value={anioInput}
+        onChange={(event) => {
+          const value = event.target.value;
+          setAnioInput(value);
+          if (/^\d{4}$/.test(value) && Number(value) >= 1000) {
+            setAnioSeleccionado(Number(value));
+            setPeriodo("anio");
+          }
+        }}
+        onBlur={() => setAnioInput(String(anioSeleccionado))}
+      />
     </label>
   </div>
 </div>
@@ -592,7 +619,7 @@ function Estadisticas() {
         </article>
       </section>
 
-      <BusinessBehaviorStats periodo={periodo} fecha={fecha} mes={mesSeleccionado} />
+      <BusinessBehaviorStats periodo={periodo} fecha={fecha} mes={mesSeleccionado} anio={anioSeleccionado} />
 
       <section className="stats-secondary-grid">
         <article className="stats-card stats-channel-card">

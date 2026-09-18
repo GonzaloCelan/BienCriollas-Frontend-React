@@ -1219,3 +1219,6 @@ body.dark-mode .stats-error {
     grid-template-columns: 1fr;
   }
 }
+
+.stats-year-btn input { width: 70px; }
+.stats-year-btn:focus-within { box-shadow: 0 0 0 3px rgba(243, 67, 67, .15), 0 10px 24px rgba(15, 23, 42, .07); }

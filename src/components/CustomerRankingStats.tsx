@@ -11,15 +11,15 @@ const percent = new Intl.NumberFormat("es-AR", { maximumFractionDigits: 2 });
 const dateLabel = (value: string) => value.split("-").reverse().join("/");
 const ordersLabel = (count: number) => `${count} ${count === 1 ? "pedido" : "pedidos"}`;
 
-export default function CustomerRankingStats({ periodo, fecha, mes }: BusinessStatsFilters) {
+export default function CustomerRankingStats({ periodo, fecha, mes, anio }: BusinessStatsFilters) {
   const reducedMotion = useReducedMotion();
   const [retry, setRetry] = useState(0);
-  const requestKey = `${periodo}|${fecha}|${mes}|${retry}`;
+  const requestKey = `${periodo}|${fecha}|${mes}|${anio}|${retry}`;
   const [result, setResult] = useState<{ key: string; data: ClientesRankingDTO | null; error: string }>({ key: "", data: null, error: "" });
 
   useEffect(() => {
     const controller = new AbortController();
-    void obtenerRankingClientes(periodo, fecha, mes, controller.signal)
+    void obtenerRankingClientes({ periodo, fecha, mes, anio }, controller.signal)
       .then((data) => {
         if (!controller.signal.aborted) setResult({ key: requestKey, data, error: "" });
       })
@@ -29,7 +29,7 @@ export default function CustomerRankingStats({ periodo, fecha, mes }: BusinessSt
         });
       });
     return () => controller.abort();
-  }, [periodo, fecha, mes, requestKey]);
+  }, [periodo, fecha, mes, anio, requestKey]);
 
   const loading = result.key !== requestKey;
   const data = loading ? null : result.data;

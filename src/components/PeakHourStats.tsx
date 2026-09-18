@@ -4,10 +4,10 @@ import { useEffect, useState } from "react";
 import {
   obtenerHoraPico,
   type HoraPicoDTO,
-  type PeriodoEstadistica,
+  type FiltrosEstadisticas,
 } from "../services/estadisticasApi";
 
-export type BusinessStatsFilters = { periodo: PeriodoEstadistica; fecha: string; mes: string };
+export type BusinessStatsFilters = FiltrosEstadisticas;
 
 const money = new Intl.NumberFormat("es-AR", {
   style: "currency", currency: "ARS", minimumFractionDigits: 2, maximumFractionDigits: 2,
@@ -15,15 +15,15 @@ const money = new Intl.NumberFormat("es-AR", {
 const percent = new Intl.NumberFormat("es-AR", { maximumFractionDigits: 2 });
 const dateLabel = (value: string) => value.split("-").reverse().join("/");
 
-export default function PeakHourStats({ periodo, fecha, mes }: BusinessStatsFilters) {
+export default function PeakHourStats({ periodo, fecha, mes, anio }: BusinessStatsFilters) {
   const reducedMotion = useReducedMotion();
   const [retry, setRetry] = useState(0);
-  const requestKey = `${periodo}|${fecha}|${mes}|${retry}`;
+  const requestKey = `${periodo}|${fecha}|${mes}|${anio}|${retry}`;
   const [result, setResult] = useState<{ key: string; data: HoraPicoDTO | null; error: string }>({ key: "", data: null, error: "" });
 
   useEffect(() => {
     const controller = new AbortController();
-    void obtenerHoraPico(periodo, fecha, mes, controller.signal)
+    void obtenerHoraPico({ periodo, fecha, mes, anio }, controller.signal)
       .then((data) => {
         if (!controller.signal.aborted) setResult({ key: requestKey, data, error: "" });
       })
@@ -34,7 +34,7 @@ export default function PeakHourStats({ periodo, fecha, mes }: BusinessStatsFilt
         });
       });
     return () => controller.abort();
-  }, [periodo, fecha, mes, requestKey]);
+  }, [periodo, fecha, mes, anio, requestKey]);
 
   const loading = result.key !== requestKey;
   const data = loading ? null : result.data;
