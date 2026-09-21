@@ -28,7 +28,7 @@ body.dark-mode .app-shell {
   transition: margin-left var(--bc-motion-duration) var(--bc-motion-ease);
   will-change: margin-left;
 }
-.bc-page-transition { width:100%; min-height:100%; will-change:opacity,transform,filter; }
+.bc-page-transition { width:100%; min-height:100%; transform:translateZ(0); backface-visibility:hidden; will-change:opacity,transform; }
 .bc-sidebar {
   position: fixed;
   inset: 0 auto 0 0;

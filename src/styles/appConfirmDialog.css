@@ -134,6 +134,51 @@
   box-shadow: none;
 }
 
+body.dark-mode .app-confirm__overlay {
+  background: rgba(3, 8, 14, 0.72);
+}
+
+body.dark-mode .app-confirm__content {
+  border: 0;
+  color: #bdc8d6;
+  background: linear-gradient(145deg, #17212c, #111923);
+  box-shadow:
+    0 30px 80px rgba(0, 0, 0, 0.58),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+body.dark-mode .app-confirm__title {
+  color: #f1f5fa;
+}
+
+body.dark-mode .app-confirm__description {
+  color: #96a4b6;
+}
+
+body.dark-mode .app-confirm__btn--cancel {
+  border: 0;
+  color: #b7c3d1;
+  background: #0c141d;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .app-confirm__btn--cancel:hover {
+  color: #edf3fa;
+  background: #202b37;
+}
+
+body.dark-mode .app-confirm__btn--danger {
+  border: 0;
+  color: #ff858d;
+  background: #3a2027;
+  box-shadow: 0 7px 17px rgba(0, 0, 0, 0.28);
+}
+
+body.dark-mode .app-confirm__btn--danger:hover {
+  color: #fff;
+  background: #df3e47;
+}
+
 @keyframes confirmOverlayIn {
   from {
     opacity: 0;

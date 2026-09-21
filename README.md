@@ -2,11 +2,11 @@
 
 ## Habilitación de Producción
 
-La aplicación usa el sidebar lateral en todos los entornos. Producción y sus cinco subsecciones permanecen visibles con candados, pero no se pueden seleccionar mientras `VITE_PRODUCTION_ENABLED=false`.
+La aplicación usa el sidebar lateral en todos los entornos. Producción y sus cinco subsecciones están habilitadas con `VITE_PRODUCTION_ENABLED=true` tanto en desarrollo como en producción.
 
-El bloqueo está configurado tanto en `.env` como en `.env.production`. Si la variable no se define, Producción también queda bloqueada. La aplicación impide navegar a estas pantallas y no las monta mientras están deshabilitadas.
+Si alguna vez se necesita bloquear temporalmente el módulo, se puede definir `VITE_PRODUCTION_ENABLED=false` en el entorno correspondiente. La aplicación impedirá navegar a esas pantallas y no las montará mientras estén deshabilitadas.
 
-Cuando el dueño apruebe el módulo, cambiar `VITE_PRODUCTION_ENABLED=true` en el entorno correspondiente y en las variables del servicio de despliegue si allí se define esta variable. Reiniciar el servidor local o generar y desplegar una nueva compilación. La PWA recibe el cambio con esa actualización.
+Si el servicio de despliegue define esta variable por separado, debe conservar el valor `true`. Luego hay que generar y desplegar una nueva compilación para que la PWA reciba el cambio.
 
 Esta configuración controla la interfaz; los permisos de los endpoints siguen siendo responsabilidad del backend.
 

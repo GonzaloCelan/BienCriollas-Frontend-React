@@ -3,6 +3,7 @@ import {
   Suspense,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useState,
 } from "react";
 import { X } from "lucide-react";
@@ -38,11 +39,23 @@ const Estadisticas = lazy(() => import("./pages/Estadisticas"));
 const Egresos = lazy(() => import("./pages/Egresos"));
 const Ingresos = lazy(() => import("./pages/Ingresos"));
 const Usuarios = lazy(() => import("./pages/Usuarios"));
-const Ingredientes = lazy(() => import("./pages/Ingredientes"));
-const Recetas = lazy(() => import("./pages/Recetas"));
-const Proceso = lazy(() => import("./pages/Proceso"));
-const NuevaProduccion = lazy(() => import("./pages/NuevaProduccion"));
-const CostosRendimiento = lazy(() => import("./pages/CostosRendimiento"));
+const loadIngredientes = () => import("./pages/Ingredientes");
+const loadRecetas = () => import("./pages/Recetas");
+const loadProceso = () => import("./pages/Proceso");
+const loadNuevaProduccion = () => import("./pages/NuevaProduccion");
+const loadCostosRendimiento = () => import("./pages/CostosRendimiento");
+const productionPageLoaders = [
+  { page: "ingredientes", load: loadIngredientes },
+  { page: "recetas", load: loadRecetas },
+  { page: "proceso", load: loadProceso },
+  { page: "produccion-real", load: loadNuevaProduccion },
+  { page: "costos-rendimiento", load: loadCostosRendimiento },
+] satisfies { page: AppPage; load: () => Promise<unknown> }[];
+const Ingredientes = lazy(loadIngredientes);
+const Recetas = lazy(loadRecetas);
+const Proceso = lazy(loadProceso);
+const NuevaProduccion = lazy(loadNuevaProduccion);
+const CostosRendimiento = lazy(loadCostosRendimiento);
 const SeccionEnPreparacion = lazy(() => import("./pages/SeccionEnPreparacion"));
 
 const ADMIN_PAGES: AppPage[] = [
@@ -94,6 +107,7 @@ function AuthenticatedApp({
     limpiarPermisoError,
   } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
+  const [sidebarHovered, setSidebarHovered] = useState(false);
   const [activePage, setActivePage] = useState<AppPage>("pedidos");
   const [pedidosPendientes, setPedidosPendientes] = useState<
     PedidoNotificacion[]
@@ -147,7 +161,33 @@ function AuthenticatedApp({
   }, []);
 
   useEffect(() => {
-    if (collapsed) return;
+    let cancelled = false;
+    const preload = () => {
+      if (!cancelled) {
+        void Promise.allSettled(
+          productionPageLoaders
+            .filter(({ page }) => isPageAvailable(page))
+            .map(({ load }) => load())
+        );
+      }
+    };
+    const preloadTimer = window.setTimeout(preload, 250);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(preloadTimer);
+    };
+  }, []);
+
+  useLayoutEffect(() => {
+    const content = document.getElementById("app-main");
+    if (content) {
+      content.scrollTop = 0;
+      content.scrollLeft = 0;
+    }
+  }, [paginaActiva]);
+
+  useEffect(() => {
+    if (collapsed || sidebarHovered) return;
 
     const autoCollapse = window.setTimeout(() => {
       const isDesktop = window.matchMedia("(min-width: 761px)").matches;
@@ -155,7 +195,7 @@ function AuthenticatedApp({
     }, 4000);
 
     return () => window.clearTimeout(autoCollapse);
-  }, [collapsed]);
+  }, [collapsed, sidebarHovered]);
 
   const toggleSidebar = useCallback(() => {
     setCollapsed((previous) => !previous);
@@ -184,6 +224,7 @@ function AuthenticatedApp({
         <Sidebar
           collapsed={collapsed}
           onToggle={toggleSidebar}
+          onHoverChange={setSidebarHovered}
           activePage={paginaActiva}
           onChangePage={cambiarPagina}
           pedidosPendientes={pedidosPendientes}
@@ -207,12 +248,12 @@ function AuthenticatedApp({
           id="app-main"
           className={`app-content ${collapsed ? "app-content--collapsed" : ""}`}
         >
-          <AnimatePresence mode="wait" initial={false}>
+          <AnimatePresence mode="popLayout" initial={false}>
             <motion.div key={paginaActiva} className="bc-page-transition"
-              initial={{ opacity: 0, y: 14, scale: .995, filter: "blur(3px)" }}
-              animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
-              exit={{ opacity: 0, y: -8, scale: .998, filter: "blur(2px)" }}
-              transition={{ duration: .28, ease: [.22, 1, .36, 1] }}>
+              initial={{ opacity: 0, y: 8, scale: .998 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -5, scale: .999 }}
+              transition={{ duration: .22, ease: [.22, 1, .36, 1] }}>
               <Suspense fallback={<div className="app-page-loading" aria-label="Cargando" />}>
                 {paginaActiva === "pedidos" && <Pedidos />}
                 {paginaActiva === "catalogo" && <Catalogo />}

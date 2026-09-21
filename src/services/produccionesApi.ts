@@ -1,4 +1,6 @@
 import { API_URL } from "../config/api";
+import type { MeasurementUnit } from "../utils/measurementUnits";
+import type { AdditionalCostCalculationMode, AdditionalCostType } from "../utils/recipeAdditionalCosts";
 import { apiFetch, crearApiError } from "./httpClient";
 
 const BASE_URL = `${API_URL}/api/v1/productions`;
@@ -8,16 +10,28 @@ export type EstadoProduccion = "DRAFT" | "FINALIZED" | "CANCELED";
 export type IngredienteProduccion = {
   ingredientId: number;
   ingredientName: string;
-  expectedQuantityGrams: number;
-  actualQuantityGrams: number | null;
-  differenceGrams: number;
+  expectedQuantity: number;
+  actualQuantity: number | null;
+  differenceQuantity: number;
   differencePercentage: number | null;
-  costPerGramSnapshot: number;
+  measurementUnit: MeasurementUnit;
+  costPerBaseUnitSnapshot: number;
   expectedCost: number;
   actualCost: number;
-  currentStockGrams: number;
-  projectedStockGrams: number;
+  currentStock: number;
+  projectedStock: number;
   enoughStock: boolean;
+};
+
+export type CostoAdicionalProduccion = {
+  id: number;
+  recipeAdditionalCostId: number;
+  costType: AdditionalCostType;
+  name: string;
+  calculationMode: AdditionalCostCalculationMode;
+  value: number;
+  expectedCost: number;
+  sortOrder: number;
 };
 
 export type Produccion = {
@@ -38,6 +52,7 @@ export type Produccion = {
   status: EstadoProduccion;
   notes: string | null;
   ingredients: IngredienteProduccion[];
+  additionalCosts: CostoAdicionalProduccion[];
   expectedIngredientCost: number;
   actualIngredientCost: number;
   actualIngredientCostPerUnit: number | null;
@@ -141,19 +156,19 @@ export async function actualizarProduccionApi(id: number, payload: ActualizarPro
   }), "No se pudieron guardar los datos reales.");
 }
 
-export async function actualizarConsumoProduccionApi(id: number, ingredientId: number, actualQuantityGrams: number): Promise<Produccion> {
+export async function actualizarConsumoProduccionApi(id: number, ingredientId: number, actualQuantity: number): Promise<Produccion> {
   return procesar<Produccion>(await apiFetch(`${BASE_URL}/${id}/ingredients`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ ingredientId, actualQuantityGrams }),
+    body: JSON.stringify({ ingredientId, actualQuantity }),
   }), "No se pudo actualizar el consumo del ingrediente.");
 }
 
-export async function agregarIngredienteProduccionApi(id: number, ingredientId: number, actualQuantityGrams: number): Promise<Produccion> {
+export async function agregarIngredienteProduccionApi(id: number, ingredientId: number, actualQuantity: number): Promise<Produccion> {
   return procesar<Produccion>(await apiFetch(`${BASE_URL}/${id}/ingredients`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ ingredientId, actualQuantityGrams }),
+    body: JSON.stringify({ ingredientId, actualQuantity }),
   }), "No se pudo agregar el ingrediente extra.");
 }
 

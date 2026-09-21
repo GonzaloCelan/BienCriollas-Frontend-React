@@ -19,6 +19,8 @@ import {
   type OrdenProducciones, type PaginaProducciones, type Produccion,
 } from "../services/produccionesApi";
 import { listarRecetasApi, type Receta } from "../services/recetasApi";
+import { formatMeasurement, measurementUnitSymbol } from "../utils/measurementUnits";
+import { additionalCostModeLabel, additionalCostTypeLabel } from "../utils/recipeAdditionalCosts";
 import "../styles/nuevaProduccion.css";
 
 const PAGE_SIZE = 12;
@@ -55,11 +57,6 @@ function formatNumber(value: number | null | undefined, maximumFractionDigits = 
   return new Intl.NumberFormat("es-AR", { maximumFractionDigits }).format(value ?? 0);
 }
 
-function formatWeight(value: number | null | undefined) {
-  const amount = value ?? 0;
-  return Math.abs(amount) >= 1000 ? `${formatNumber(amount / 1000)} kg` : `${formatNumber(amount)} g`;
-}
-
 function formatDate(value: string | null | undefined) {
   if (!value) return "Sin fecha";
   const date = new Date(`${value.slice(0, 10)}T12:00:00`);
@@ -67,12 +64,12 @@ function formatDate(value: string | null | undefined) {
 }
 
 function effectiveActual(item: IngredienteProduccion) {
-  return item.actualQuantityGrams ?? item.expectedQuantityGrams;
+  return item.actualQuantity ?? item.expectedQuantity;
 }
 
-function hasAtMostTwoDecimals(value: string) {
+function hasAtMostFourDecimals(value: string) {
   const decimals = value.trim().split(/[.,]/)[1];
-  return !decimals || decimals.length <= 2;
+  return !decimals || decimals.length <= 4;
 }
 
 function realFormFrom(production: Produccion): RealForm {
@@ -197,6 +194,7 @@ export default function NuevaProduccion() {
     const assigned = new Set(detail?.ingredients.map((item) => item.ingredientId) ?? []);
     return ingredients.filter((item) => !assigned.has(item.id));
   }, [detail, ingredients]);
+  const selectedExtraIngredient = extraIngredients.find((item) => item.id === Number(extraIngredientId));
 
   const hasConsumptionChanges = Boolean(detail?.ingredients.some((item) => Number(consumptions[item.ingredientId]) !== effectiveActual(item)));
   const hasRealChanges = Boolean(detail && JSON.stringify(realForm) !== JSON.stringify(realFormFrom(detail)));
@@ -244,7 +242,7 @@ export default function NuevaProduccion() {
     if (realForm.wasteReason.length > 250) return "El motivo de merma admite hasta 250 caracteres.";
     if (realForm.notes.length > 1000) return "Las notas admiten hasta 1000 caracteres.";
     for (const value of Object.values(consumptions)) {
-      if (!value.trim() || !hasAtMostTwoDecimals(value) || !Number.isFinite(Number(value)) || Number(value) < 0) return "Los consumos deben ser cantidades positivas con hasta 2 decimales.";
+      if (!value.trim() || !hasAtMostFourDecimals(value) || !Number.isFinite(Number(value)) || Number(value) < 0) return "Los consumos deben ser cantidades positivas con hasta 4 decimales.";
     }
     return "";
   }
@@ -289,7 +287,7 @@ export default function NuevaProduccion() {
     const ingredientId = Number(extraIngredientId);
     const quantity = Number(extraQuantity);
     if (!Number.isInteger(ingredientId) || ingredientId <= 0) { setError("Seleccioná un ingrediente extra."); return; }
-    if (!extraQuantity.trim() || !hasAtMostTwoDecimals(extraQuantity) || !Number.isFinite(quantity) || quantity < 0) { setError("Ingresá una cantidad válida con hasta 2 decimales."); return; }
+    if (!extraQuantity.trim() || !hasAtMostFourDecimals(extraQuantity) || !Number.isFinite(quantity) || quantity < 0) { setError("Ingresá una cantidad válida con hasta 4 decimales."); return; }
     try {
       setSaving(true); setError("");
       const updated = await agregarIngredienteProduccionApi(detail.id, ingredientId, quantity);
@@ -364,7 +362,7 @@ export default function NuevaProduccion() {
         <AnimatePresence mode="wait" initial={false}>{!detailLoading && detail && <motion.div className="rp-detail-content" key={detail.id} initial={{ opacity: 0, y: 12, filter: "blur(3px)" }} animate={{ opacity: 1, y: 0, filter: "blur(0px)" }} exit={{ opacity: 0, y: -8 }} transition={{ duration: .28 }}>
           <header className="rp-detail-hero"><div className="rp-detail-photo"><img src={getVarietyImage(detail.varietyId)} alt={`Empanadas de ${detail.varietyName}`} /></div><div className="rp-detail-heading"><span className={`rp-status rp-status--${detail.status.toLowerCase()}`}>{selectedStatus?.label}</span><h3>{detail.varietyName}</h3><p>Producción #{detail.id} · {formatDate(detail.productionDate)}</p><div><span>Receta v{detail.recipeVersion}</span><span>{detail.processVersion ? `Proceso v${detail.processVersion}` : "Sin proceso asociado"}</span></div></div>{detail.status === "DRAFT" && <div className="rp-detail-actions"><button type="button" onClick={() => setConfirmAction("CANCEL")}><Trash2 size={15} />Cancelar</button><button className="is-primary" type="button" onClick={() => { if (!realForm.finalUnits.trim()) { setError("Informá las unidades finales antes de finalizar."); return; } setConfirmAction("FINALIZE"); }}><CheckCircle2 size={15} />Finalizar</button></div>}</header>
 
-          <div className="rp-detail-metrics"><article><span><Factory size={18} /></span><div><small>Planificadas</small><strong>{detail.plannedUnits} u.</strong></div></article><article><span className="done"><PackageCheck size={18} /></span><div><small>Terminadas</small><strong>{detail.finalUnits ?? "—"}{detail.finalUnits !== null ? " u." : ""}</strong></div></article><article><span className="money"><CircleDollarSign size={18} /></span><div><small>Costo real</small><strong>{formatMoney(detail.actualIngredientCost)}</strong></div></article><article><span className={efficiencyTone}><Gauge size={18} /></span><div><small>Productividad</small><strong>{detail.actualUnitsPerHour === null ? "—" : `${formatNumber(detail.actualUnitsPerHour)} u./h`}</strong></div></article></div>
+          <div className="rp-detail-metrics"><article><span><Factory size={18} /></span><div><small>Planificadas</small><strong>{detail.plannedUnits} u.</strong></div></article><article><span className="done"><PackageCheck size={18} /></span><div><small>Terminadas</small><strong>{detail.finalUnits ?? "—"}{detail.finalUnits !== null ? " u." : ""}</strong></div></article><article><span className="money"><CircleDollarSign size={18} /></span><div><small>Costo de ingredientes</small><strong>{formatMoney(detail.actualIngredientCost)}</strong></div></article><article><span className={efficiencyTone}><Gauge size={18} /></span><div><small>Productividad</small><strong>{detail.actualUnitsPerHour === null ? "—" : `${formatNumber(detail.actualUnitsPerHour)} u./h`}</strong></div></article></div>
 
           <section className="rp-panel"><header><div><span><Factory size={17} /></span><div><h4>Resultado real</h4><p>{detail.status === "DRAFT" ? "Completá los datos medidos durante la tanda." : statusCopy[detail.status].description}</p></div></div>{detail.status === "DRAFT" && <button className="rp-save" type="button" onClick={() => void saveDraft()} disabled={saving || !hasPendingChanges}>{saving ? <LoaderCircle className="rp-spin" size={15} /> : <Save size={15} />}Guardar cambios</button>}</header><div className="rp-real-grid">
             <label><span>Unidades finales</span><input type="number" min="0" step="1" disabled={detail.status !== "DRAFT"} value={realForm.finalUnits} onChange={(event) => setRealForm((current) => ({ ...current, finalUnits: event.target.value }))} placeholder="Pendiente" /></label>
@@ -375,9 +373,11 @@ export default function NuevaProduccion() {
             <label className="wide"><span>Notas <small>{realForm.notes.length}/1000</small></span><textarea rows={2} maxLength={1000} disabled={detail.status !== "DRAFT"} value={realForm.notes} onChange={(event) => setRealForm((current) => ({ ...current, notes: event.target.value }))} placeholder="Observaciones de la tanda…" /></label>
           </div></section>
 
-          <section className="rp-panel rp-consumption"><header><div><span><Wheat size={17} /></span><div><h4>Consumo de ingredientes</h4><p>Esperado contra consumo real, stock y costos congelados.</p></div></div><strong>{detail.ingredients.length}</strong></header><div className="rp-table-wrap"><table><thead><tr><th>Ingrediente</th><th>Esperado</th><th>Real</th><th>Diferencia</th><th>Stock proyectado</th><th>Costo real</th></tr></thead><tbody>{detail.ingredients.map((item, index) => { const actual = Number(consumptions[item.ingredientId] ?? effectiveActual(item)); const difference = actual - item.expectedQuantityGrams; return <motion.tr key={item.ingredientId} className={!item.enoughStock ? "is-missing" : ""} initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: index * .035 }}><td><span><Wheat size={15} /></span><strong>{item.ingredientName}</strong>{item.expectedQuantityGrams === 0 && <em>Extra</em>}</td><td>{formatWeight(item.expectedQuantityGrams)}</td><td>{detail.status === "DRAFT" ? <div className="rp-quantity"><input type="number" min="0" step="0.01" value={consumptions[item.ingredientId] ?? ""} onChange={(event) => setConsumptions((current) => ({ ...current, [item.ingredientId]: event.target.value }))} /><small>g</small></div> : formatWeight(effectiveActual(item))}</td><td className={difference > 0 ? "is-negative" : difference < 0 ? "is-positive" : ""}>{difference > 0 ? "+" : ""}{formatWeight(difference)}</td><td><strong className={item.enoughStock ? "is-positive" : "is-negative"}>{formatWeight(item.currentStockGrams - actual)}</strong></td><td><strong>{formatMoney(actual * item.costPerGramSnapshot)}</strong></td></motion.tr>; })}</tbody></table></div>
-            {detail.status === "DRAFT" && <form className="rp-extra" onSubmit={addExtraIngredient}><Plus size={16} /><strong>Ingrediente extra</strong><select value={extraIngredientId} onChange={(event) => setExtraIngredientId(event.target.value)}><option value="">Seleccionar ingrediente</option>{extraIngredients.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select><div className="rp-quantity"><input type="number" min="0" step="0.01" value={extraQuantity} onChange={(event) => setExtraQuantity(event.target.value)} placeholder="Cantidad" /><small>g</small></div><button type="submit" disabled={saving || !extraIngredientId}>Agregar</button></form>}
+          <section className="rp-panel rp-consumption"><header><div><span><Wheat size={17} /></span><div><h4>Consumo de ingredientes</h4><p>Esperado contra consumo real, stock y costos congelados.</p></div></div><strong>{detail.ingredients.length}</strong></header><div className="rp-table-wrap"><table><thead><tr><th>Ingrediente</th><th>Esperado</th><th>Real</th><th>Diferencia</th><th>Stock proyectado</th><th>Costo real</th></tr></thead><tbody>{detail.ingredients.map((item, index) => { const actual = Number(consumptions[item.ingredientId] ?? effectiveActual(item)); const difference = actual - item.expectedQuantity; return <motion.tr key={item.ingredientId} className={!item.enoughStock ? "is-missing" : ""} initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: index * .035 }}><td><span><Wheat size={15} /></span><strong>{item.ingredientName}</strong>{item.expectedQuantity === 0 && <em>Extra</em>}</td><td>{formatMeasurement(item.expectedQuantity, item.measurementUnit)}</td><td>{detail.status === "DRAFT" ? <div className="rp-quantity"><input type="number" min="0" step="0.0001" value={consumptions[item.ingredientId] ?? ""} onChange={(event) => setConsumptions((current) => ({ ...current, [item.ingredientId]: event.target.value }))} /><small>{measurementUnitSymbol(item.measurementUnit)}</small></div> : formatMeasurement(effectiveActual(item), item.measurementUnit)}</td><td className={difference > 0 ? "is-negative" : difference < 0 ? "is-positive" : ""}>{difference > 0 ? "+" : ""}{formatMeasurement(difference, item.measurementUnit)}</td><td><strong className={item.enoughStock ? "is-positive" : "is-negative"}>{formatMeasurement(item.currentStock - actual, item.measurementUnit)}</strong></td><td><strong>{formatMoney(actual * item.costPerBaseUnitSnapshot)}</strong></td></motion.tr>; })}</tbody></table></div>
+            {detail.status === "DRAFT" && <form className="rp-extra" onSubmit={addExtraIngredient}><Plus size={16} /><strong>Ingrediente extra</strong><select value={extraIngredientId} onChange={(event) => setExtraIngredientId(event.target.value)}><option value="">Seleccionar ingrediente</option>{extraIngredients.map((item) => <option key={item.id} value={item.id}>{item.name} · {measurementUnitSymbol(item.measurementUnit)}</option>)}</select><div className="rp-quantity"><input type="number" min="0" step="0.0001" value={extraQuantity} onChange={(event) => setExtraQuantity(event.target.value)} placeholder="Cantidad" /><small>{selectedExtraIngredient ? measurementUnitSymbol(selectedExtraIngredient.measurementUnit) : "—"}</small></div><button type="submit" disabled={saving || !extraIngredientId}>Agregar</button></form>}
           </section>
+
+          {detail.additionalCosts.length > 0 && <section className="rp-panel rp-additional-costs"><header><div><span><CircleDollarSign size={17} /></span><div><h4>Costos adicionales congelados</h4><p>Snapshot de la versión de receta usada en esta producción.</p></div></div><strong>{detail.additionalCosts.length}</strong></header><div>{[...detail.additionalCosts].sort((a, b) => a.sortOrder - b.sortOrder).map((cost, index) => <motion.article key={cost.id} initial={{ opacity: 0, y: 9 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * .035 }}><span><CircleDollarSign size={15} /></span><div><strong>{cost.name}</strong><small>{additionalCostTypeLabel(cost.costType)} · {additionalCostModeLabel(cost.calculationMode)}</small></div><b>{formatMoney(cost.expectedCost)}</b></motion.article>)}</div></section>}
 
           <div className="rp-bottom-grid"><section className="rp-panel rp-costs"><header><div><span><CircleDollarSign size={17} /></span><div><h4>Costos de ingredientes</h4><p>Snapshot de precios de esta producción.</p></div></div></header><dl><div><dt>Costo esperado</dt><dd>{formatMoney(detail.expectedIngredientCost)}</dd></div><div><dt>Costo real</dt><dd>{formatMoney(detail.actualIngredientCost)}</dd></div><div className="total"><dt>Costo real por unidad</dt><dd>{detail.actualIngredientCostPerUnit === null ? "—" : formatMoney(detail.actualIngredientCostPerUnit)}</dd></div></dl></section><section className="rp-panel rp-productivity"><header><div><span><Gauge size={17} /></span><div><h4>Productividad</h4><p>Comparación entre el proceso estándar y el resultado real.</p></div></div></header><div><article><span>Estándar</span><strong>{detail.standardUnitsPerHour === null ? "—" : `${formatNumber(detail.standardUnitsPerHour)} u./h`}</strong></article><article><span>Real</span><strong>{detail.actualUnitsPerHour === null ? "—" : `${formatNumber(detail.actualUnitsPerHour)} u./h`}</strong></article><article className={efficiencyTone}><span>Variación</span><strong>{detail.productivityVariationPercentage === null ? "—" : `${detail.productivityVariationPercentage > 0 ? "+" : ""}${formatNumber(detail.productivityVariationPercentage)}%`}</strong></article></div>{detail.finalizedAt && <small><Clock3 size={13} />Finalizada el {formatDate(detail.finalizedAt)}</small>}</section></div>
         </motion.div>}</AnimatePresence>

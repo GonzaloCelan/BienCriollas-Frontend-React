@@ -1,4 +1,5 @@
 import { API_URL } from "../config/api";
+import type { MeasurementUnit } from "../utils/measurementUnits";
 import { apiFetch, crearApiError } from "./httpClient";
 
 const BASE_URL = `${API_URL}/api/v1/ingredients`;
@@ -6,10 +7,14 @@ const BASE_URL = `${API_URL}/api/v1/ingredients`;
 export type Ingrediente = {
   id: number;
   name: string;
-  currentStockGrams: number;
-  minimumStockGrams: number;
-  costPerGram: number;
-  costPerKilogram: number;
+  measurementUnit: MeasurementUnit;
+  purchasePresentation: string | null;
+  purchaseQuantity: number | null;
+  purchasePrice: number | null;
+  purchaseDataComplete: boolean;
+  currentStock: number;
+  minimumStock: number;
+  costPerBaseUnit: number;
   stockValue: number;
   lowStock: boolean;
   active: boolean;
@@ -39,19 +44,27 @@ export type ResumenIngredientes = {
 
 export type IngredienteEditable = {
   name: string;
-  currentStockGrams: number;
-  minimumStockGrams: number;
-  costPerKilogram: number;
+  measurementUnit: MeasurementUnit;
+  purchasePresentation: string;
+  purchaseQuantity: number;
+  purchasePrice: number;
+  currentStock: number;
+  minimumStock: number;
 };
+
+export type CompraIngredienteEditable = Pick<
+  IngredienteEditable,
+  "purchasePresentation" | "purchaseQuantity" | "purchasePrice"
+>;
 
 export type FiltroIngredientes = "activos" | "inactivos" | "stock-bajo";
 export type OrdenIngredientes =
   | "name,asc"
   | "name,desc"
-  | "currentStockGrams,asc"
-  | "currentStockGrams,desc"
-  | "costPerKilogram,asc"
-  | "costPerKilogram,desc";
+  | "currentStock,asc"
+  | "currentStock,desc"
+  | "costPerBaseUnit,asc"
+  | "costPerBaseUnit,desc";
 
 function filtrarYOrdenar(
   ingredients: Ingrediente[],
@@ -63,7 +76,7 @@ function filtrarYOrdenar(
     ? ingredients.filter((item) => item.name.toLocaleLowerCase("es").includes(normalizedQuery))
     : ingredients;
   const [field, direction] = sort.split(",") as [
-    "name" | "currentStockGrams" | "costPerKilogram",
+    "name" | "currentStock" | "costPerBaseUnit",
     "asc" | "desc",
   ];
 
@@ -137,24 +150,24 @@ export async function actualizarIngredienteApi(id: number, payload: IngredienteE
   return procesar<Ingrediente>(response, "No se pudo actualizar el ingrediente.");
 }
 
-export async function establecerStockIngredienteApi(id: number, stockGrams: number): Promise<Ingrediente> {
-  return patch(id, "stock", { stockGrams }, "No se pudo ajustar el stock.");
+export async function establecerStockIngredienteApi(id: number, currentStock: number): Promise<Ingrediente> {
+  return patch(id, "stock", { currentStock }, "No se pudo ajustar el stock.");
 }
 
-export async function incrementarStockIngredienteApi(id: number, quantityGrams: number): Promise<Ingrediente> {
-  return patch(id, "stock/increase", { quantityGrams }, "No se pudo ingresar el stock.");
+export async function incrementarStockIngredienteApi(id: number, quantity: number): Promise<Ingrediente> {
+  return patch(id, "stock/increase", { quantity }, "No se pudo ingresar el stock.");
 }
 
-export async function descontarStockIngredienteApi(id: number, quantityGrams: number): Promise<Ingrediente> {
-  return patch(id, "stock/decrease", { quantityGrams }, "No se pudo descontar el stock.");
+export async function descontarStockIngredienteApi(id: number, quantity: number): Promise<Ingrediente> {
+  return patch(id, "stock/decrease", { quantity }, "No se pudo descontar el stock.");
 }
 
-export async function actualizarCostoIngredienteApi(id: number, costPerKilogram: number): Promise<Ingrediente> {
-  return patch(id, "cost", { costPerKilogram }, "No se pudo actualizar el costo.");
+export async function actualizarCostoIngredienteApi(id: number, payload: CompraIngredienteEditable): Promise<Ingrediente> {
+  return patch(id, "cost", payload, "No se pudieron actualizar los datos de compra.");
 }
 
-export async function actualizarMinimoIngredienteApi(id: number, minimumStockGrams: number): Promise<Ingrediente> {
-  return patch(id, "minimum-stock", { minimumStockGrams }, "No se pudo actualizar el stock mínimo.");
+export async function actualizarMinimoIngredienteApi(id: number, minimumStock: number): Promise<Ingrediente> {
+  return patch(id, "minimum-stock", { minimumStock }, "No se pudo actualizar el stock mínimo.");
 }
 
 export async function cambiarEstadoIngredienteApi(id: number, active: boolean): Promise<Ingrediente> {

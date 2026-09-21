@@ -1,4 +1,5 @@
 import { API_URL } from "../config/api";
+import type { MeasurementUnit } from "../utils/measurementUnits";
 import { apiFetch, crearApiError } from "./httpClient";
 
 const BASE_URL = `${API_URL}/api/v1/production-analytics`;
@@ -20,6 +21,8 @@ export type ProductionSummary = {
   totalIngredientCost: number;
   totalLaborCost: number;
   totalEnergyCost: number;
+  totalPackagingCost: number;
+  totalOtherAdditionalCost: number;
   totalProductionCost: number;
   averageCostPerUnit: number | null;
   totalPersonHours: number;
@@ -52,6 +55,9 @@ export type VarietyPerformance = {
   averageWastePercentage: number | null;
   totalIngredientCost: number;
   totalLaborCost: number;
+  totalPackagingCost: number;
+  totalOtherAdditionalCost: number;
+  totalEnergyCost: number;
   totalProductionCost: number;
   averageCostPerUnit: number | null;
   averageUnitsPerHour: number | null;
@@ -64,9 +70,10 @@ export type VarietyPerformance = {
 export type IngredientDeviation = {
   ingredientId: number;
   ingredientName: string;
-  totalExpectedGrams: number;
-  totalActualGrams: number;
-  differenceGrams: number;
+  measurementUnit: MeasurementUnit;
+  totalExpectedQuantity: number;
+  totalActualQuantity: number;
+  differenceQuantity: number;
   differencePercentage: number | null;
   additionalCost: number;
 };
@@ -117,6 +124,14 @@ export type ProductionPerformance = {
   actualLaborCost: number | null;
   laborInefficiencyCost: number | null;
   energyCost: number | null;
+  expectedEnergyCost: number | null;
+  energyCostDeviation: number | null;
+  expectedPackagingCost: number | null;
+  actualPackagingCost: number | null;
+  packagingCostDeviation: number | null;
+  expectedOtherAdditionalCost: number | null;
+  actualOtherAdditionalCost: number | null;
+  otherAdditionalCostDeviation: number | null;
   standardTotalCost: number | null;
   actualTotalCost: number | null;
   standardCostPerUnit: number | null;

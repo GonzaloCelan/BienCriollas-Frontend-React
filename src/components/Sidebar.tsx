@@ -17,6 +17,7 @@ export type PedidoNotificacion = {
 };
 type SidebarProps = {
   collapsed: boolean; onToggle: () => void; activePage: AppPage;
+  onHoverChange: (hovered: boolean) => void;
   onChangePage: (page: AppPage) => void; pedidosPendientes?: PedidoNotificacion[];
   darkMode: boolean; onToggleTheme: () => void; usuario: Usuario;
   onLogout: () => void; onChangePassword: () => void;
@@ -43,7 +44,7 @@ const productionItems: MenuItem[] = [
 
 export default function Sidebar({ collapsed, onToggle, activePage, onChangePage,
   pedidosPendientes = [], darkMode, onToggleTheme, usuario, onLogout,
-  onChangePassword }: SidebarProps) {
+  onChangePassword, onHoverChange }: SidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [productionOpen, setProductionOpen] = useState(false);
   const [panel, setPanel] = useState<"account" | "notifications" | null>(null);
@@ -124,7 +125,7 @@ export default function Sidebar({ collapsed, onToggle, activePage, onChangePage,
       aria-current={active ? "page" : undefined} aria-label={item.label}
       title={locked ? `${item.label}: pendiente de habilitación` : item.label}
       onClick={() => navigate(item.page)}>
-      {active && <motion.span className="bc-nav-active-pill" layoutId="bc-sidebar-active-pill" transition={{ type: "spring", stiffness: 310, damping: 30, mass: .72 }} />}
+      {active && <motion.span className="bc-nav-active-pill" layoutId="bc-sidebar-active-pill" transition={{ type: "tween", duration: .22, ease: [.22, 1, .36, 1] }} />}
       <item.icon size={19} strokeWidth={1.8} aria-hidden="true" />
       <span className="bc-nav-label">{item.label}</span>
       {locked && <LockKeyhole size={13} className="bc-nav-lock" aria-hidden="true" />}
@@ -165,6 +166,8 @@ export default function Sidebar({ collapsed, onToggle, activePage, onChangePage,
     {mobileOpen && <div className="bc-sidebar-backdrop" onClick={() => setMobileOpen(false)} />}
     <aside id="app-sidebar" ref={sidebarRef}
       className={`bc-sidebar ${collapsed ? "bc-sidebar--collapsed" : ""} ${mobileOpen ? "bc-sidebar--open" : ""}`}
+      onMouseEnter={() => onHoverChange(true)}
+      onMouseLeave={() => onHoverChange(false)}
       aria-label="Menú lateral" role={mobileOpen ? "dialog" : undefined}
       aria-modal={mobileOpen ? true : undefined}>
       <div className="bc-sidebar-brand">

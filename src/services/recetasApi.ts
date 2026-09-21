@@ -1,4 +1,6 @@
 import { API_URL } from "../config/api";
+import type { MeasurementUnit } from "../utils/measurementUnits";
+import type { AdditionalCostCalculationMode, AdditionalCostType } from "../utils/recipeAdditionalCosts";
 import { apiFetch, crearApiError } from "./httpClient";
 
 const BASE_URL = `${API_URL}/api/v1/recipes`;
@@ -6,9 +8,35 @@ const BASE_URL = `${API_URL}/api/v1/recipes`;
 export type IngredienteReceta = {
   ingredientId: number;
   ingredientName: string;
-  quantityGrams: number;
-  costPerGram: number;
+  quantity: number;
+  measurementUnit: MeasurementUnit;
+  currentCostPerBaseUnit: number;
   estimatedCost: number;
+};
+
+export type CostoAdicionalRecetaPayload = {
+  costType: AdditionalCostType;
+  name: string;
+  calculationMode: AdditionalCostCalculationMode;
+  value: number;
+  sortOrder: number;
+  notes: string | null;
+};
+
+export type CostoAdicionalReceta = CostoAdicionalRecetaPayload & {
+  id: number;
+  calculatedCost: number;
+};
+
+export type ResumenCostosReceta = {
+  ingredientCost: number;
+  fixedAdditionalCost: number;
+  perUnitAdditionalCost: number;
+  subtotalBeforePercentage: number;
+  percentageAdditionalCost: number;
+  totalAdditionalCost: number;
+  estimatedRecipeTotalCost: number;
+  estimatedCostPerUnit: number;
 };
 
 export type Receta = {
@@ -19,6 +47,8 @@ export type Receta = {
   baseYieldUnits: number;
   notes: string | null;
   ingredients: IngredienteReceta[];
+  additionalCosts: CostoAdicionalReceta[];
+  costSummary: ResumenCostosReceta;
   estimatedTotalCost: number;
   estimatedCostPerUnit: number;
   active: boolean;
@@ -40,7 +70,7 @@ export type PaginaRecetas = {
 
 export type IngredienteRecetaPayload = {
   ingredientId: number;
-  quantityGrams: number;
+  quantity: number;
 };
 
 export type CrearRecetaPayload = {
@@ -48,6 +78,7 @@ export type CrearRecetaPayload = {
   baseYieldUnits: number;
   notes: string | null;
   ingredients: IngredienteRecetaPayload[];
+  additionalCosts: CostoAdicionalRecetaPayload[];
 };
 
 export type CrearVersionRecetaPayload = Omit<CrearRecetaPayload, "varietyId">;
@@ -55,11 +86,12 @@ export type CrearVersionRecetaPayload = Omit<CrearRecetaPayload, "varietyId">;
 export type IngredienteCalculoReceta = {
   ingredientId: number;
   ingredientName: string;
-  baseQuantityGrams: number;
-  requiredQuantityGrams: number;
-  currentStockGrams: number;
+  measurementUnit: MeasurementUnit;
+  baseQuantity: number;
+  requiredQuantity: number;
+  currentStock: number;
   enoughStock: boolean;
-  missingGrams: number;
+  missingQuantity: number;
   estimatedCost: number;
 };
 
@@ -72,6 +104,8 @@ export type CalculoReceta = {
   requestedUnits: number;
   scaleFactor: number;
   ingredients: IngredienteCalculoReceta[];
+  additionalCosts: CostoAdicionalReceta[];
+  costSummary: ResumenCostosReceta;
   estimatedTotalCost: number;
   estimatedCostPerUnit: number;
 };
