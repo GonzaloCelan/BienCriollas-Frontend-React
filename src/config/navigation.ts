@@ -9,6 +9,7 @@ const productionPages: AppPage[] = [
 const enabledProductionPages = new Set<AppPage>([
   "ingredientes",
   "recetas",
+  "proceso",
 ]);
 
 export function isPageAvailable(page: AppPage): boolean {
