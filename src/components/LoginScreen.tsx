@@ -53,37 +53,39 @@ function LoginScreen() {
     <main className="auth-screen">
       <section className="auth-card" aria-labelledby="login-title">
         <div className="auth-card__heading">
-          <img src="/logocolor.png" alt="Bien Criollas" />
+          <div className="auth-card__brand">
+            <img src="/logocolor.png" alt="Bien Criollas" />
+          </div>
           <h1 id="login-title">Iniciar sesión</h1>
-          <span>Ingresá con tu usuario para continuar.</span>
+          <span>Sistema de gestión Bien Criollas</span>
         </div>
 
         <form className="auth-form" onSubmit={handleSubmit}>
           <label>
-            <span>Usuario</span>
+            <span className="auth-field-label">Usuario</span>
             <div className="auth-field">
-              <UserRound size={18} />
+              <UserRound size={20} aria-hidden="true" />
               <input
                 autoFocus
                 autoComplete="username"
                 value={username}
                 onChange={(event) => setUsername(event.target.value)}
-                placeholder="Tu usuario"
+                placeholder="Usuario"
                 disabled={enviando}
               />
             </div>
           </label>
 
           <label>
-            <span>Contraseña</span>
+            <span className="auth-field-label">Contraseña</span>
             <div className="auth-field">
-              <LockKeyhole size={18} />
+              <LockKeyhole size={20} aria-hidden="true" />
               <input
                 type={mostrarPassword ? "text" : "password"}
                 autoComplete="current-password"
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
-                placeholder="Tu contraseña"
+                placeholder="Contraseña"
                 disabled={enviando}
               />
               <button
@@ -97,17 +99,13 @@ function LoginScreen() {
             </div>
           </label>
 
-          {error && <div className="auth-form__error">{error}</div>}
+          {error && <div className="auth-form__error" role="alert">{error}</div>}
 
           <button className="auth-submit" type="submit" disabled={enviando}>
             {enviando && <LoaderCircle size={18} className="auth-spinner" />}
             {enviando ? "Ingresando…" : "Ingresar"}
           </button>
         </form>
-
-        <small className="auth-card__footer">
-          Acceso exclusivo para personal autorizado.
-        </small>
       </section>
     </main>
   );
