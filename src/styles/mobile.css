@@ -637,18 +637,12 @@
 
   /* Stock */
   .stock-page__header--clean {
-    align-items: stretch;
-    flex-direction: column;
+    grid-template-columns: 1fr;
   }
 
-  .stock-page__stock-total-wrap,
   .stock-page__stock-total {
     width: 100%;
-    min-width: 0;
-  }
-
-  .stock-page__stock-total {
-    min-height: 76px;
+    justify-self: center;
   }
 
   .stock-mode-panel {

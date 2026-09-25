@@ -35,7 +35,11 @@ const variedadImages: Record<number, string> = {
   12: jamonQuesoImg,
 };
 
-function CriticalStockPanel() {
+type CriticalStockPanelProps = {
+  onNavigateToStock: () => void;
+};
+
+function CriticalStockPanel({ onNavigateToStock }: CriticalStockPanelProps) {
   const [stock, setStock] = useState<StockItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -101,7 +105,13 @@ function CriticalStockPanel() {
             const image = variedadImages[item.id];
 
             return (
-              <article className="critical-stock__item" key={item.id}>
+              <button
+                type="button"
+                className="critical-stock__item"
+                key={item.id}
+                onClick={onNavigateToStock}
+                aria-label={`Ir a Stock por ${item.nombre}`}
+              >
                 <div className="critical-stock__image">
                   {image ? (
                     <img
@@ -133,7 +143,7 @@ function CriticalStockPanel() {
                     />
                   </div>
                 </div>
-              </article>
+              </button>
             );
           })}
         </div>

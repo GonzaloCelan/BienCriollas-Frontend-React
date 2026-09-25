@@ -264,10 +264,16 @@
 .orders-scheduled-alert>svg { justify-self:center; }
 .orders-scheduled-alert div { display:grid; gap:3px; }.orders-scheduled-alert strong { font-size:11px; font-weight:950; text-transform:uppercase; }.orders-scheduled-alert span { color:#7f8b9d; font-size:9px; font-weight:700; }
 
+.orders-scheduled-alert strong { font-size:12px; line-height:1.35; }
+.orders-scheduled-alert span { font-size:10px; line-height:1.4; }
+
 body.dark-mode .orders-schedule-button { color:#ff7373; background:#111923; box-shadow:0 9px 24px rgba(0,0,0,.25); }
 body.dark-mode .orders-view-tabs { background:#111923; box-shadow:0 9px 24px rgba(0,0,0,.25); }
 body.dark-mode .orders-view-tabs button { color:#9eabbc; } body.dark-mode .orders-view-tabs button.is-active { color:#fff; background:#f33f46; }
 body.dark-mode .orders-scheduled-alert--today { color:#ff7a85; background:linear-gradient(110deg,#352027,#111923); } body.dark-mode .orders-scheduled-alert--tomorrow { color:#8ea9e8; background:linear-gradient(110deg,#182641,#111923); } body.dark-mode .orders-scheduled-alert span { color:#a8b3c2; }
+body.dark-mode .orders-scheduled-alert { border:1px solid rgba(185,201,221,.12); }
+body.dark-mode .orders-scheduled-alert--tomorrow { color:#a9c3ff; background:linear-gradient(110deg,#1e2c46,#17212c); }
+body.dark-mode .orders-scheduled-alert span { color:#c0cbd9; }
 
 /* KPI */
 .orders-stats {

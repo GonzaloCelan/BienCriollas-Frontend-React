@@ -130,7 +130,11 @@ function formatScheduledDelivery(dateValue: string, timeValue: string) {
   return `${label.charAt(0).toUpperCase() + label.slice(1)} · ${timeValue.slice(0, 5)}`;
 }
 
-function Pedidos() {
+type PedidosProps = {
+  onNavigateToStock: () => void;
+};
+
+function Pedidos({ onNavigateToStock }: PedidosProps) {
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [view, setView] = useState<OrdersView>("TODAY");
   const [scheduledOrders, setScheduledOrders] = useState<Pedido[]>([]);
@@ -682,7 +686,7 @@ function Pedidos() {
           />
         </div>
 
-        <CriticalStockPanel key={stockRefreshKey} />
+        <CriticalStockPanel key={stockRefreshKey} onNavigateToStock={onNavigateToStock} />
         </div>
       </> : (
         <>
@@ -695,7 +699,6 @@ function Pedidos() {
             selectedDate={scheduledDate}
             onDateChange={setScheduledDate}
             onClearDate={() => setScheduledDate("")}
-            onProgram={abrirProgramarPedido}
             onEdit={abrirEditorPedido}
             onCancel={abrirConfirmacionCancelacion}
             onLoadDetail={cargarDetallePedido}

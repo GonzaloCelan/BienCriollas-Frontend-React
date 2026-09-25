@@ -23,9 +23,13 @@
 }
 
 .stock-page__header--clean {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  justify-content: space-between;
+}
+
+.stock-page__header--clean::after {
+  content: "";
 }
 
 .stock-page__title {
@@ -52,7 +56,7 @@
   font-style: normal;
 }
 
-.stock-page__header span {
+.stock-page__title > span {
   display: block;
   margin-top: 8px;
   color: #64748b;
@@ -60,56 +64,42 @@
   font-weight: 700;
 }
 
-/* =========================
-   STOCK TOTAL CENTRADO
-   ========================= */
-
-.stock-page__stock-total-wrap {
-  width: auto;
-  display: flex;
-  justify-content: flex-end;
-  margin: 0;
-  flex: 0 0 auto;
-}
-
 .stock-page__stock-total {
-  min-width: 230px;
-  height: 68px;
-  padding: 0 22px;
-
-  border-radius: 5px;
-  background: rgba(255, 255, 255, 0.86);
-  border: 0 solid rgba(226, 232, 240, 0.82);
-
+  grid-column: 2;
+  margin: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-
   text-align: center;
-
-  box-shadow:
-    rgba(0, 0, 0, 0.4) 0px 2px 4px,
-    rgba(0, 0, 0, 0.3) 0px 7px 13px -3px,
-    rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
+  animation: stockTotalRise 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .stock-page__stock-total span {
   margin: 0;
   color: #64748b;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 950;
   text-transform: uppercase;
-  letter-spacing: 0.09em;
+  letter-spacing: 0.16em;
 }
 
 .stock-page__stock-total strong {
-  margin-top: 5px;
-  color: #111827;
-  font-size: 30px;
+  margin-top: 7px;
+  min-width: 6ch;
+  color: #ef233c;
+  font-size: clamp(30px, 3vw, 40px);
   font-weight: 950;
-  letter-spacing: -0.055em;
-  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.07em;
+  line-height: 0.95;
+  text-align: center;
+  text-shadow:
+    0 1px 0 #ffe2e4,
+    0 2px 0 #d52639,
+    0 3px 0 #bc1d30,
+    0 4px 0 #a8182a,
+    0 10px 14px rgba(93, 20, 35, 0.26),
+    0 18px 26px rgba(32, 42, 58, 0.14);
 }
 
 /* =========================
@@ -624,45 +614,25 @@ body.dark-mode .stock-page__header h2 {
   text-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
 }
 
-body.dark-mode .stock-page__header span {
+body.dark-mode .stock-page__title > span {
   color: #94a3b8;
 }
 
 /* TOTAL */
 
-body.dark-mode .stock-page__stock-total {
-  position: relative;
-  overflow: hidden;
-
-  background:
-    radial-gradient(circle at 50% 0%, rgba(243, 67, 67, 0.2), transparent 58%),
-    linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.045),
-      rgba(255, 255, 255, 0.015)
-    ),
-    #121821;
-
-  border: 1px solid rgba(243, 67, 67, 0.34);
-
-  box-shadow:
-    0 0 18px rgba(243, 67, 67, 0.22),
-    0 0 38px rgba(243, 67, 67, 0.16),
-    0 18px 40px rgba(0, 0, 0, 0.42),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05),
-    inset 0 -3px 0 rgba(0, 0, 0, 0.24);
-
-  animation: stockTotalNeonPulse 2.2s ease-in-out infinite;
-}
 body.dark-mode .stock-page__stock-total span {
-  color: #94a3b8;
+  color: #aab7c8;
 }
 
 body.dark-mode .stock-page__stock-total strong {
-  color: #f8fafc;
+  color: #ff646c;
   text-shadow:
-    0 0 8px rgba(243, 67, 67, 0.45),
-    0 0 18px rgba(243, 67, 67, 0.28);
+    0 1px 0 #ffb1b6,
+    0 2px 0 #db3947,
+    0 3px 0 #b82c39,
+    0 4px 0 #922430,
+    0 11px 17px rgba(0, 0, 0, 0.6),
+    0 0 28px rgba(243, 67, 67, 0.16);
 }
 
 /* TABS */
@@ -936,15 +906,16 @@ body.dark-mode .stock-page__error {
 
 @media (max-width: 1100px) {
   .stock-page__header--clean {
-    align-items: stretch;
+    grid-template-columns: 1fr;
   }
 
-  .stock-page__stock-total-wrap {
-    justify-content: flex-start;
+  .stock-page__header--clean::after {
+    display: none;
   }
 
   .stock-page__stock-total {
-    min-width: 220px;
+    grid-column: 1;
+    justify-self: center;
   }
 
   .stock-page__confirm-area {
@@ -980,25 +951,20 @@ body.dark-mode .stock-page__error {
   }
 }
 
-@keyframes stockTotalNeonPulse {
-  0%,
-  100% {
-    transform: scale(1);
-    box-shadow:
-      0 0 18px rgba(243, 67, 67, 0.22),
-      0 0 38px rgba(243, 67, 67, 0.16),
-      0 18px 40px rgba(0, 0, 0, 0.42),
-      inset 0 1px 0 rgba(255, 255, 255, 0.05),
-      inset 0 -3px 0 rgba(0, 0, 0, 0.24);
+@keyframes stockTotalRise {
+  from {
+    opacity: 0;
+    transform: translateY(9px);
   }
 
-  50% {
-    transform: scale(1.025);
-    box-shadow:
-      0 0 24px rgba(243, 67, 67, 0.42),
-      0 0 58px rgba(243, 67, 67, 0.28),
-      0 22px 48px rgba(0, 0, 0, 0.48),
-      inset 0 1px 0 rgba(255, 255, 255, 0.07),
-      inset 0 -3px 0 rgba(0, 0, 0, 0.26);
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stock-page__stock-total {
+    animation: none;
   }
 }

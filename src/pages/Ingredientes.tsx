@@ -1,6 +1,6 @@
 import {
   AlertTriangle, ArrowDown, ArrowDownUp, ArrowUp, ChevronLeft, ChevronRight,
-  CircleDollarSign, Edit3, LoaderCircle, PackageCheck, PackageOpen, Plus, RefreshCw,
+  Edit3, LoaderCircle, PackageCheck, PackageOpen, Plus, RefreshCw,
   Search, SlidersHorizontal, Trash2, X,
 } from "lucide-react";
 import { gooeyToast } from "goey-toast";
@@ -44,6 +44,24 @@ type StockAction = "increase" | "decrease" | "set";
 
 function formatMoney(value: number, maximumFractionDigits = 2) {
   return new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS", maximumFractionDigits }).format(value || 0);
+}
+function AnimatedStockValue({ value }: { value: number | undefined }) {
+  const [displayValue, setDisplayValue] = useState(0);
+  useEffect(() => {
+    if (value === undefined) return;
+    let frame = 0;
+    let startedAt: number | null = null;
+    const animate = (now: number) => {
+      if (startedAt === null) startedAt = now;
+      const progress = Math.min((now - startedAt) / 650, 1);
+      setDisplayValue(progress === 1 ? value : value * (1 - Math.pow(1 - progress, 3)));
+      if (progress < 1) frame = window.requestAnimationFrame(animate);
+    };
+    frame = window.requestAnimationFrame(animate);
+    return () => window.cancelAnimationFrame(frame);
+  }, [value]);
+  if (value === undefined) return <>—</>;
+  return <><span aria-hidden="true">{formatMoney(displayValue)}</span><span className="sr-only">{formatMoney(value)}</span></>;
 }
 function formatUpdatedAt(value: string) {
   const date = new Date(value);
@@ -254,12 +272,15 @@ export default function Ingredientes() {
       <button type="button" className="ingredients-primary" onClick={openCreate}><Plus size={17} />Nuevo ingrediente</button>
     </header>
 
-    <div className="ingredients-summary" aria-label="Resumen de ingredientes">
-      <article><span className="ingredients-summary__icon"><PackageOpen size={20} /></span><div><small>Total</small><strong>{summary?.totalIngredients ?? 0}</strong><p>ingredientes registrados</p></div></article>
-      <article><span className="ingredients-summary__icon ingredients-summary__icon--ok"><PackageCheck size={20} /></span><div><small>Activos</small><strong>{summary?.activeIngredients ?? 0}</strong><p>disponibles para usar</p></div></article>
-      <article className={(summary?.lowStockIngredients ?? 0) > 0 ? "is-warning" : ""}><span className="ingredients-summary__icon ingredients-summary__icon--warning"><AlertTriangle size={20} /></span><div><small>Stock bajo</small><strong>{summary?.lowStockIngredients ?? 0}</strong><p>requieren atención</p></div></article>
-      <article><span className="ingredients-summary__icon ingredients-summary__icon--money"><CircleDollarSign size={20} /></span><div><small>Valor en stock</small><strong>{formatMoney(summary?.totalStockValue ?? 0)}</strong><p>capital disponible</p></div></article>
-    </div>
+    <section className="ingredients-strip" aria-label="Resumen de ingredientes">
+      <div className="ingredients-strip__body">
+        <div className="ingredients-strip__title"><small>EN NÚMEROS</small><h3>Inventario</h3></div>
+        <div className="ingredients-strip__metric"><small>TOTAL INGREDIENTES</small><strong>{summary?.totalIngredients ?? "—"}</strong></div>
+        <div className="ingredients-strip__metric"><small>ACTIVOS</small><strong>{summary?.activeIngredients ?? "—"}</strong></div>
+        <div className={`ingredients-strip__metric ${(summary?.lowStockIngredients ?? 0) > 0 ? "is-warning" : ""}`}><small>STOCK BAJO</small><strong>{summary?.lowStockIngredients ?? "—"}</strong></div>
+        <div className="ingredients-strip__metric"><small>VALOR EN STOCK</small><strong><AnimatedStockValue value={summary?.totalStockValue} /></strong></div>
+      </div>
+    </section>
 
     <div className="ingredients-card">
       <div className="ingredients-toolbar">

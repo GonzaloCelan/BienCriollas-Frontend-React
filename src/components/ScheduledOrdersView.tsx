@@ -5,7 +5,6 @@ import {
   CalendarDays,
   Eye,
   Pencil,
-  Plus,
   Search,
   Trash2,
 } from "lucide-react";
@@ -24,7 +23,6 @@ type ScheduledOrdersViewProps = {
   selectedDate: string;
   onDateChange: (date: string) => void;
   onClearDate: () => void;
-  onProgram: () => void;
   onEdit: (pedido: Pedido) => void | Promise<void>;
   onCancel: (idPedido: number) => void;
   onLoadDetail: (idPedido: number) => Promise<Pedido["items"]>;
@@ -75,7 +73,6 @@ export default function ScheduledOrdersView({
   selectedDate,
   onDateChange,
   onClearDate,
-  onProgram,
   onEdit,
   onCancel,
   onLoadDetail,
@@ -199,7 +196,6 @@ export default function ScheduledOrdersView({
           <span><CalendarClock size={28} /></span>
           <h3>No hay pedidos programados.</h3>
           <p>Los pedidos para fechas futuras aparecerán acá.</p>
-          <button type="button" onClick={onProgram}><Plus size={16} />Programar pedido</button>
         </section>
       )}
 

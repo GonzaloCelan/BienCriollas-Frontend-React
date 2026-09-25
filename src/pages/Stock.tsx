@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { gooeyToast } from "goey-toast";
 
 import StockCard from "../components/StockCard";
@@ -13,18 +13,18 @@ import {
   type StockItem,
 } from "../services/stockApi";
 
-import carneImg from "../assets/variedades/thumbs/carne.jpg";
-import verduraImg from "../assets/variedades/thumbs/verdura.jpg";
-import chocloImg from "../assets/variedades/thumbs/choclo.jpg";
-import polloImg from "../assets/variedades/thumbs/pollo.jpg";
-import atunImg from "../assets/variedades/thumbs/atun.jpg";
-import capresseImg from "../assets/variedades/thumbs/capresse.jpg";
-import fugazzaImg from "../assets/variedades/thumbs/fugazza.jpg";
-import quesoAzulImg from "../assets/variedades/thumbs/queso-azul.jpg";
-import bondiolaImg from "../assets/variedades/thumbs/bondiola.jpg";
-import vacioImg from "../assets/variedades/thumbs/vacio.jpg";
-import campoImg from "../assets/variedades/thumbs/campo.jpg";
-import jamonQuesoImg from "../assets/variedades/thumbs/jamon-queso.jpg";
+import criollaStockImg from "../assets/variedades/criolla-stock.jpg";
+import verduraImg from "../assets/variedades/verdura-stock.jpg";
+import chocloImg from "../assets/variedades/choclo-stock.jpg";
+import polloImg from "../assets/variedades/pollo-stock.jpg";
+import atunImg from "../assets/variedades/atun-stock.jpg";
+import capresseImg from "../assets/variedades/capresse-stock.jpg";
+import fugazzaImg from "../assets/variedades/fugazza-stock.jpg";
+import quesoAzulImg from "../assets/variedades/queso-azul-stock.jpg";
+import bondiolaImg from "../assets/variedades/bondiola-stock.jpg";
+import vacioImg from "../assets/variedades/vacio-stock.jpg";
+import campoImg from "../assets/variedades/campo-stock.jpg";
+import jamonQuesoImg from "../assets/variedades/jamon-y-queso-stock.jpg";
 
 import "../styles/stock.css";
 
@@ -35,7 +35,7 @@ type StockCardItem = StockItem & {
 };
 
 const variedadImages: Record<number, string> = {
-  1: carneImg,
+  1: criollaStockImg,
   2: verduraImg,
   3: chocloImg,
   4: polloImg,
@@ -124,6 +124,9 @@ function Stock() {
   const [error, setError] = useState("");
   const [mode, setMode] = useState<StockMode>("produccion");
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [displayedTotal, setDisplayedTotal] = useState(0);
+  const displayedTotalRef = useRef(0);
+  const previousTotalRef = useRef<number | null>(null);
 
   const cargarStock = useCallback(async () => {
     try {
@@ -182,6 +185,52 @@ function Stock() {
   const totalDisponible = useMemo(() => {
     return items.reduce((acc, item) => acc + item.stock, 0);
   }, [items]);
+
+  useEffect(() => {
+    if (loading) return;
+
+    const previousTotal = previousTotalRef.current;
+    previousTotalRef.current = totalDisponible;
+
+    if (previousTotal === totalDisponible) return;
+
+    if (
+      previousTotal === null ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      const frame = window.requestAnimationFrame(() => {
+        displayedTotalRef.current = totalDisponible;
+        setDisplayedTotal(totalDisponible);
+      });
+      return () => window.cancelAnimationFrame(frame);
+    }
+
+    const startingTotal = displayedTotalRef.current;
+    const difference = totalDisponible - startingTotal;
+    const duration = 850;
+    let countFrame = 0;
+    let startedAt: number | null = null;
+
+    const count = (now: number) => {
+      if (startedAt === null) startedAt = now;
+      const progress = Math.min((now - startedAt) / duration, 1);
+      const easedProgress = 1 - Math.pow(1 - progress, 3);
+      const currentTotal = Math.round(startingTotal + difference * easedProgress);
+
+      displayedTotalRef.current = currentTotal;
+      setDisplayedTotal(currentTotal);
+
+      if (progress < 1) {
+        countFrame = window.requestAnimationFrame(count);
+      }
+    };
+
+    countFrame = window.requestAnimationFrame(count);
+
+    return () => {
+      window.cancelAnimationFrame(countFrame);
+    };
+  }, [loading, totalDisponible]);
 
   const totalIngresado = useMemo(() => {
     return items.reduce((acc, item) => acc + item.cantidad, 0);
@@ -322,20 +371,18 @@ function Stock() {
 
   return (
     <section className="stock-page">
-     <header className="stock-page__header stock-page__header--clean">
-  <div className="stock-page__title">
-    <p className="stock-page__eyebrow">Gestión de stock</p>
-    <h2>Stock</h2>
-    <span>Disponibilidad y carga de producción por variedad.</span>
-  </div>
+      <header className="stock-page__header stock-page__header--clean">
+        <div className="stock-page__title">
+          <p className="stock-page__eyebrow">Gestión de stock</p>
+          <h2>Stock</h2>
+          <span>Disponibilidad y carga de producción por variedad.</span>
+        </div>
 
-  <div className="stock-page__stock-total-wrap">
-    <div className="stock-page__stock-total">
-      <span>Stock total</span>
-      <strong>{totalDisponible}</strong>
-    </div>
-  </div>
-</header>
+        <p className="stock-page__stock-total">
+          <span>Stock total</span>
+          <strong>{displayedTotal}</strong>
+        </p>
+      </header>
 
       <section className="stock-mode-panel">
         <div className="stock-mode-tabs">

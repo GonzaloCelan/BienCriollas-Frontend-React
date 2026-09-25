@@ -26,10 +26,12 @@ import {
 } from "./services/appBadge";
 import { obtenerTodosLosPedidosPorEstado } from "./services/pedidosApi";
 import { isPageAvailable } from "./config/navigation";
+import { installProductionButtonEffect } from "./utils/productionButtonEffect";
 
 import "./styles/sidebar.css";
 import "./styles/mobile.css";
 import "./styles/auth.css";
+import "./styles/productionButtonEffect.css";
 
 const pedidosPagePromise = import("./pages/Pedidos");
 const Pedidos = lazy(() => pedidosPagePromise);
@@ -39,6 +41,7 @@ const Estadisticas = lazy(() => import("./pages/Estadisticas"));
 const Egresos = lazy(() => import("./pages/Egresos"));
 const Ingresos = lazy(() => import("./pages/Ingresos"));
 const Usuarios = lazy(() => import("./pages/Usuarios"));
+const Empleados = lazy(() => import("./pages/Empleados"));
 const loadIngredientes = () => import("./pages/Ingredientes");
 const loadRecetas = () => import("./pages/Recetas");
 const loadProceso = () => import("./pages/Proceso");
@@ -113,6 +116,8 @@ function AuthenticatedApp({
     PedidoNotificacion[]
   >([]);
   const [changePasswordOpen, setChangePasswordOpen] = useState(false);
+
+  useEffect(() => installProductionButtonEffect(), []);
 
   const paginaActiva =
     !isPageAvailable(activePage) || (!esAdministrador && ADMIN_PAGES.includes(activePage))
@@ -255,14 +260,14 @@ function AuthenticatedApp({
               exit={{ opacity: 0, y: -5, scale: .999 }}
               transition={{ duration: .22, ease: [.22, 1, .36, 1] }}>
               <Suspense fallback={<div className="app-page-loading" aria-label="Cargando" />}>
-                {paginaActiva === "pedidos" && <Pedidos />}
+                {paginaActiva === "pedidos" && <Pedidos onNavigateToStock={() => cambiarPagina("stock")} />}
                 {paginaActiva === "catalogo" && <Catalogo />}
                 {paginaActiva === "stock" && <Stock />}
                 {esAdministrador && paginaActiva === "estadisticas" && <Estadisticas />}
                 {esAdministrador && paginaActiva === "egresos" && <Egresos />}
                 {esAdministrador && paginaActiva === "ingresos" && <Ingresos />}
                 {esAdministrador && paginaActiva === "usuarios" && <Usuarios />}
-                {esAdministrador && paginaActiva === "empleados" && <Usuarios title="Usuarios" />}
+                {esAdministrador && paginaActiva === "empleados" && <Empleados />}
                 {esAdministrador && paginaActiva === "proveedores" && <SeccionEnPreparacion section="proveedores" />}
                 {paginaActiva === "ingredientes" && <Ingredientes />}
                 {paginaActiva === "recetas" && <Recetas />}

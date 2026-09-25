@@ -1,0 +1,105 @@
+/* Mantiene el diseño de cada botón y agrega una respuesta suave al tacto. */
+:is(
+  .ingredients-primary,
+  .ingredient-secondary,
+  .recipes-primary,
+  .recipe-secondary,
+  .recipe-detail-actions button,
+  .recipe-editor__stage-action,
+  .sp-button,
+  .rp-primary,
+  .rp-secondary,
+  .rp-save,
+  .rp-detail-actions button,
+  .analytics-hero__actions button,
+  .analytics-filter-card form button,
+  .analytics-settings footer button,
+  .analytics-cost-warning button
+) {
+  transition: transform .26s cubic-bezier(.22, 1, .36, 1), box-shadow .26s ease, background-color .26s ease;
+}
+
+@media (hover: hover) {
+  :is(
+    .ingredients-primary,
+    .ingredient-secondary,
+    .recipes-primary,
+    .recipe-secondary,
+    .recipe-detail-actions button,
+    .recipe-editor__stage-action,
+    .sp-button,
+    .rp-primary,
+    .rp-secondary,
+    .rp-save,
+    .rp-detail-actions button,
+    .analytics-hero__actions button,
+    .analytics-filter-card form button,
+    .analytics-settings footer button,
+    .analytics-cost-warning button
+  ):hover:not(:disabled) {
+    transform: translateY(-2px);
+  }
+}
+
+:is(
+  .ingredients-primary,
+  .ingredient-secondary,
+  .recipes-primary,
+  .recipe-secondary,
+  .recipe-detail-actions button,
+  .recipe-editor__stage-action,
+  .sp-button,
+  .rp-primary,
+  .rp-secondary,
+  .rp-save,
+  .rp-detail-actions button,
+  .analytics-hero__actions button,
+  .analytics-filter-card form button,
+  .analytics-settings footer button,
+  .analytics-cost-warning button
+):active:not(:disabled) {
+  transform: translateY(1px) scale(.97);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, .14);
+}
+
+/* La onda vive fuera del botón y sigue visible si el clic abre otra pantalla. */
+.production-button-pulse {
+  position: fixed;
+  z-index: 10000;
+  box-sizing: border-box;
+  border: 3px solid var(--pulse-color);
+  border-radius: var(--pulse-radius);
+  background: color-mix(in srgb, var(--pulse-color) 20%, transparent);
+  pointer-events: none;
+  will-change: transform, opacity;
+  animation: productionButtonPulse .62s cubic-bezier(.16, 1, .3, 1) forwards;
+}
+
+@keyframes productionButtonPulse {
+  0% { opacity: .8; transform: scale(1); }
+  22% { opacity: .7; transform: scale(1.08); }
+  100% { opacity: 0; transform: scaleX(1.46) scaleY(1.8); }
+}
+
+/* Estas acciones mantienen su respuesta aun si otras animaciones de la página están desactivadas. */
+@media (prefers-reduced-motion: reduce) {
+  :is(
+    .ingredients-primary,
+    .ingredient-secondary,
+    .recipes-primary,
+    .recipe-secondary,
+    .recipe-detail-actions button,
+    .recipe-editor__stage-action,
+    .sp-button,
+    .rp-primary,
+    .rp-secondary,
+    .rp-save,
+    .rp-detail-actions button,
+    .analytics-hero__actions button,
+    .analytics-filter-card form button,
+    .analytics-settings footer button,
+    .analytics-cost-warning button
+  ) {
+    transition: transform .26s cubic-bezier(.22, 1, .36, 1), box-shadow .26s ease, background-color .26s ease !important;
+  }
+}

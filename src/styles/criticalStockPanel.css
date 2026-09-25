@@ -50,8 +50,13 @@
 }
 
 .critical-stock__item {
+  width: 100%;
   min-height: 72px;
   padding: 12px;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
 
   border-radius: 5px;
   border: 1px solid rgba(226, 232, 240, 0.45);
@@ -322,4 +327,9 @@ body.dark-mode .critical-stock__message--error {
   from {
     width: 0;
   }
+}
+
+.critical-stock__item:focus-visible {
+  outline: 2px solid #ef233c;
+  outline-offset: 2px;
 }

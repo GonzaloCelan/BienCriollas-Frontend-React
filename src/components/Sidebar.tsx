@@ -29,7 +29,8 @@ const operationItems: MenuItem[] = [
   { label: "Stock", page: "stock", icon: Package },
 ];
 const managementItems: MenuItem[] = [
-  { label: "Usuarios", page: "empleados", icon: UsersRound },
+  { label: "Usuarios", page: "usuarios", icon: UserRound },
+  { label: "Empleados", page: "empleados", icon: UsersRound },
   { label: "Ingresos", page: "ingresos", icon: ArrowDownLeft },
   { label: "Egresos", page: "egresos", icon: ArrowUpRight },
   { label: "Estadísticas", page: "estadisticas", icon: ChartNoAxesCombined },
@@ -118,7 +119,7 @@ export default function Sidebar({ collapsed, onToggle, activePage, onChangePage,
 
   function renderItem(item: MenuItem, child = false) {
     const locked = !isPageAvailable(item.page);
-    const active = !locked && (activePage === item.page || (item.page === "empleados" && activePage === "usuarios"));
+    const active = !locked && activePage === item.page;
     return <button key={item.page} type="button"
       className={`bc-nav-item ${active ? "is-active" : ""} ${child ? "bc-nav-item--child" : ""}`}
       disabled={locked}
