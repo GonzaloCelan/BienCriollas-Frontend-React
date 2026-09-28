@@ -20,9 +20,11 @@ export type PedidoRequestDTO = {
   cliente: string;
   tipoVenta: TipoVentaBackend;
   tipoPago: TipoPagoBackend;
+  pagado: boolean;
   numeroPedidoPedidosYa: string | null;
   fechaEntrega?: string | null;
   horaEntrega: string | null;
+  tiempoEstimadoDeliveryMinutos?: number | null;
   montoEfectivo: number;
   montoTransferencia: number;
   totalPedido: number;
@@ -34,8 +36,10 @@ type PedidoResponseDTO = {
   cliente: string;
   tipoVenta: string;
   tipoPago: string;
+  pagado: boolean;
   numeroPedidoPedidosYa: string | null;
   horaEntrega: string | null;
+  fechaHoraEstimadaDelivery: string | null;
   totalPedido: number;
   estadoPedido: EstadoBackend;
   montoEfectivo?: number | null;
@@ -86,6 +90,7 @@ export type PedidoDetalleResponseDTO = {
   subtotal: number;
   tipoVenta: TipoVentaBackend;
   tipoPago: TipoPagoBackend;
+  pagado: boolean;
 };
 
 export type PedidoNotificacionDTO = {
@@ -139,7 +144,9 @@ function mapPedido(pedido: PedidoResponseDTO): Pedido {
     cliente: pedido.cliente,
     tipoVenta: normalizarTipoVenta(pedido.tipoVenta),
     pago: normalizarTipoPago(pedido.tipoPago),
+    pagado: pedido.pagado === true,
     horario: formatearHorario(pedido.horaEntrega),
+    fechaHoraEstimadaDelivery: pedido.fechaHoraEstimadaDelivery ?? null,
     estado: normalizarEstado(pedido.estadoPedido),
     total: Number(pedido.totalPedido ?? 0),
     numeroPedidoPedidosYa: pedido.numeroPedidoPedidosYa,
@@ -318,6 +325,36 @@ export async function actualizarPedidoApi(
 
   if (!response.ok) {
     throw await crearApiError(response, "No se pudo actualizar el pedido.");
+  }
+}
+
+export async function actualizarEstadoPagoPedidoApi(
+  idPedido: number,
+  pagado: boolean
+): Promise<void> {
+  const response = await apiFetch(`${API_URL}/api/v2/pedido/${idPedido}/pago`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ pagado }),
+  });
+
+  if (!response.ok) {
+    throw await crearApiError(response, "No se pudo actualizar el estado de pago.");
+  }
+}
+
+export async function actualizarEtaDeliveryApi(
+  idPedido: number,
+  minutos: number | null
+): Promise<void> {
+  const response = await apiFetch(`${API_URL}/api/v2/pedido/${idPedido}/eta-delivery`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ minutos }),
+  });
+
+  if (!response.ok) {
+    throw await crearApiError(response, "No se pudo actualizar el tiempo estimado del delivery.");
   }
 }
 

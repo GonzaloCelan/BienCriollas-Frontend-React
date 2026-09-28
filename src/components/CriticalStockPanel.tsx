@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AlertTriangle } from "lucide-react";
 
 import { obtenerStockActual, type StockItem } from "../services/stockApi";
@@ -37,36 +37,34 @@ const variedadImages: Record<number, string> = {
 
 type CriticalStockPanelProps = {
   onNavigateToStock: () => void;
+  refreshToken: number;
 };
 
-function CriticalStockPanel({ onNavigateToStock }: CriticalStockPanelProps) {
+function CriticalStockPanel({ onNavigateToStock, refreshToken }: CriticalStockPanelProps) {
   const [stock, setStock] = useState<StockItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const latestRequest = useRef(0);
 
   const cargarStock = useCallback(async () => {
+    const requestId = ++latestRequest.current;
     try {
-      setError("");
-
       const data = await obtenerStockActual();
-      setStock(data);
+      if (requestId === latestRequest.current) setStock(data);
     } catch (error) {
       console.error(error);
-      setError("No se pudo cargar el stock.");
-    } finally {
-      setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    const initialLoad = window.setTimeout(() => void cargarStock(), 0);
+    const refresh = window.setTimeout(() => void cargarStock(), 0);
+    return () => window.clearTimeout(refresh);
+  }, [cargarStock, refreshToken]);
 
+  useEffect(() => {
     const interval = window.setInterval(() => {
       void cargarStock();
     }, 30000);
 
     return () => {
-      window.clearTimeout(initialLoad);
       window.clearInterval(interval);
     };
   }, [cargarStock]);
@@ -77,6 +75,10 @@ function CriticalStockPanel({ onNavigateToStock }: CriticalStockPanelProps) {
       .sort((a, b) => a.stock - b.stock)
       .slice(0, 5);
   }, [stock]);
+
+  if (stockCritico.length === 0) {
+    return null;
+  }
 
   return (
     <aside className="critical-stock">
@@ -89,18 +91,7 @@ function CriticalStockPanel({ onNavigateToStock }: CriticalStockPanelProps) {
         <AlertTriangle size={17} />
       </header>
 
-      {loading ? (
-        <div className="critical-stock__message">Cargando stock...</div>
-      ) : error ? (
-        <div className="critical-stock__message critical-stock__message--error">
-          {error}
-        </div>
-      ) : stockCritico.length === 0 ? (
-        <div className="critical-stock__message">
-          No hay variedades críticas.
-        </div>
-      ) : (
-        <div className="critical-stock__list">
+      <div className="critical-stock__list">
           {stockCritico.map((item) => {
             const image = variedadImages[item.id];
 
@@ -146,8 +137,7 @@ function CriticalStockPanel({ onNavigateToStock }: CriticalStockPanelProps) {
               </button>
             );
           })}
-        </div>
-      )}
+      </div>
     </aside>
   );
 }

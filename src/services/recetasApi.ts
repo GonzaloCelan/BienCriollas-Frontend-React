@@ -89,9 +89,6 @@ export type IngredienteCalculoReceta = {
   measurementUnit: MeasurementUnit;
   baseQuantity: number;
   requiredQuantity: number;
-  currentStock: number;
-  enoughStock: boolean;
-  missingQuantity: number;
   estimatedCost: number;
 };
 

@@ -4,6 +4,7 @@ import {
   Clock3,
   CreditCard,
   Eye,
+  Pause,
   Pencil,
   Printer,
   Store,
@@ -14,12 +15,16 @@ import { gooeyToast } from "goey-toast";
 import { TOAST_RAPIDO_TIMING } from "../config/toast";
 
 import OrderDetailDrawer from "./OrderDetailDrawer";
+import DeliveryEtaCountdown from "./DeliveryEtaCountdown";
+import DeliveryEtaDialog from "./DeliveryEtaDialog";
+import PaymentStatusBadge from "./PaymentStatusBadge";
 import OrdersEmptyState from "./OrdersEmptyState";
 import OrdersLoadingState from "./OrdersLoadingState";
 
 import { imprimirComandaPedido } from "../utils/printComanda";
 
 import type { EstadoBackend } from "../services/pedidosApi";
+import { getDeliveryEtaClock, getDeliveryEtaPresentation, toggleDeliveryEtaPlayback, type DeliveryEtaPlayback } from "../utils/deliveryEta";
 
 export type EstadoPedidoFrontend =
   | "Pendiente"
@@ -32,7 +37,9 @@ export type Pedido = {
   cliente: string;
   tipoVenta: string;
   pago: string;
+  pagado: boolean;
   horario: string;
+  fechaHoraEstimadaDelivery: string | null;
   estado: EstadoPedidoFrontend;
   total: number;
 
@@ -64,6 +71,9 @@ type PedidosTableProps = {
   onDeletePedido: (idPedido: number) => void;
   onLoadDetail: (idPedido: number) => Promise<Pedido["items"]>;
   onChangePayment: (pedido: Pedido) => void;
+  onChangePaymentStatus: (pedido: Pedido) => void;
+  onChangeDeliveryEta: (pedido: Pedido, minutes: number | null) => Promise<void>;
+  updatingPaymentId?: number | null;
   onEditPedido: (pedido: Pedido) => void | Promise<void>;
   editingId?: number | null;
 };
@@ -164,6 +174,18 @@ function getHorarioPedido(horario: string) {
   return value.slice(0, 5);
 }
 
+function isPedidosYa(pedido: Pedido) {
+  return pedido.tipoVenta.toLowerCase().includes("pedidos");
+}
+
+function canEditDeliveryEta(pedido: Pedido) {
+  return isPedidosYa(pedido) && pedido.estado !== "Entregado" && pedido.estado !== "Cancelado";
+}
+
+function getCurrentTimestamp() {
+  return Date.now();
+}
+
 type ScheduleTone = "normal" | "soon" | "urgent" | "critical" | "late";
 
 function getSchedulePresentation(pedido: Pedido, now: number) {
@@ -211,6 +233,9 @@ function PedidosTable({
   onDeletePedido,
   onLoadDetail,
   onChangePayment,
+  onChangePaymentStatus,
+  onChangeDeliveryEta,
+  updatingPaymentId = null,
   onEditPedido,
   editingId = null,
 }: PedidosTableProps) {
@@ -218,12 +243,37 @@ function PedidosTable({
   const [detalleItems, setDetalleItems] = useState<Pedido["items"]>([]);
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [printingId, setPrintingId] = useState<number | null>(null);
+  const [etaPedido, setEtaPedido] = useState<Pedido | null>(null);
+  const [etaPlayback, setEtaPlayback] = useState<Record<number, DeliveryEtaPlayback>>({});
   const [now, setNow] = useState(() => Date.now());
+  const hasRunningEta = pedidos.some((pedido) => {
+    const target = pedido.fechaHoraEstimadaDelivery;
+    if (!canEditDeliveryEta(pedido) || !target) return false;
+    const clock = getDeliveryEtaClock(target, now, etaPlayback[pedido.id]);
+    const presentation = getDeliveryEtaPresentation(target, clock.now);
+    return !clock.paused && presentation !== null && presentation.tone !== "finished";
+  });
 
   useEffect(() => {
-    const interval = window.setInterval(() => setNow(Date.now()), 30000);
-    return () => window.clearInterval(interval);
-  }, []);
+    const interval = window.setInterval(() => setNow(Date.now()), hasRunningEta ? 1000 : 30000);
+    const updateOnFocus = () => setNow(Date.now());
+    window.addEventListener("focus", updateOnFocus);
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener("focus", updateOnFocus);
+    };
+  }, [hasRunningEta]);
+
+  function handleEtaPauseClick(pedido: Pedido) {
+    const target = pedido.fechaHoraEstimadaDelivery;
+    if (!target) return;
+    const clickedAt = getCurrentTimestamp();
+    setEtaPlayback((current) => ({
+      ...current,
+      [pedido.id]: toggleDeliveryEtaPlayback(target, clickedAt, current[pedido.id]),
+    }));
+    setNow(clickedAt);
+  }
 
   const totalItems = (detalleItems ?? []).reduce(
     (acc, item) => acc + item.cantidad,
@@ -297,11 +347,13 @@ function PedidosTable({
           pedidos.map((pedido, index) => {
             const puedeAvanzar = puedeAvanzarEstado(pedido.estado);
             const puedeCancelar = puedeCancelarPedido(pedido.estado);
-            const esPedidosYa = pedido.tipoVenta
-              .toLowerCase()
-              .includes("pedidos");
+            const esPedidosYa = isPedidosYa(pedido);
             const numeroPedidoExterno = getNumeroPedidoExterno(pedido);
             const horarioPedido = getHorarioPedido(pedido.horario);
+            const editableEta = canEditDeliveryEta(pedido);
+            const etaClock = getDeliveryEtaClock(pedido.fechaHoraEstimadaDelivery ?? "", now, etaPlayback[pedido.id]);
+            const etaPresentation = getDeliveryEtaPresentation(pedido.fechaHoraEstimadaDelivery, etaClock.now);
+            const hasEta = etaPresentation !== null;
 
             return (
               <article
@@ -311,10 +363,35 @@ function PedidosTable({
               >
                 <div className="orders-mobile-card__topline">
                   <strong>Pedido #{pedido.id}</strong>
-                  <span>
-                    <Clock3 size={15} />
-                    {horarioPedido}
-                  </span>
+                  {editableEta ? (
+                    <span className="orders-eta-controls orders-mobile-card__eta">
+                      {hasEta && etaPresentation.tone === "finished" ? (
+                        <DeliveryEtaCountdown fechaHoraEstimadaDelivery={pedido.fechaHoraEstimadaDelivery} now={etaClock.now} />
+                      ) : hasEta ? (
+                        <button
+                          type="button"
+                          className="orders-eta-trigger"
+                          onClick={() => handleEtaPauseClick(pedido)}
+                          aria-pressed={etaClock.paused}
+                          title={etaClock.paused ? "Reanudar cronómetro" : "Pausar cronómetro"}
+                          aria-label={`${etaPresentation.description}. ${etaClock.paused ? "Reanudar" : "Pausar"} cronómetro del pedido #${pedido.id}`}
+                        >
+                          <DeliveryEtaCountdown fechaHoraEstimadaDelivery={pedido.fechaHoraEstimadaDelivery} now={etaClock.now} />
+                          {etaClock.paused && <Pause size={11} aria-hidden="true" />}
+                        </button>
+                      ) : (
+                        <span className="orders-delivery-eta--empty">Sin ETA</span>
+                      )}
+                      <button type="button" className="orders-eta-edit" onClick={() => setEtaPedido(pedido)} title="Editar tiempo estimado del delivery" aria-label={`Editar tiempo estimado del delivery del pedido #${pedido.id}`}>
+                        <Pencil size={12} aria-hidden="true" />
+                      </button>
+                    </span>
+                  ) : (
+                    <span>
+                      <Clock3 size={15} />
+                      {esPedidosYa && !hasEta ? "Sin ETA" : horarioPedido}
+                    </span>
+                  )}
                 </div>
 
                 <button
@@ -339,6 +416,15 @@ function PedidosTable({
                     {` · ${pedido.tipoVenta}`}
                   </span>
                 </button>
+
+                <div className="orders-mobile-card__payment">
+                  <span>Estado de pago</span>
+                  <PaymentStatusBadge
+                    pagado={pedido.pagado}
+                    onClick={pedido.estado === "Entregado" || pedido.estado === "Cancelado" ? undefined : () => onChangePaymentStatus(pedido)}
+                    busy={updatingPaymentId === pedido.id}
+                  />
+                </div>
 
                 <div className="orders-mobile-card__amount">
                   <span>{pedido.tipoVenta}</span>
@@ -384,6 +470,7 @@ function PedidosTable({
             <tr>
               <th>Cliente</th>
               <th>Pago</th>
+              <th>Estado de pago</th>
               <th>Canal</th>
               <th>Horario</th>
               <th>Total</th>
@@ -395,18 +482,22 @@ function PedidosTable({
           <tbody>
             {loading ? (
               <tr className="orders-state-row">
-                <td colSpan={7}>
+                <td colSpan={8}>
                   <OrdersLoadingState />
                 </td>
               </tr>
             ) : pedidos.length > 0 ? (
-              pedidos.map((pedido, index) => {
+              pedidos.map((pedido) => {
                 const puedeAvanzar = puedeAvanzarEstado(pedido.estado);
                 const puedeCancelar = puedeCancelarPedido(pedido.estado);
                 const puedeCambiarPagoPedido = puedeCambiarPago(pedido.estado);
                 const puedeEditar = puedeEditarPedido(pedido.estado);
                 const horarioPedido = getHorarioPedido(pedido.horario);
                 const schedulePresentation = getSchedulePresentation(pedido, now);
+                const editableEta = canEditDeliveryEta(pedido);
+                const etaClock = getDeliveryEtaClock(pedido.fechaHoraEstimadaDelivery ?? "", now, etaPlayback[pedido.id]);
+                const etaPresentation = getDeliveryEtaPresentation(pedido.fechaHoraEstimadaDelivery, etaClock.now);
+                const hasEta = etaPresentation !== null;
 
                 return (
                   <tr
@@ -416,7 +507,6 @@ function PedidosTable({
                         ? "orders-row-active"
                         : ""
                     }
-                    style={{ animationDelay: `${index * 0.045}s` }}
                   >
                     <td data-label="Cliente">
                       <div className="orders-client-cell">
@@ -452,6 +542,14 @@ function PedidosTable({
                       </button>
                     </td>
 
+                    <td data-label="Estado de pago">
+                      <PaymentStatusBadge
+                        pagado={pedido.pagado}
+                        onClick={pedido.estado === "Entregado" || pedido.estado === "Cancelado" ? undefined : () => onChangePaymentStatus(pedido)}
+                        busy={updatingPaymentId === pedido.id}
+                      />
+                    </td>
+
                     <td data-label="Venta">
                       <span
                         className={`orders-sale-pill ${getSaleClass(
@@ -477,18 +575,45 @@ function PedidosTable({
                       <span className="orders-mobile-schedule-label">
                         Horario
                       </span>
-                      <span
-                        className={`orders-schedule-value orders-schedule-value--${schedulePresentation.tone} ${
-                          pedido.estado === "Preparado" ? "orders-schedule-value--ready" : ""
-                        }`}
-                        title={schedulePresentation.title}
-                        aria-label={schedulePresentation.title || schedulePresentation.label}
-                      >
-                        {schedulePresentation.tone !== "normal" && (
-                          <span className="orders-schedule-dot" aria-hidden="true" />
-                        )}
-                        {schedulePresentation.label}
-                      </span>
+                      {editableEta ? (
+                        <span className="orders-eta-controls">
+                          {hasEta && etaPresentation.tone === "finished" ? (
+                            <DeliveryEtaCountdown fechaHoraEstimadaDelivery={pedido.fechaHoraEstimadaDelivery} now={etaClock.now} />
+                          ) : hasEta ? (
+                            <button
+                              type="button"
+                              className="orders-eta-trigger"
+                              onClick={() => handleEtaPauseClick(pedido)}
+                              aria-pressed={etaClock.paused}
+                              title={etaClock.paused ? "Reanudar cronómetro" : "Pausar cronómetro"}
+                              aria-label={`${etaPresentation.description}. ${etaClock.paused ? "Reanudar" : "Pausar"} cronómetro del pedido #${pedido.id}`}
+                            >
+                              <DeliveryEtaCountdown fechaHoraEstimadaDelivery={pedido.fechaHoraEstimadaDelivery} now={etaClock.now} />
+                              {etaClock.paused && <Pause size={11} aria-hidden="true" />}
+                            </button>
+                          ) : (
+                            <span className="orders-delivery-eta--empty">Sin ETA</span>
+                          )}
+                          <button type="button" className="orders-eta-edit" onClick={() => setEtaPedido(pedido)} title="Editar tiempo estimado del delivery" aria-label={`Editar tiempo estimado del delivery del pedido #${pedido.id}`}>
+                            <Pencil size={12} aria-hidden="true" />
+                          </button>
+                        </span>
+                      ) : isPedidosYa(pedido) && !hasEta ? (
+                        <span className="orders-schedule-value">Sin ETA</span>
+                      ) : (
+                        <span
+                          className={`orders-schedule-value orders-schedule-value--${schedulePresentation.tone} ${
+                            pedido.estado === "Preparado" ? "orders-schedule-value--ready" : ""
+                          }`}
+                          title={schedulePresentation.title}
+                          aria-label={schedulePresentation.title || schedulePresentation.label}
+                        >
+                          {schedulePresentation.tone !== "normal" && (
+                            <span className="orders-schedule-dot" aria-hidden="true" />
+                          )}
+                          {schedulePresentation.label}
+                        </span>
+                      )}
                     </td>
 
                     <td data-label="Total">
@@ -579,7 +704,7 @@ function PedidosTable({
               })
             ) : (
               <tr className="orders-state-row">
-                <td colSpan={7}>
+                <td colSpan={8}>
                   <OrdersEmptyState estado={estadoActivo} />
                 </td>
               </tr>
@@ -594,6 +719,14 @@ function PedidosTable({
         totalItems={loadingDetail ? 0 : totalItems}
         onClose={cerrarDetalle}
       />
+      {etaPedido && (
+        <DeliveryEtaDialog
+          key={etaPedido.id}
+          pedido={etaPedido}
+          onClose={() => setEtaPedido(null)}
+          onSave={(minutes) => onChangeDeliveryEta(etaPedido, minutes)}
+        />
+      )}
     </>
   );
 }

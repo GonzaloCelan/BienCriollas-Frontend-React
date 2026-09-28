@@ -3,6 +3,7 @@ import { X } from "lucide-react";
 
 import "../styles/orderDetailDrawer.css";
 import type { Pedido } from "./PedidosTable";
+import PaymentStatusBadge from "./PaymentStatusBadge";
 
 type OrderDetailDrawerProps = {
   pedido: Pedido | null;
@@ -74,6 +75,11 @@ function OrderDetailDrawer({
           </div>
 
           <div className="order-detail-row">
+            <span>Estado de pago</span>
+            <PaymentStatusBadge pagado={pedido.pagado} />
+          </div>
+
+          <div className="order-detail-row">
             <span>Horario</span>
             <strong>{pedido.horario || "-"}</strong>
           </div>
@@ -92,7 +98,7 @@ function OrderDetailDrawer({
             </div>
           )}
 
-          <div className="order-detail-row">
+          <div className="order-detail-row order-detail-row--status">
             <span>Estado</span>
             <strong>{pedido.estado}</strong>
           </div>

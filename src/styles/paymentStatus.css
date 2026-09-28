@@ -1,0 +1,32 @@
+.order-payment-status {
+  display: inline-block;
+  width: max-content;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  font: 850 12px/1.3 "Plus Jakarta Sans", system-ui, sans-serif;
+  letter-spacing: .01em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.order-payment-status--paid,
+.scheduled-order__client .order-payment-status--paid { color: #087451; }
+.order-payment-status--pending,
+.scheduled-order__client .order-payment-status--pending { color: #9a6110; }
+.order-payment-status--action { cursor: pointer; }
+.order-payment-status--action:hover:not(:disabled) { text-decoration: underline; text-underline-offset: 3px; }
+.order-payment-status--action:focus-visible { outline: 2px solid #ef4040; outline-offset: 3px; }
+.order-payment-status--action:disabled { cursor: wait; opacity: .6; }
+.order-detail-row .order-payment-status { font-size: 14px; }
+body.dark-mode .order-payment-status--paid,
+body.dark-mode .orders-table .order-payment-status--paid,
+body.dark-mode .scheduled-order__client .order-payment-status--paid { color: #7ae6b9; }
+body.dark-mode .order-payment-status--pending,
+body.dark-mode .orders-table .order-payment-status--pending,
+body.dark-mode .scheduled-order__client .order-payment-status--pending { color: #ffd58c; }
+@media (max-width: 760px) {
+  .orders-mobile-card__payment { padding: 10px 0 3px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .orders-mobile-card__payment > span { color: #766e66; font-size: 10px; font-weight: 800; text-transform: uppercase; }
+  body.dark-mode .orders-mobile-card__payment > span { color: #abb8c8; }
+}

@@ -22,7 +22,10 @@ body.dark-mode .scheduled-summary,body.dark-mode .scheduled-toolbar,body.dark-mo
 .scheduled-order__time span { font-size:9px; }
 .scheduled-order__client span,.scheduled-order__facts span,.scheduled-order__status small { font-size:10px; line-height:1.4; }
 .scheduled-order__facts strong { font-size:12px; }
-.scheduled-order__status>span { font-size:9px; }
+.scheduled-order__status>span { padding:0; border-radius:0; background:transparent; font-size:11px; }
+.scheduled-order__payment { display:flex; align-items:center; flex-wrap:wrap; gap:5px 8px; margin-top:3px; }
+.scheduled-order__payment small { color:#718096; font-size:9px; font-weight:800; text-transform:uppercase; }
+.scheduled-order__client .order-payment-status { font-size:11px; }
 .scheduled-empty p { font-size:11px; }
 
 body.dark-mode .scheduled-summary,
@@ -63,7 +66,8 @@ body.dark-mode .scheduled-order__time span { color:#ff777c; }
 body.dark-mode .scheduled-order__client span,
 body.dark-mode .scheduled-order__facts span,
 body.dark-mode .scheduled-order__status small { color:#b9c5d5; }
-body.dark-mode .scheduled-order__status>span { color:#ffd58d; background:#4a351b; }
+body.dark-mode .scheduled-order__status>span { color:#ffd58d; background:transparent; }
+body.dark-mode .scheduled-order__payment small { color:#aebcd0; }
 body.dark-mode .scheduled-order__actions button { color:#c2cede; background:#233142; }
 body.dark-mode .scheduled-order__actions button:hover,
 body.dark-mode .scheduled-order__actions button:focus-visible { color:#ff777c; background:#3a252e; }

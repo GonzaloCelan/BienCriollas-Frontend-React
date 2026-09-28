@@ -55,6 +55,7 @@ export function imprimirComandaPedido(
   const cliente = escapeHtml(pedido.cliente || "Sin cliente");
   const tipoVentaLabel = escapeHtml(pedido.tipoVenta || "-");
   const tipoPagoLabel = escapeHtml(pedido.pago || "-");
+  const estadoPagoLabel = pedido.pagado ? "*** PAGADO ***" : "*** PAGO PENDIENTE ***";
   const totalPedidoFmt = formatMoney(pedido.total);
   const logoUrl = escapeHtml(
     new URL(LOGO_COMANDA_PATH, window.location.origin).href
@@ -178,6 +179,15 @@ export function imprimirComandaPedido(
           margin: 0 0 1mm 0;
           font-size: 10px;
           font-weight: 700;
+        }
+
+        .estado-pago {
+          margin: 0 0 1mm 0;
+          color: #000;
+          font-size: 10px;
+          font-weight: 700;
+          line-height: 1.15;
+          text-align: center;
         }
 
         table {
@@ -413,6 +423,7 @@ export function imprimirComandaPedido(
 
         <p class="cliente"><strong>Cliente:</strong> ${cliente}</p>
         <p class="pago"><strong>Pago:</strong> ${tipoPagoLabel}</p>
+        <div class="estado-pago">${estadoPagoLabel}</div>
         ${horarioHtml}
 
         <table>

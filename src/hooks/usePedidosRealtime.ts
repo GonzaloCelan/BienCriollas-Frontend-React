@@ -6,7 +6,7 @@ import { BACKEND_URL } from "../config/api";
 import type { EstadoBackend } from "../services/pedidosApi";
 import { obtenerAccessToken } from "../services/httpClient";
 
-export type PedidoEventoTipo = "CREADO" | "ACTUALIZADO" | "CANCELADO";
+export type PedidoEventoTipo = "CREADO" | "ACTUALIZADO" | "CANCELADO" | "PAGO_ACTUALIZADO" | "ETA_DELIVERY_ACTUALIZADO";
 
 export type PedidoEvento = {
   tipo: PedidoEventoTipo;
@@ -22,6 +22,8 @@ function esPedidoEvento(value: unknown): value is PedidoEvento {
     "CREADO",
     "ACTUALIZADO",
     "CANCELADO",
+    "PAGO_ACTUALIZADO",
+    "ETA_DELIVERY_ACTUALIZADO",
   ];
   const estadosValidos: EstadoBackend[] = [
     "PENDIENTE",

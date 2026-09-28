@@ -18,9 +18,6 @@ export type IngredienteProduccion = {
   costPerBaseUnitSnapshot: number;
   expectedCost: number;
   actualCost: number;
-  currentStock: number;
-  projectedStock: number;
-  enoughStock: boolean;
 };
 
 export type CostoAdicionalProduccion = {

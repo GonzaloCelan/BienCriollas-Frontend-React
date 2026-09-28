@@ -127,6 +127,7 @@ function NewOrderDrawer({
   const [hora, setHora] = useState("");
   const [fechaEntrega, setFechaEntrega] = useState("");
   const [tipoPago, setTipoPago] = useState<TipoPagoBackend>("EFECTIVO");
+  const [pagado, setPagado] = useState(false);
   const [tipoVenta, setTipoVenta] = useState<TipoVentaBackend>("PARTICULAR");
   const [totalManual, setTotalManual] = useState("");
   const [totalModificadoManualmente, setTotalModificadoManualmente] =
@@ -173,6 +174,7 @@ function NewOrderDrawer({
     setFechaEntrega(pedido.fechaEntrega ?? "");
     setTipoVenta(venta);
     setTipoPago(pago);
+    setPagado(pedido.pagado);
     setCantidades(cantidadesPedido);
     setCantidadesOriginales(cantidadesPedido);
     setTotalManual(venta === "PEDIDOS_YA" ? String(pedido.total ?? "") : "");
@@ -242,6 +244,7 @@ function NewOrderDrawer({
     setHora("");
     setFechaEntrega("");
     setTipoPago("EFECTIVO");
+    setPagado(false);
     setTipoVenta("PARTICULAR");
     setTotalManual("");
     setTotalModificadoManualmente(false);
@@ -490,6 +493,7 @@ function NewOrderDrawer({
       cliente: clienteTrim,
       tipoVenta,
       tipoPago,
+      pagado,
       numeroPedidoPedidosYa:
         tipoVenta === "PEDIDOS_YA" && numeroPedido.trim()
           ? numeroPedido.trim()
@@ -747,6 +751,22 @@ function NewOrderDrawer({
                 </small>
               </>
             )}
+
+            <div className="drawer-field drawer-field--full">
+              <span id="drawer-payment-status-label">Estado de pago</span>
+              <div className="drawer-payment-status">
+                <span className={!pagado ? "is-selected" : ""}>Por cobrar</span>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-labelledby="drawer-payment-status-label"
+                  aria-checked={pagado}
+                  className={`drawer-payment-switch ${pagado ? "is-paid" : ""}`}
+                  onClick={() => setPagado((current) => !current)}
+                ><span aria-hidden="true" /></button>
+                <span className={pagado ? "is-selected" : ""}>Pagado</span>
+              </div>
+            </div>
 
             <div className="drawer-field drawer-field--full">
               <span>Tipo de venta</span>

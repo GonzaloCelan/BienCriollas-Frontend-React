@@ -324,6 +324,21 @@
   letter-spacing: 0.045em;
 }
 
+
+/* Compact payment state, independent of the selected payment method. */
+.drawer-payment-status { min-height:40px; display:flex; align-items:center; gap:11px; }
+.drawer-payment-status > span { color:#8290a3; font-size:12px; font-weight:750; transition:color .18s ease; }
+.drawer-payment-status > span.is-selected { color:#233044; font-weight:900; }
+.drawer-payment-switch { width:46px; height:26px; padding:3px; border:0; border-radius:999px; background:#e2e8f0; cursor:pointer; transition:background .18s ease; }
+.drawer-payment-switch > span { width:20px; height:20px; display:block; border-radius:50%; background:#fff; box-shadow:0 2px 5px rgba(15,23,42,.2); transition:transform .18s ease; }
+.drawer-payment-switch.is-paid { background:#109469; }
+.drawer-payment-switch.is-paid > span { transform:translateX(20px); }
+.drawer-payment-switch:focus-visible { outline:2px solid #ef233c; outline-offset:3px; }
+body.dark-mode .drawer-payment-status > span { color:#91a1b5; }
+body.dark-mode .drawer-payment-status > span.is-selected { color:#f2f6fb; }
+body.dark-mode .drawer-payment-switch { background:#425065; }
+body.dark-mode .drawer-payment-switch.is-paid { background:#128963; }
+
 /* SEGMENT */
 .drawer-segment {
   height: 40px;

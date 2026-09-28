@@ -1,6 +1,10 @@
 @import "./kpiCard.css";
 @import "./criticalStockPanel.css";
 
+.app-content:has(.orders-page) {
+  scrollbar-gutter: stable;
+}
+
 .orders-page {
   width: 100%;
   min-height: 100vh;
@@ -292,6 +296,10 @@ body.dark-mode .orders-scheduled-alert span { color:#c0cbd9; }
   grid-template-columns: 3fr 1fr;
   gap: 18px;
   align-items: start;
+}
+
+.orders-content-grid:not(:has(> .critical-stock)) {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 /* PANEL TABLA */
@@ -592,7 +600,7 @@ body.dark-mode .pedidos-table .pedidos-ya {
 
 body.dark-mode .orders-table .orders-total,
 body.dark-mode .pedidos-table .orders-total,
-body.dark-mode tbody td:nth-child(5) {
+body.dark-mode .orders-table tbody td:nth-child(6) {
   color: #f8fafc;
   font-weight: 900;
 }
@@ -714,11 +722,17 @@ body.dark-mode .orders-page label {
    RESPONSIVE
 ========================================================= */
 
-@media (max-width: 1200px) {
+@media (max-width: 1600px) {
   .orders-content-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
+  .orders-content-grid > .critical-stock {
+    order: -1;
+  }
+}
+
+@media (max-width: 1200px) {
   .orders-stats {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }

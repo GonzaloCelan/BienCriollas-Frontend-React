@@ -21,6 +21,8 @@ import cancelledAnimation from "../assets/lotties/cancel.json";
 
 import {
   actualizarEstadoPedidoApi,
+  actualizarEstadoPagoPedidoApi,
+  actualizarEtaDeliveryApi,
   actualizarTipoPagoPedidoApi,
   obtenerPedidosProgramadosApi,
   obtenerResumenPedidosProgramadosApi,
@@ -31,6 +33,7 @@ import {
   type TipoPagoBackend,
   type ScheduledOrdersSummary,
 } from "../services/pedidosApi";
+import { ApiError } from "../services/httpClient";
 import {
   usePedidosRealtime,
   type PedidoEvento,
@@ -142,6 +145,7 @@ function Pedidos({ onNavigateToStock }: PedidosProps) {
   const [scheduledDate, setScheduledDate] = useState("");
   const [scheduledLoading, setScheduledLoading] = useState(true);
   const [scheduledError, setScheduledError] = useState("");
+  const [updatingPaymentId, setUpdatingPaymentId] = useState<number | null>(null);
   const [estadoActivo, setEstadoActivo] =
     useState<EstadoBackend>("PENDIENTE");
   const [newOrderOpen, setNewOrderOpen] = useState(false);
@@ -316,6 +320,7 @@ function Pedidos({ onNavigateToStock }: PedidosProps) {
         showTimestamp: false,
       });
       await Promise.all([
+        cargarPedidosPorEstado(estadoActivo, true),
         cargarPedidosProgramados(scheduledDate, true),
         cargarContadores(),
       ]);
@@ -366,6 +371,54 @@ function Pedidos({ onNavigateToStock }: PedidosProps) {
         showTimestamp: false,
       });
     }
+  }
+
+  async function cambiarEstadoPagoPedido(pedido: Pedido) {
+    if (updatingPaymentId !== null || pedido.estado === "Cancelado" || pedido.estado === "Entregado") return;
+
+    try {
+      setUpdatingPaymentId(pedido.id);
+      await actualizarEstadoPagoPedidoApi(pedido.id, !pedido.pagado);
+      await Promise.all([
+        cargarPedidosPorEstado(estadoActivo, true),
+        cargarPedidosProgramados(scheduledDate, true),
+      ]);
+      gooeyToast.success("Estado de pago actualizado", {
+        description: `Pedido #${pedido.id}: ${pedido.pagado ? "por cobrar" : "pagado"}.`,
+        timing: TOAST_RAPIDO_TIMING,
+        showTimestamp: false,
+      });
+    } catch (error) {
+      console.error(error);
+      if (error instanceof ApiError && error.status === 409) {
+        await Promise.all([
+          cargarPedidosPorEstado(estadoActivo, true),
+          cargarPedidosProgramados(scheduledDate, true),
+        ]);
+      }
+      gooeyToast.error("No se pudo actualizar el estado de pago", {
+        description: error instanceof Error ? error.message : "El pedido mantiene su estado de pago anterior.",
+        timing: TOAST_RAPIDO_TIMING,
+        showTimestamp: false,
+      });
+    } finally {
+      setUpdatingPaymentId(null);
+    }
+  }
+
+  async function cambiarEtaPedido(pedido: Pedido, minutes: number | null) {
+    await actualizarEtaDeliveryApi(pedido.id, minutes);
+    await Promise.all([
+      cargarPedidosPorEstado(estadoActivo, true),
+      cargarPedidosProgramados(scheduledDate, true),
+    ]);
+    gooeyToast.success(minutes === null ? "ETA quitado" : "ETA actualizado", {
+      description: minutes === null
+        ? `El pedido #${pedido.id} quedó sin tiempo estimado.`
+        : `El pedido #${pedido.id} tiene un nuevo tiempo estimado de ${minutes} min.`,
+      timing: TOAST_RAPIDO_TIMING,
+      showTimestamp: false,
+    });
   }
 
   async function cargarDetallePedido(idPedido: number) {
@@ -478,12 +531,14 @@ function Pedidos({ onNavigateToStock }: PedidosProps) {
   usePedidosRealtime((evento: PedidoEvento) => {
     console.info("Pedido actualizado en tiempo real:", evento);
 
+    const soloDatosDelPedido = evento.tipo === "PAGO_ACTUALIZADO" || evento.tipo === "ETA_DELIVERY_ACTUALIZADO";
+
     void Promise.all([
       cargarPedidosPorEstado(estadoActivo, true),
-      cargarContadores(),
       cargarPedidosProgramados(scheduledDate, true),
+      ...(soloDatosDelPedido ? [] : [cargarContadores()]),
     ]).then(() => {
-      refrescarStockCritico();
+      if (!soloDatosDelPedido) refrescarStockCritico();
     });
   });
 
@@ -498,7 +553,7 @@ function Pedidos({ onNavigateToStock }: PedidosProps) {
     }
 
     await Promise.all([
-      cargarPedidosPorEstado("PENDIENTE", programado),
+      cargarPedidosPorEstado("PENDIENTE", true),
       cargarContadores(),
       cargarPedidosProgramados("", programado),
     ]);
@@ -681,12 +736,15 @@ function Pedidos({ onNavigateToStock }: PedidosProps) {
             onDeletePedido={abrirConfirmacionCancelacion}
             onLoadDetail={cargarDetallePedido}
             onChangePayment={cambiarTipoPagoPedido}
+            onChangePaymentStatus={cambiarEstadoPagoPedido}
+            onChangeDeliveryEta={cambiarEtaPedido}
+            updatingPaymentId={updatingPaymentId}
             onEditPedido={abrirEditorPedido}
             editingId={editingId}
           />
         </div>
 
-        <CriticalStockPanel key={stockRefreshKey} onNavigateToStock={onNavigateToStock} />
+        <CriticalStockPanel refreshToken={stockRefreshKey} onNavigateToStock={onNavigateToStock} />
         </div>
       </> : (
         <>
@@ -701,6 +759,8 @@ function Pedidos({ onNavigateToStock }: PedidosProps) {
             onClearDate={() => setScheduledDate("")}
             onEdit={abrirEditorPedido}
             onCancel={abrirConfirmacionCancelacion}
+            onChangePaymentStatus={cambiarEstadoPagoPedido}
+            updatingPaymentId={updatingPaymentId}
             onLoadDetail={cargarDetallePedido}
           />
         </>

@@ -1,0 +1,39 @@
+.delivery-eta-dialog { position:fixed; inset:0; z-index:21000; display:grid; place-items:center; padding:18px; }
+.delivery-eta-dialog__backdrop { position:absolute; inset:0; width:100%; height:100%; border:0; background:rgba(10,17,28,.56); cursor:pointer; }
+.delivery-eta-dialog__panel { position:relative; width:min(420px,100%); padding:23px; border-radius:10px; background:#fff; box-shadow:0 26px 70px rgba(15,23,42,.3); animation:deliveryEtaIn .2s ease-out both; }
+.delivery-eta-dialog__panel header { display:flex; align-items:center; gap:12px; }
+.delivery-eta-dialog__icon { width:38px; height:38px; display:grid; place-items:center; flex:none; border-radius:8px; color:#ef4040; background:#fff0f0; }
+.delivery-eta-dialog__panel header div { flex:1; min-width:0; }
+.delivery-eta-dialog__panel header small { color:#ef4040; font-size:10px; font-weight:850; text-transform:uppercase; letter-spacing:.06em; }
+.delivery-eta-dialog__panel h2 { margin:2px 0 0; color:#233044; font-size:20px; line-height:1.2; }
+.delivery-eta-dialog__close { width:32px; height:32px; border:0; border-radius:6px; background:transparent; color:#718096; cursor:pointer; }
+.delivery-eta-dialog__panel form { margin-top:20px; display:grid; gap:9px; }
+.delivery-eta-dialog__panel form > p { margin:0 0 9px; color:#64748b; font-size:12px; line-height:1.5; }
+.delivery-eta-dialog__panel label { color:#344054; font-size:11px; font-weight:850; text-transform:uppercase; }
+.delivery-eta-dialog__input { display:flex; align-items:center; gap:8px; border-bottom:1.5px solid #9aa8b9; }
+.delivery-eta-dialog__input:focus-within { border-color:#ef4040; }
+.delivery-eta-dialog__input input { width:100%; height:40px; border:0; outline:0; background:transparent; color:#233044; font:800 16px/1 "Plus Jakarta Sans",system-ui,sans-serif; }
+.delivery-eta-dialog__input input::placeholder { color:#a5b0bd; font-weight:600; }
+.delivery-eta-dialog__input span { color:#6e7d90; font-size:12px; font-weight:850; }
+.delivery-eta-dialog__panel form > small { color:#8490a0; font-size:10px; }
+.delivery-eta-dialog__panel form > small.is-error,.delivery-eta-dialog__error { color:#be123c; }
+.delivery-eta-dialog__panel .delivery-eta-dialog__error { margin:0; font-size:11px; }
+.delivery-eta-dialog__panel footer { margin-top:15px; display:flex; flex-wrap:wrap; justify-content:flex-end; gap:8px; }
+.delivery-eta-dialog__panel footer button { min-height:36px; padding:0 12px; border:0; border-radius:6px; font-size:11px; font-weight:850; cursor:pointer; }
+.delivery-eta-dialog__panel footer button:disabled { opacity:.55; cursor:not-allowed; }
+.delivery-eta-dialog__remove { margin-right:auto; background:#fff2f2; color:#be123c; }
+.delivery-eta-dialog__cancel { background:#f1f4f8; color:#57657a; }
+.delivery-eta-dialog__save { background:#ef4040; color:#fff; }
+.delivery-eta-dialog__panel button:focus-visible { outline:2px solid #ef4040; outline-offset:2px; }
+body.dark-mode .delivery-eta-dialog__panel { background:#17212c; box-shadow:0 26px 70px rgba(0,0,0,.55); }
+body.dark-mode .delivery-eta-dialog__icon { color:#ff777c; background:#342126; }
+body.dark-mode .delivery-eta-dialog__panel h2,body.dark-mode .delivery-eta-dialog__panel label { color:#edf3fa; }
+body.dark-mode .delivery-eta-dialog__panel form > p,body.dark-mode .delivery-eta-dialog__panel form > small,body.dark-mode .delivery-eta-dialog__input span { color:#aebcd0; }
+body.dark-mode .delivery-eta-dialog__input { border-color:#697a8e; }
+body.dark-mode .delivery-eta-dialog__input:focus-within { border-color:#ff777c; }
+body.dark-mode .delivery-eta-dialog__input input { color:#edf3fa; }
+body.dark-mode .delivery-eta-dialog__remove { color:#ff9ba4; background:#3a252e; }
+body.dark-mode .delivery-eta-dialog__cancel { color:#c4d0dd; background:#263241; }
+body.dark-mode .delivery-eta-dialog__panel form > small.is-error,body.dark-mode .delivery-eta-dialog__error { color:#ff9ba4; }
+@keyframes deliveryEtaIn { from { opacity:0; transform:translateY(8px) scale(.98); } to { opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce) { .delivery-eta-dialog__panel { animation:none; } }

@@ -120,6 +120,10 @@
   text-align: right;
 }
 
+.order-detail-row--status strong {
+  font-size: 14px;
+}
+
 .order-detail-row--highlight {
   min-height: 70px;
 }

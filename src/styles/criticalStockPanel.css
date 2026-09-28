@@ -49,6 +49,12 @@
   gap: 10px;
 }
 
+@media (min-width: 761px) and (max-width: 1600px) {
+  .critical-stock__list {
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  }
+}
+
 .critical-stock__item {
   width: 100%;
   min-height: 72px;

@@ -11,6 +11,7 @@ import {
 
 import type { Pedido } from "./PedidosTable";
 import OrderDetailDrawer from "./OrderDetailDrawer";
+import PaymentStatusBadge from "./PaymentStatusBadge";
 import type { ScheduledOrdersSummary } from "../services/pedidosApi";
 
 import "../styles/scheduledOrders.css";
@@ -25,6 +26,8 @@ type ScheduledOrdersViewProps = {
   onClearDate: () => void;
   onEdit: (pedido: Pedido) => void | Promise<void>;
   onCancel: (idPedido: number) => void;
+  onChangePaymentStatus: (pedido: Pedido) => void;
+  updatingPaymentId?: number | null;
   onLoadDetail: (idPedido: number) => Promise<Pedido["items"]>;
 };
 
@@ -75,6 +78,8 @@ export default function ScheduledOrdersView({
   onClearDate,
   onEdit,
   onCancel,
+  onChangePaymentStatus,
+  updatingPaymentId = null,
   onLoadDetail,
 }: ScheduledOrdersViewProps) {
   const [search, setSearch] = useState("");
@@ -171,6 +176,14 @@ export default function ScheduledOrdersView({
                     <div className="scheduled-order__client">
                       <strong>{pedido.cliente || "Sin cliente"}</strong>
                       <span>Pedido #{pedido.id} · {pedido.tipoVenta}</span>
+                      <div className="scheduled-order__payment">
+                        <small>Estado de pago</small>
+                        <PaymentStatusBadge
+                          pagado={pedido.pagado}
+                          onClick={pedido.estado === "Entregado" || pedido.estado === "Cancelado" ? undefined : () => onChangePaymentStatus(pedido)}
+                          busy={updatingPaymentId === pedido.id}
+                        />
+                      </div>
                     </div>
                     <div className="scheduled-order__facts">
                       <span><strong>{totalUnits(pedido)}</strong> empanadas</span>
