@@ -6,6 +6,22 @@ export type StockApiResponse = {
   stock_disponible: number;
   stock_total: number;
   fecha_elaboracion: string | null;
+  costo_unitario_actual: number | null;
+  valor_stock_actual: number | null;
+};
+
+type StockSummaryApiResponse = {
+  total_unidades_disponibles: number;
+  valor_total_stock: number;
+  variedades_con_stock: number;
+  variedades_sin_valoracion: number;
+};
+
+export type StockSummary = {
+  totalUnidadesDisponibles: number;
+  valorTotalStock: number;
+  variedadesConStock: number;
+  variedadesSinValoracion: number;
 };
 
 export type StockItem = {
@@ -15,6 +31,8 @@ export type StockItem = {
   stock: number;
   stockTotal: number;
   fechaElaboracion: string | null;
+  costoUnitarioActual: number | null;
+  valorStockActual: number | null;
   produccion: number;
 };
 
@@ -100,9 +118,25 @@ export const obtenerStockActual = async (): Promise<StockItem[]> => {
       stock: item.stock_disponible,
       stockTotal: item.stock_total,
       fechaElaboracion: item.fecha_elaboracion,
+      costoUnitarioActual: item.costo_unitario_actual,
+      valorStockActual: item.valor_stock_actual,
       produccion: 0,
     };
   });
+};
+
+export const obtenerResumenStock = async (): Promise<StockSummary> => {
+  const response = await apiFetch(`${API_URL}/api/v2/stock/resumen`);
+
+  await handleResponse(response, "Error al obtener el resumen del stock");
+
+  const data: StockSummaryApiResponse = await response.json();
+  return {
+    totalUnidadesDisponibles: data.total_unidades_disponibles,
+    valorTotalStock: data.valor_total_stock,
+    variedadesConStock: data.variedades_con_stock,
+    variedadesSinValoracion: data.variedades_sin_valoracion,
+  };
 };
 
 export const actualizarStock = async (

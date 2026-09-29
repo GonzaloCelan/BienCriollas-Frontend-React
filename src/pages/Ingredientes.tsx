@@ -3,8 +3,8 @@ import {
   PackageOpen, Plus, RefreshCw, Search, SlidersHorizontal, X,
 } from "lucide-react";
 import { gooeyToast } from "goey-toast";
-import { AnimatePresence, motion } from "framer-motion";
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { createPortal } from "react-dom";
 import AppConfirmDialog from "../components/AppConfirmDialog";
 import { TOAST_RAPIDO_TIMING } from "../config/toast";
@@ -92,6 +92,7 @@ function parseForm(form: IngredientForm): IngredienteEditable {
 
 export default function Ingredientes() {
   const [pageData, setPageData] = useState<PaginaIngredientes | null>(null);
+  const [loadedViewKey, setLoadedViewKey] = useState("initial");
   const [summary, setSummary] = useState<ResumenIngredientes | null>(null);
   const [page, setPage] = useState(0);
   const [filter, setFilter] = useState<FiltroIngredientes>("todos");
@@ -106,6 +107,11 @@ export default function Ingredientes() {
   const [saving, setSaving] = useState(false);
   const [confirmItem, setConfirmItem] = useState<Ingrediente | null>(null);
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
+  const loadRequestRef = useRef(0);
+  const reduceMotion = useReducedMotion();
+  const selectionTransition = reduceMotion
+    ? { duration: 0 }
+    : { type: "spring" as const, stiffness: 460, damping: 36 };
 
   useEffect(() => {
     if (openMenuId === null) return;
@@ -131,6 +137,7 @@ export default function Ingredientes() {
   }, [search]);
 
   const loadData = useCallback(async () => {
+    const requestId = ++loadRequestRef.current;
     try {
       setLoading(true);
       setError("");
@@ -138,12 +145,15 @@ export default function Ingredientes() {
         listarIngredientesApi({ filtro: filter, query: debouncedSearch, page, size: PAGE_SIZE, sort }),
         obtenerResumenIngredientesApi(),
       ]);
+      if (requestId !== loadRequestRef.current) return;
       setPageData(ingredients);
+      setLoadedViewKey(`${filter}|${debouncedSearch}|${page}|${sort}`);
       setSummary(ingredientSummary);
     } catch (loadError) {
+      if (requestId !== loadRequestRef.current) return;
       setError(getErrorMessage(loadError, "No se pudieron cargar los ingredientes."));
     } finally {
-      setLoading(false);
+      if (requestId === loadRequestRef.current) setLoading(false);
     }
   }, [debouncedSearch, filter, page, sort]);
 
@@ -252,7 +262,12 @@ export default function Ingredientes() {
       <div className="ingredients-toolbar">
         <div className="ingredients-search"><Search size={17} /><input value={search} onChange={(event) => { setFilter("todos"); setSearch(event.target.value); setPage(0); }} placeholder="Buscar ingrediente..." aria-label="Buscar ingrediente" />{search && <button type="button" onClick={() => setSearch("")} aria-label="Limpiar búsqueda"><X size={15} /></button>}</div>
         <div className="ingredients-filter" role="group" aria-label="Filtrar ingredientes">
-          {(["todos", "activos", "inactivos"] as FiltroIngredientes[]).map((value) => <button type="button" key={value} className={filter === value ? "is-active" : ""} onClick={() => { setFilter(value); setPage(0); setSearch(""); }}>{value.charAt(0).toUpperCase() + value.slice(1)}</button>)}
+          {(["todos", "activos", "inactivos"] as FiltroIngredientes[]).map((value) => (
+            <button type="button" key={value} className={filter === value ? "is-active" : ""} aria-pressed={filter === value} onClick={() => { setFilter(value); setPage(0); setSearch(""); setDebouncedSearch(""); }}>
+              {filter === value && <motion.span className="ingredients-filter__indicator" layoutId="ingredient-filter-indicator" transition={selectionTransition} aria-hidden="true" />}
+              <span className="ingredients-filter__label">{value.charAt(0).toUpperCase() + value.slice(1)}</span>
+            </button>
+          ))}
         </div>
         <label className="ingredients-sort"><SlidersHorizontal size={16} /><span className="sr-only">Ordenar</span><select value={sort} onChange={(event) => { setSort(event.target.value as OrdenIngredientes); setPage(0); }} aria-label="Ordenar ingredientes"><option value="name,asc">Nombre A–Z</option><option value="name,desc">Nombre Z–A</option></select></label>
         <button type="button" className="ingredients-refresh" onClick={() => void loadData()} disabled={loading} aria-label="Actualizar ingredientes" title="Actualizar"><RefreshCw size={17} className={loading ? "is-spinning" : ""} /></button>
@@ -260,7 +275,7 @@ export default function Ingredientes() {
 
       {error && !formMode && <div className="ingredients-error" role="alert"><AlertTriangle size={17} /><span>{error}</span><button type="button" onClick={() => setError("")} aria-label="Cerrar error"><X size={15} /></button></div>}
 
-      <section className="ingredient-grid" aria-label="Listado de ingredientes" aria-busy={loading}>
+      <motion.section key={loadedViewKey} className={`ingredient-grid${loading ? " ingredient-grid--loading" : ""}`} aria-label="Listado de ingredientes" aria-busy={loading} initial={reduceMotion ? false : { opacity: 0, y: 8 }} animate={{ opacity: loading && pageData !== null ? .62 : 1, y: 0 }} transition={reduceMotion ? { duration: 0 } : { duration: .32, ease: "easeOut" }}>
         {items.map((item) => <article className={`ingredient-tile ${item.active ? "" : "is-inactive"} ${openMenuId === item.id ? "is-menu-open" : ""}`} key={item.id}>
           <header className="ingredient-tile__heading">
             <div><h3>{toTitleCase(item.name)}</h3><small>Actualizado {formatUpdatedAt(item.updatedAt)}</small></div>
@@ -288,9 +303,9 @@ export default function Ingredientes() {
         </article>)}
         {loading && items.length === 0 && <div className="ingredients-state"><LoaderCircle size={25} className="is-spinning" />Cargando ingredientes…</div>}
         {!loading && items.length === 0 && <div className="ingredients-state"><span><PackageOpen size={28} /></span><strong>{search ? "No encontramos coincidencias" : "No hay ingredientes para mostrar"}</strong><p>{search ? "Probá con otro nombre." : filter === "inactivos" ? "No hay ingredientes inactivos." : "Creá el primer ingrediente para empezar."}</p></div>}
-      </section>
+      </motion.section>
 
-      {(pageData?.totalPages ?? 0) > 1 && <footer className="ingredients-pagination"><span>Mostrando {items.length} de {pageData?.totalElements ?? 0}</span><div><button type="button" disabled={pageData?.first} onClick={() => setPage((value) => value - 1)} aria-label="Página anterior"><ChevronLeft size={16} /></button>{pageNumbers.map((number) => <button type="button" key={number} className={page === number ? "is-active" : ""} onClick={() => setPage(number)}>{number + 1}</button>)}<button type="button" disabled={pageData?.last} onClick={() => setPage((value) => value + 1)} aria-label="Página siguiente"><ChevronRight size={16} /></button></div></footer>}
+      {(pageData?.totalPages ?? 0) > 1 && <footer className="ingredients-pagination"><span>Mostrando {items.length} de {pageData?.totalElements ?? 0}</span><div><button type="button" disabled={pageData?.first} onClick={() => setPage((value) => value - 1)} aria-label="Página anterior"><ChevronLeft size={16} /></button>{pageNumbers.map((number) => <button type="button" key={number} className={page === number ? "is-active" : ""} onClick={() => setPage(number)} aria-current={page === number ? "page" : undefined}>{page === number && <motion.span className="ingredients-pagination__indicator" layoutId="ingredient-page-indicator" transition={selectionTransition} aria-hidden="true" />}<span className="ingredients-pagination__label">{number + 1}</span></button>)}<button type="button" disabled={pageData?.last} onClick={() => setPage((value) => value + 1)} aria-label="Página siguiente"><ChevronRight size={16} /></button></div></footer>}
     </div>
 
     {createPortal(<AnimatePresence>{formMode && <motion.div className="ingredient-modal" role="dialog" aria-modal="true" aria-labelledby="ingredient-form-title" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: .22 }}><button type="button" className="ingredient-modal__backdrop" onClick={() => { if (!saving) setFormMode(null); }} aria-label="Cerrar formulario" /><motion.form className={`ingredient-drawer__panel ingredient-modal__panel ${formMode === "price" ? "ingredient-modal__panel--compact" : ""}`} onSubmit={saveIngredient} initial={{ opacity: 0, y: 30, scale: .96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 22, scale: .97 }} transition={{ duration: .34, ease: [0.16, 1, 0.3, 1] }}>
