@@ -117,6 +117,12 @@
 .recipe-drawer__panel > header button { width: 38px; height: 38px; display: grid; place-items: center; flex-shrink: 0; border: 1px solid #dfe4ea; border-radius: 9px; background: #fff; color: #667386; transition: transform .2s ease, color .2s ease; }
 .recipe-drawer__panel > header button:hover { color: #ef4040; transform: rotate(90deg); }
 .recipe-drawer__body { flex: 1 1 0; min-width: 0; min-height: 0; padding: 24px; display: flex; flex-direction: column; gap: 18px; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+.recipe-calculation-panel > .recipe-drawer__body { overflow-y: scroll; scrollbar-gutter: stable; scrollbar-width: thin; scrollbar-color: rgba(239,64,64,.42) transparent; }
+.recipe-calculation-panel > .recipe-drawer__body > * { flex-shrink: 0; }
+.recipe-calculation-panel > .recipe-drawer__body::-webkit-scrollbar { width: 10px; }
+.recipe-calculation-panel > .recipe-drawer__body::-webkit-scrollbar-track { background: transparent; }
+.recipe-calculation-panel > .recipe-drawer__body::-webkit-scrollbar-thumb { border: 3px solid transparent; border-radius: 999px; background: rgba(239,64,64,.42); background-clip: padding-box; }
+.recipe-calculation-panel > .recipe-drawer__body::-webkit-scrollbar-thumb:hover { background: rgba(239,64,64,.64); background-clip: padding-box; }
 .recipe-form-panel > header { position: sticky; top: 0; z-index: 4; background: #fff; }
 .recipe-form-panel > .recipe-drawer__body { min-height: calc(100dvh - 168px); height: auto; overflow: visible; }
 .recipe-form-panel > footer { position: sticky; bottom: 0; z-index: 4; background: #fff; box-shadow: 0 -8px 22px rgba(31,41,55,.075); }

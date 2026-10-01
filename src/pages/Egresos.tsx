@@ -1,5 +1,4 @@
 import AppConfirmDialog from "../components/AppConfirmDialog";
-import Kpi from "../components/Kpi";
 import { TOAST_RAPIDO_TIMING } from "../config/toast";
 import { gooeyToast } from "goey-toast";
 
@@ -9,7 +8,6 @@ import {
   Factory,
   Search,
   Users,
-  Wallet,
   ShoppingCart,
   Save,
 } from "lucide-react";
@@ -426,56 +424,38 @@ function Egresos() {
 
       {error && <div className="expenses-error">{error}</div>}
 
+      <section className="expenses-strip" aria-label="Resumen de egresos">
+        <div className="expenses-strip__body">
+          <div className="expenses-strip__title">
+            <small>EN NÚMEROS</small>
+            <h3>Egresos</h3>
+            <span>Hoy y mes actual</span>
+          </div>
+          <div className="expenses-strip__metric">
+            <small>HOY · {nombreDiaActual.toUpperCase()}</small>
+            <strong>{loadingInicial ? "—" : formatMoney(totalHoy)}</strong>
+            <span>{egresosHoy.length} movimientos</span>
+          </div>
+          <div className="expenses-strip__metric">
+            <small>PERSONAL</small>
+            <strong>{loadingInicial ? "—" : formatMoney(totalPersonal)}</strong>
+            <span>{porcentajePersonal}% del mes{variacionPersonal > 0 ? ` · ${variacionPersonal}% vs. mes anterior` : ""}</span>
+          </div>
+          <div className="expenses-strip__metric">
+            <small>PRODUCCIÓN</small>
+            <strong>{loadingInicial ? "—" : formatMoney(totalProduccion)}</strong>
+            <span>{porcentajeProduccion}% del mes{variacionProduccion > 0 ? ` · ${variacionProduccion}% vs. mes anterior` : ""}</span>
+          </div>
+          <div className="expenses-strip__metric">
+            <small>ACUMULADO {nombreMesActual.toUpperCase()}</small>
+            <strong>{loadingInicial ? "—" : formatMoney(totalMes)}</strong>
+            <span>Total mensual de egresos</span>
+          </div>
+        </div>
+      </section>
+
       <section className="expenses-layout">
         <main className="expenses-main">
-          <section className="expenses-summary">
-            <Kpi
-              title={`Acumulado de hoy ${nombreDiaActual}`}
-              value={formatMoney(totalHoy)}
-              subtitle={`${egresosHoy.length} movimientos`}
-              icon={<Wallet size={22} />}
-              variant="orange"
-              loading={loadingInicial}
-            />
-
-            <Kpi
-              title="Personal"
-              value={formatMoney(totalPersonal)}
-              subtitle={`${porcentajePersonal}% del mes`}
-              helper={
-                variacionPersonal > 0
-                  ? `${variacionPersonal}% vs. mes anterior`
-                  : undefined
-              }
-              icon={<Users size={22} />}
-              variant="purple"
-              loading={loadingInicial}
-            />
-
-            <Kpi
-              title="Producción"
-              value={formatMoney(totalProduccion)}
-              subtitle={`${porcentajeProduccion}% del mes`}
-              helper={
-                variacionProduccion > 0
-                  ? `${variacionProduccion}% vs. mes anterior`
-                  : undefined
-              }
-              icon={<Factory size={22} />}
-              variant="blue"
-              loading={loadingInicial}
-            />
-
-            <Kpi
-  title={`Acumulado ${nombreMesActual}`}
-  value={formatMoney(totalMes)}
-  subtitle="Total mensual de egresos"
-  icon={<CalendarDays size={22} />}
-  variant="red"
-  loading={loadingInicial}
-/>
-          </section>
-
           <section className="expenses-card expenses-quick-form">
             <header className="expenses-card__header">
               <div className="expenses-card__title">

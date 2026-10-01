@@ -13,7 +13,6 @@ import { gooeyToast } from "goey-toast";
 
 import "../styles/ingresos.css";
 
-import Kpi from "../components/Kpi";
 import AppConfirmDialog from "../components/AppConfirmDialog";
 import AnimatedNumber from "../components/AnimatedNumber";
 import { TOAST_RAPIDO_TIMING } from "../config/toast";
@@ -495,46 +494,38 @@ function Ingresos() {
 
       {error && <div className="income-error">{error}</div>}
 
+      <section className="income-strip" aria-label="Resumen de ingresos">
+        <div className="income-strip__body">
+          <div className="income-strip__title">
+            <small>EN NÚMEROS</small>
+            <h3>Ingresos</h3>
+            <span>{periodo === "hoy" ? "Día seleccionado" : periodo === "ultimos7" ? "Últimos 7 días" : "Mes seleccionado"}</span>
+          </div>
+          <div className="income-strip__metric">
+            <small>EFECTIVO</small>
+            <strong>{loading ? "—" : <AnimatedNumber value={efectivo} money />}</strong>
+            <span>Particulares cobrados</span>
+          </div>
+          <div className="income-strip__metric">
+            <small>TRANSFERENCIAS</small>
+            <strong>{loading ? "—" : <AnimatedNumber value={transferencia} money />}</strong>
+            <span>Particulares cobrados</span>
+          </div>
+          <div className="income-strip__metric">
+            <small>PEDIDOS YA ESTIMADO</small>
+            <strong>{loading ? "—" : <AnimatedNumber value={pedidosYaEstimado} money />}</strong>
+            <span>Entregados · pendiente de liquidación</span>
+          </div>
+          <div className="income-strip__metric">
+            <small>ACUMULADO {nombreMesAcumulado.toUpperCase()}</small>
+            <strong>{loading ? "—" : <AnimatedNumber value={acumuladoMensual} money />}</strong>
+            <span>Efectivo + transferencias + liquidaciones</span>
+          </div>
+        </div>
+      </section>
+
       <section className="income-layout">
         <main className="income-main">
-          <section className="income-kpis">
-            <Kpi
-              title="Dinero en efectivo"
-              value={<AnimatedNumber value={efectivo} money />}
-              subtitle="Pedidos particulares cobrados"
-              helper="No incluye Pedidos Ya"
-              icon={<Banknote size={22} />}
-              variant="green"
-            />
-
-            <Kpi
-              title="Transferencias"
-              value={<AnimatedNumber value={transferencia} money />}
-              subtitle="Pedidos particulares cobrados"
-              helper="No incluye Pedidos Ya"
-              icon={<CreditCard size={22} />}
-              variant="blue"
-            />
-
-            <Kpi
-              title="Pedidos Ya estimado"
-              value={<AnimatedNumber value={pedidosYaEstimado} money />}
-              subtitle="Pendiente de liquidación"
-              helper="Pedidos Ya entregados"
-              icon={<span className="income-py-icon">P</span>}
-              variant="red"
-            />
-
-            <Kpi
-              title={`Acumulado ${nombreMesAcumulado}`}
-              value={<AnimatedNumber value={acumuladoMensual} money />}
-              subtitle="Mes seleccionado"
-              helper="Efectivo + transferencia + liquidaciones"
-              icon={<CalendarDays size={22} />}
-              variant="purple"
-            />
-          </section>
-
           <section className="income-card income-form-card">
             <header className="income-card__header">
               <div className="income-card__title">

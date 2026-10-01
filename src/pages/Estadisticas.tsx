@@ -3,16 +3,12 @@ import {
   CalendarDays,
   ChevronDown,
   CreditCard,
-  PackageCheck,
-  ReceiptText,
-  Trophy,
   Truck,
   AlertTriangle,
 } from "lucide-react";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import Kpi from "../components/Kpi";
 import BusinessBehaviorStats from "../components/BusinessBehaviorStats";
 
 import {
@@ -505,44 +501,34 @@ function Estadisticas() {
 
       {error && <div className="stats-error">{error}</div>}
 
-      <section className="stats-kpis">
-        <Kpi
-          title="Pedidos entregados"
-          value={loading ? "..." : pedidosEntregados}
-          subtitle="Pedidos completados"
-          icon={<PackageCheck size={20} />}
-        />
-
-        <Kpi
-          title="Empanadas vendidas"
-          value={loading ? "..." : empanadasVendidas}
-          subtitle="Unidades vendidas"
-          icon={<BarChart3 size={20} />}
-        />
-
-        <Kpi
-          title="Ticket promedio"
-          value={loading ? "..." : formatMoney(ticketPromedio)}
-          subtitle="Promedio por pedido"
-          icon={<ReceiptText size={20} />}
-        />
-
-        <Kpi
-          title="Variedad más vendida"
-          value={
-            loading
-              ? "..."
-              : estadistica?.variedadMasVendida?.nombre ?? "Sin datos"
-          }
-          subtitle={
-            loading
-              ? "Calculando..."
-              : estadistica?.variedadMasVendida
-              ? `${estadistica.variedadMasVendida.unidadesVendidas} unidades`
-              : "Sin ventas"
-          }
-          icon={<Trophy size={20} />}
-        />
+      <section className="stats-strip" aria-label="Resumen de estadísticas">
+        <div className="stats-strip__body">
+          <div className="stats-strip__title">
+            <small>EN NÚMEROS</small>
+            <h3>Ventas</h3>
+            <span>{periodo === "hoy" ? "Día seleccionado" : periodo === "ultimos7" ? "Últimos 7 días" : periodo === "mes" ? "Mes seleccionado" : "Año seleccionado"}</span>
+          </div>
+          <div className="stats-strip__metric">
+            <small>PEDIDOS ENTREGADOS</small>
+            <strong>{loading ? "—" : pedidosEntregados}</strong>
+            <span>Pedidos completados</span>
+          </div>
+          <div className="stats-strip__metric">
+            <small>EMPANADAS VENDIDAS</small>
+            <strong>{loading ? "—" : empanadasVendidas}</strong>
+            <span>Unidades vendidas</span>
+          </div>
+          <div className="stats-strip__metric">
+            <small>TICKET PROMEDIO</small>
+            <strong>{loading ? "—" : formatMoney(ticketPromedio)}</strong>
+            <span>Promedio por pedido</span>
+          </div>
+          <div className="stats-strip__metric">
+            <small>VARIEDAD MÁS VENDIDA</small>
+            <strong>{loading ? "—" : estadistica?.variedadMasVendida?.nombre ?? "Sin datos"}</strong>
+            <span>{loading ? "Calculando..." : estadistica?.variedadMasVendida ? `${estadistica.variedadMasVendida.unidadesVendidas} unidades` : "Sin ventas"}</span>
+          </div>
+        </div>
       </section>
 
       <section className="stats-feature-grid">
