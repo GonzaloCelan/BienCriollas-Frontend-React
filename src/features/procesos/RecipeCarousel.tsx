@@ -3,7 +3,7 @@ import type { MouseEvent, PointerEvent as ReactPointerEvent } from "react";
 import { motion } from "framer-motion";
 import { ArrowUpRight, Check, Hand } from "lucide-react";
 
-export type ProcessRecipeItem = { id: number; name: string; detail: string; image: string };
+export type ProcessRecipeItem = { id: number; name: string; detail: string };
 type Props = { recipes: ProcessRecipeItem[]; selectedId: number | null; dirtyIds: number[]; onSelect: (id: number) => void };
 type DragState = { active: boolean; pointerId: number; startX: number; startScroll: number; moved: boolean };
 
@@ -111,7 +111,7 @@ export default function RecipeCarousel({ recipes, selectedId, dirtyIds, onSelect
           const selected = selectedId === item.id;
           return <motion.button key={item.id} className={`sp-recipe ${selected ? "selected" : ""}`} onClick={event => { onSelect(item.id); reveal(event.currentTarget); }} onFocus={event => reveal(event.currentTarget)} aria-pressed={selected} initial={{ opacity: 0, y: 18, scale: .97 }} animate={{ opacity: 1, y: selected ? -2 : 0, scale: selected ? 1.012 : 1 }} transition={{ delay: Math.min(index * .045, .22), duration: .42, ease: [.22, 1, .36, 1], layout: { type: "spring", stiffness: 290, damping: 27 } }} whileHover={{ y: -5, scale: 1.01 }} whileTap={{ scale: .975 }}>
             {selected && <motion.span className="sp-recipe-selected" layoutId="standard-recipe-selection" transition={{ type: "spring", stiffness: 260, damping: 25, mass: .8 }} />}
-            <motion.img src={item.image} alt="" draggable={false} animate={{ scale: selected ? 1.08 : 1, rotate: selected ? -1.5 : 0 }} transition={{ type: "spring", stiffness: 260, damping: 24 }} /><motion.span className="sp-recipe-copy" animate={{ x: selected ? 2 : 0 }}><strong>{item.name}</strong><small>{item.detail}</small></motion.span><motion.span className="sp-recipe-check" animate={{ rotate: selected ? 0 : -35, scale: selected ? 1.08 : 1 }} transition={{ type: "spring", stiffness: 300, damping: 22 }}>{selected ? <Check size={14} /> : <ArrowUpRight size={14} />}</motion.span>{dirtyIds.includes(item.id) && <motion.span className="sp-draft-dot" title="Cambios sin guardar" initial={{ scale: 0 }} animate={{ scale: [0, 1.45, 1] }} />}
+            <motion.span className="sp-recipe-copy" animate={{ x: selected ? 2 : 0 }}><strong>{item.name}</strong><small>{item.detail}</small></motion.span><motion.span className="sp-recipe-check" animate={{ rotate: selected ? 0 : -35, scale: selected ? 1.08 : 1 }} transition={{ type: "spring", stiffness: 300, damping: 22 }}>{selected ? <Check size={14} /> : <ArrowUpRight size={14} />}</motion.span>{dirtyIds.includes(item.id) && <motion.span className="sp-draft-dot" title="Cambios sin guardar" initial={{ scale: 0 }} animate={{ scale: [0, 1.45, 1] }} />}
           </motion.button>;
         })}
       </div>

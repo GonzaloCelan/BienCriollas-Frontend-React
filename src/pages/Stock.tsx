@@ -13,38 +13,10 @@ import {
   type StockSummary,
 } from "../services/stockApi";
 
-import criollaStockImg from "../assets/variedades/criolla-stock.jpg";
-import verduraImg from "../assets/variedades/verdura-stock.jpg";
-import chocloImg from "../assets/variedades/choclo-stock.jpg";
-import polloImg from "../assets/variedades/pollo-stock.jpg";
-import atunImg from "../assets/variedades/atun-stock.jpg";
-import capresseImg from "../assets/variedades/capresse-stock.jpg";
-import fugazzaImg from "../assets/variedades/fugazza-stock.jpg";
-import quesoAzulImg from "../assets/variedades/queso-azul-stock.jpg";
-import bondiolaImg from "../assets/variedades/bondiola-stock.jpg";
-import vacioImg from "../assets/variedades/vacio-stock.jpg";
-import campoImg from "../assets/variedades/campo-stock.jpg";
-import jamonQuesoImg from "../assets/variedades/jamon-y-queso-stock.jpg";
-
 import "../styles/stock.css";
 
 type StockMode = "produccion" | "mermas" | "conteo";
 type StockAction = { id: number; mode: StockMode };
-
-const variedadImages: Record<number, string> = {
-  1: criollaStockImg,
-  2: verduraImg,
-  3: chocloImg,
-  4: polloImg,
-  5: atunImg,
-  6: capresseImg,
-  7: fugazzaImg,
-  8: quesoAzulImg,
-  9: bondiolaImg,
-  10: vacioImg,
-  11: campoImg,
-  12: jamonQuesoImg,
-};
 
 const numberFormatter = new Intl.NumberFormat("es-AR");
 const moneyFormatter = new Intl.NumberFormat("es-AR", {
@@ -410,18 +382,6 @@ function Stock() {
                     <tr className={`${index % 2 === 1 ? "stock-table__row--even" : ""}${editing ? " stock-table__row--editing" : ""}`}>
                       <td>
                         <div className="stock-table__variety">
-                          {variedadImages[item.id] ? (
-                            <img
-                              src={variedadImages[item.id]}
-                              alt=""
-                              loading="lazy"
-                              decoding="async"
-                            />
-                          ) : (
-                            <span className="stock-table__image-fallback" aria-hidden="true">
-                              {item.nombre.charAt(0)}
-                            </span>
-                          )}
                           <strong>{item.nombre}</strong>
                         </div>
                       </td>

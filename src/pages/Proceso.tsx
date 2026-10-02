@@ -7,7 +7,6 @@ import ProcessHistory from "../features/procesos/ProcessHistory";
 import StepEditor from "../features/procesos/StepEditor";
 import { draftFromProcess, emptyProcess, formatMinutes, processPayload, summarizeProcess, validateProcess } from "../features/procesos/model";
 import type { ProcessDraft, ProcessStep } from "../features/procesos/model";
-import { getVarietyImage } from "../features/procesos/recipes";
 import { ApiError } from "../services/httpClient";
 import { crearProcesoApi, crearVersionProcesoApi, listarProcesosApi, obtenerHistorialProcesoApi } from "../services/procesosApi";
 import type { Proceso } from "../services/procesosApi";
@@ -65,7 +64,7 @@ export default function ProcesoPage() {
 
   const recipeItems = useMemo(() => catalogo.map(item => {
     const backend = processes.find(process => process.varietyId === item.id_variedad);
-    return { id: item.id_variedad, name: item.nombre, image: getVarietyImage(item.id_variedad), detail: backend ? `Proceso v${backend.version} · ${backend.stepCount} ${backend.stepCount === 1 ? "paso" : "pasos"}` : "Sin proceso definido" };
+    return { id: item.id_variedad, name: item.nombre, detail: backend ? `Proceso v${backend.version} · ${backend.stepCount} ${backend.stepCount === 1 ? "paso" : "pasos"}` : "Sin proceso definido" };
   }), [catalogo, processes]);
   const selectedVarietyId = varietyId ?? catalogo[0]?.id_variedad ?? null;
   const backendProcess = processes.find(item => item.varietyId === selectedVarietyId) ?? null;

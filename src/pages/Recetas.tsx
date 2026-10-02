@@ -9,7 +9,6 @@ import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react
 import { createPortal } from "react-dom";
 import { TOAST_RAPIDO_TIMING } from "../config/toast";
 import AppConfirmDialog from "../components/AppConfirmDialog";
-import { getVarietyImage } from "../features/procesos/recipes";
 import { obtenerCatalogoApi, type CatalogoItem } from "../services/catalogoApi";
 import { ApiError } from "../services/httpClient";
 import { listarIngredientesApi, type Ingrediente } from "../services/ingredientesApi";
@@ -596,7 +595,6 @@ export default function Recetas() {
           <AnimatePresence initial={false}>{visibleRecipes.map((recipe, index) => {
             const isSelected = selectedRecipe?.id === recipe.id;
             return <motion.button type="button" className={`recipe-library-item ${isSelected ? "is-selected" : ""}`} key={recipe.id} onClick={() => setSelectedRecipeId(recipe.id)} aria-pressed={isSelected} initial={{ opacity: 0, x: -14 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 12 }} transition={{ duration: .24, delay: index * .035 }} layout>
-              <img src={getVarietyImage(recipe.varietyId)} alt="" />
               <span className="recipe-library-item__copy"><span><strong>{recipe.varietyName}</strong><em>v{recipe.version}</em></span><small>Rinde {recipe.baseYieldUnits} u.</small><b>{formatMoney(recipe.estimatedCostPerUnit)} / u.</b></span>
               <span className={`recipe-table-status ${recipe.active ? "is-active" : "is-history"}`}>{recipe.active ? "Vigente" : "Histórica"}</span>
               <ChevronRight size={17} className="recipe-library-item__arrow" />

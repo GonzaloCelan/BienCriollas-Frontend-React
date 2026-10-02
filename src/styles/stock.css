@@ -227,33 +227,13 @@
 .stock-table__variety {
   display: flex;
   align-items: center;
-  gap: 8px;
   min-width: 0;
-}
-
-.stock-table__variety img,
-.stock-table__image-fallback {
-  display: block;
-  width: 46px;
-  height: 32px;
-  flex: 0 0 46px;
-  border-radius: 5px;
-  object-fit: cover;
-  background: #f1f4f8;
-}
-
-.stock-table__image-fallback {
-  display: grid;
-  place-items: center;
-  color: #ef233c;
-  font-size: 15px;
-  font-weight: 950;
 }
 
 .stock-table__variety strong {
   min-width: 0;
   color: #263347;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 900;
   line-height: 1.25;
 }

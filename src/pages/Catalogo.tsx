@@ -18,35 +18,7 @@ import {
   calcularTotalPedido,
 } from "../utils/calcularTotalPedido";
 
-import carneImg from "../assets/variedades/thumbs/carne.jpg";
-import verduraImg from "../assets/variedades/thumbs/verdura.jpg";
-import chocloImg from "../assets/variedades/thumbs/choclo.jpg";
-import polloImg from "../assets/variedades/thumbs/pollo.jpg";
-import atunImg from "../assets/variedades/thumbs/atun.jpg";
-import capresseImg from "../assets/variedades/thumbs/capresse.jpg";
-import fugazzaImg from "../assets/variedades/thumbs/fugazza.jpg";
-import quesoAzulImg from "../assets/variedades/thumbs/queso-azul.jpg";
-import bondiolaImg from "../assets/variedades/thumbs/bondiola.jpg";
-import vacioImg from "../assets/variedades/thumbs/vacio.jpg";
-import campoImg from "../assets/variedades/thumbs/campo.jpg";
-import jamonQuesoImg from "../assets/variedades/thumbs/jamon-queso.jpg";
-
 import "../styles/catalogo.css";
-
-const variedadImages: Record<number, string> = {
-  1: carneImg,
-  2: verduraImg,
-  3: chocloImg,
-  4: polloImg,
-  5: atunImg,
-  6: capresseImg,
-  7: fugazzaImg,
-  8: quesoAzulImg,
-  9: bondiolaImg,
-  10: vacioImg,
-  11: campoImg,
-  12: jamonQuesoImg,
-};
 
 type PriceDraft = {
   precioUnitario: string;
@@ -419,12 +391,6 @@ function Catalogo() {
                   >
                   <td data-label="Variedad">
                     <div className="catalog-table__variety">
-                      <img
-                        src={variedadImages[item.id_variedad]}
-                        alt={`Empanada de ${item.nombre}`}
-                        loading="lazy"
-                        decoding="async"
-                      />
                       <strong>{item.nombre}</strong>
                     </div>
                   </td>
